@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   buildPlanPrompt,
   generateHouseholdPlan,
@@ -8,6 +8,7 @@ import {
 } from '@/lib/plan';
 import { AirQualityReport } from '@/lib/air-quality/types';
 import { POST } from '@/app/api/plan/route';
+import { planRateLimiter } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 
 const MOCK_AIR_QUALITY: AirQualityReport = {
@@ -221,6 +222,10 @@ describe('Plan Module - Gemini Generation & Fallback', () => {
 });
 
 describe('Plan Module - POST /api/plan Route Handler', () => {
+  beforeEach(() => {
+    planRateLimiter.reset();
+  });
+
   it('returns 200 with full plan on valid POST request', async () => {
     vi.stubEnv('GOOGLE_MAPS_API_KEY', 'test-maps-key');
     vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key');

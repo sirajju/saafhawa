@@ -83,7 +83,13 @@ export function getClientIp(request: NextRequest): string {
   return '127.0.0.1';
 }
 
-// Singletons for the two endpoints
+// Singletons for the API endpoints
+// Air quality endpoint: 60 requests per minute per IP
+export const airQualityRateLimiter = new SlidingWindowRateLimiter(60, 60);
+
+// Plan generation endpoint: 30 requests per minute per IP
+export const planRateLimiter = new SlidingWindowRateLimiter(30, 60);
+
 // Chat endpoint: 15 messages per minute per IP
 export const chatRateLimiter = new SlidingWindowRateLimiter(15, 60);
 

@@ -13,6 +13,7 @@ import {
   ProviderUnavailableError,
   LocationNotFoundError,
 } from '@/lib/air-quality/types';
+import { airQualityRateLimiter } from '@/lib/rate-limit';
 import { GET } from '@/app/api/air-quality/route';
 import { NextRequest } from 'next/server';
 
@@ -306,6 +307,7 @@ describe('Air Quality - Service Orchestration', () => {
 
   beforeEach(() => {
     airQualityCache.clear();
+    airQualityRateLimiter.reset();
     process.env.GOOGLE_MAPS_API_KEY = 'valid-test-key';
   });
 
@@ -398,6 +400,7 @@ describe('Air Quality - API Route GET /api/air-quality', () => {
 
   beforeEach(() => {
     airQualityCache.clear();
+    airQualityRateLimiter.reset();
     process.env.GOOGLE_MAPS_API_KEY = 'valid-test-key';
   });
 

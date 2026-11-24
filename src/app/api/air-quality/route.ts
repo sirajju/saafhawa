@@ -1,10 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAirQualityByLocation } from '@/lib/air-quality/service';
 import { AirQualityError, AirQualityQuerySchema } from '@/lib/air-quality/types';
+import { airQualityRateLimiter, getClientIp } from '@/lib/rate-limit';
 import { ZodError } from 'zod';
 
 export async function GET(request: NextRequest) {
   try {
+    // 1. IP-based rate limiting
+    const clientIp = getClientIp(request);
+    const rateCheck = airQualityRateLimiter.check(clientIp);
+
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        {
+          error: 'Too Many Requests',
+          message: `Rate limit exceeded. Please wait ${rateCheck.resetSeconds} seconds before requesting air quality again.`,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateCheck.resetSeconds),
+          },
+        }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
 
     // Accept only the single designated query parameter: "place"

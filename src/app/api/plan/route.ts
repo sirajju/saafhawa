@@ -2,10 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateHouseholdPlan } from '@/lib/plan/service';
 import { PlanRequestSchema } from '@/lib/plan/types';
 import { AirQualityError } from '@/lib/air-quality/types';
+import { getClientIp, planRateLimiter } from '@/lib/rate-limit';
 import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. IP-based rate limiting
+    const clientIp = getClientIp(request);
+    const rateCheck = planRateLimiter.check(clientIp);
+
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        {
+          error: 'Too Many Requests',
+          message: `Rate limit exceeded. Please wait ${rateCheck.resetSeconds} seconds before generating another plan.`,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateCheck.resetSeconds),
+          },
+        }
+      );
+    }
+
     let rawBody: unknown;
     try {
       rawBody = await request.json();

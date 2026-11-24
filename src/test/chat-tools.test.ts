@@ -19,6 +19,8 @@ import {
   getClientIp,
   chatRateLimiter,
   advisoryRateLimiter,
+  airQualityRateLimiter,
+  planRateLimiter,
 } from '@/lib/rate-limit';
 import {
   AdvisoryRequestSchema,
@@ -234,9 +236,11 @@ describe('Rate Limiter', () => {
     expect(getClientIp(reqWithNoHeaders)).toBe('127.0.0.1');
   });
 
-  it('exports singleton rate limiters for chat and advisory', () => {
+  it('exports singleton rate limiters for all API endpoints', () => {
     expect(chatRateLimiter).toBeDefined();
     expect(advisoryRateLimiter).toBeDefined();
+    expect(airQualityRateLimiter).toBeDefined();
+    expect(planRateLimiter).toBeDefined();
   });
 });
 
