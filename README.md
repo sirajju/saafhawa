@@ -1,6 +1,6 @@
 # SaafHawa (Clean Air Assistant) 🌫️🌱
 
-> An intelligent winter smog mitigation platform for families and communities to navigate severe air quality crises with personalized low-emission daily routines, accessible indoor air quality hacks, deterministic scientific impact tracking, and WhatsApp-ready community broadcast advisories.
+> An intelligent, accessible winter smog mitigation platform for households and communities. Combines real-time microclimate air quality data with living profiles to generate tailored 24-hour smog action plans, verifiable physical exposure and emission reduction arithmetic, conversational follow-up guidance via Gemini function calling, and WhatsApp-ready community broadcast advisories.
 
 [![CI Pipeline](https://github.com/sirajju/saafhawa/actions/workflows/ci.yml/badge.svg)](https://github.com/sirajju/saafhawa/actions/workflows/ci.yml)
 ![Next.js](https://img.shields.io/badge/Next.js-16.4.6-black?logo=next.js)
@@ -10,41 +10,40 @@
 ![Google Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-8e75ff?logo=googlegemini)
 ![Vitest](https://img.shields.io/badge/Vitest-5.1-6e9f18?logo=vitest)
 ![Playwright](https://img.shields.io/badge/Playwright-E2E-2ead33?logo=playwright)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
-## 📋 What the App Does
+## 1. Chosen Vertical
 
-During north Indian and South Asian winters, atmospheric temperature inversions trap industrial emissions, vehicular exhaust, and biomass smoke near ground level, creating persistent hazardous smog episodes with Air Quality Index (AQI) values frequently exceeding 400.
+**Vertical:** Environmental Public Health & Winter Smog Defense (Clean Air for Households and Communities).
 
-**SaafHawa** ("Clean Air" in Hindi/Urdu) is an end-to-end assistant built for hackathons and public health defense. It combines real-time microclimate air quality data with a household's specific living profile to generate a tailored 24-hour smog survival action plan. 
+During north Indian and South Asian winters, atmospheric thermal inversions trap industrial emissions, vehicular exhaust, and biomass combustion close to the surface, creating hazardous smog episodes where the Air Quality Index (AQI) frequently exceeds 400. Vulnerable populations—including infants, school-age children, elderly adults, and individuals with respiratory conditions such as asthma and COPD—face severe acute respiratory risks.
 
-### Core Pillars:
-1. **Personalized 24-Hour Routine Optimization**: Recommends safe activity windows (e.g., shifting outdoor walks to midday when sunlight breaks ground inversions) and low-emission commute alternatives.
-2. **Indoor Air Quality (IAQ) Defense**: Prioritizes affordable interventions—from HEPA purifiers and DIY Corsi-Rosenthal box fans to kitchen exhaust habits, door draft sealing, and wet mopping.
-3. **Deterministic Scientific Impact Engine**: Calculates exact microgram ($\mu\text{g}$) inhaled $\text{PM}_{2.5}$ dose avoided and grams of $\text{PM}_{2.5}$ and $\text{CO}_2$ emissions prevented. **AI never invents or guesses numbers.**
-4. **Conversational Assistant with Function Calling**: Users can ask natural follow-up questions (*"Can my daughter play soccer outside at 5 PM?"*, *"How much cleaner is the metro?"*). Gemini executes registered backend tools to fetch live conditions and run arithmetic models.
-5. **WhatsApp Community Advisories**: Generates one-click, formatted broadcast advisories in **English** and **Hindi** tailored for Housing Societies (RWAs) and School/Parent groups.
+**SaafHawa** ("Clean Air") tackles this crisis directly. It equips families and local neighborhood communities with actionable, accessible, and mathematically grounded interventions that minimize particulate exposure and reduce household emission contributions.
 
 ---
 
-## 🎯 Problem Statement Coverage Matrix
+## 2. Approach and Logic
 
-| Hackathon Requirement | SaafHawa Implementation | Technical Enforcement |
-| :--- | :--- | :--- |
-| **Severe Winter Smog Focus** | Micro-targeted air quality data using India's National AQI (`ind_cpcb`) and 24-hour hourly forecast curves. | Google Air Quality API + 15-minute capped TTL cache. |
-| **Routines Based on Location & Living** | 21-action verified catalogue evaluated against household composition (children, seniors, asthma), commute distance, fuels, and budget. | Zod schema validation on profile + Gemini structured action selection. |
-| **Indoor Air Quality Hacks** | Actions for DIY Corsi-Rosenthal box fans, HEPA bedroom filtration, kitchen exhaust venting, eliminating incense/coils, wet mopping. | Deterministic indoor particulate mass-balance equations. |
-| **Clear Impact of Each Choice** | Every card visualizes avoided inhaled $\mu\text{g}$ dose and emissions saved, translated to relatable benchmarks (e.g., cigarette equivalents avoided, car-km prevented). | Pure TypeScript calculator (`src/lib/impact/calculator.ts`) grounded in peer-reviewed science. |
-| **No Client-Exposed API Keys** | All Google Geocoding, Air Quality, and Gemini requests execute strictly on the server runtime. | Zero `NEXT_PUBLIC_` secrets; keys loaded only in route handlers and server services. |
-| **Interactive Follow-ups** | Context-aware chat panel with Gemini function calling and strict medical disclaimers. | Multi-turn `@google/genai` tool use with factual fallbacks. |
-| **Community Scaling** | Pre-formatted WhatsApp advisories in English & Hindi for housing societies & schools. | Modal with copy-to-clipboard and WhatsApp deep link (`https://api.whatsapp.com/send`). |
-| **Zero-Config Fallback (No Keys Needed)** | Works completely out of the box with no Gemini key and no Google Maps key set: uses rule-based action planning and a built-in Delhi winter air quality reference, with prominent "Sample Data" labels. | Built-in sample Delhi data generator (`src/lib/air-quality/sample-data.ts`) + rule-based selection. |
-| **Accessibility & Screen Reader Live Regions** | WCAG AA compliance: text equivalents for all colored badges/charts, live region announcements for loading & plan readiness, full keyboard navigation, landmarks & labels verified via Testing Library. | Semantic HTML, `<div role="status" aria-live="polite">`, Testing Library component suite (`src/test/components.test.tsx`). |
+SaafHawa is engineered around five fundamental design principles:
+
+1. **Separation of Cognitive Selection and Physical Arithmetic:**
+   Large Language Models cannot reliably perform arithmetic or physical exposure modeling without numerical hallucinations. In SaafHawa, Gemini's role is strictly cognitive: selecting the 6–8 most suitable action IDs for a given household and providing empathetic timing rationales without numbers. All exposure reductions ($\mu\text{g}$ PM2.5 inhaled dose avoided) and emission reductions ($\text{g}$ of PM2.5, $\text{g}$ of $\text{CO}_2$ saved) are computed deterministically in pure TypeScript using peer-reviewed physical inhalation formulas.
+2. **Context-Grounded Conversational Follow-up:**
+   Rather than relying on generic AI advice, the follow-up chat assistant uses Gemini function calling. When users ask questions like *"Can my daughter play outside at 5 PM?"*, Gemini calls real registered tools (`getAirQualityAndForecast`, `calculateActionImpact`) to inspect the live 24-hour hourly forecast before giving a grounded answer.
+3. **Medical Safety Boundaries:**
+   Air quality software must never practice medicine. For medical symptoms, coughing, or asthma flare-ups, SaafHawa provides immediate environmental precautions (e.g., move to a sealed room, run HEPA filtration, keep prescribed rescue inhalers accessible) and explicitly directs the user to consult a qualified medical doctor.
+4. **Community Amplification:**
+   Individual household protection must scale to collective community action. With one click, SaafHawa generates pre-formatted WhatsApp advisories in English or Hindi for Housing Societies (RWAs) and School/Parent groups to halt leaf burning, schedule outdoor recesses during clean hours, and coordinate carpools.
+5. **Zero-Key Resilience:**
+   The entire application functions out of the box with zero external API keys configured. When Google Maps or Gemini keys are absent, built-in reference data for New Delhi and rule-based action ranking seamlessly activate, accompanied by a visible "Sample Data" notice.
 
 ---
 
-## 🏗️ Architecture & Data Flow
+## 3. How the Solution Works
+
+### Architecture & Data Flow
 
 ```mermaid
 flowchart TD
@@ -58,7 +57,7 @@ flowchart TD
         subgraph Security["Security & Rate Limiting"]
             RL["Sliding-Window IP Rate Limiter"]
             Headers["Security Headers (CSP, HSTS, X-Frame)"]
-            ZodVal["Zod Schema Validation"]
+            ZodVal["Zod Schema Validation & 64KB Body Cap"]
         end
 
         subgraph Routes["API Route Handlers"]
@@ -79,8 +78,8 @@ flowchart TD
 
     subgraph GoogleServices["Google Cloud & Developer APIs"]
         GeoAPI["Google Geocoding API"]
-        AirAPI["Google Air Quality API (CPCB / UAQI)"]
-        GeminiAPI["Google Gemini 2.5 Flash (Gen AI SDK)"]
+        AirAPI["Google Air Quality API (ind_cpcb / uaqi)"]
+        GeminiAPI["Google Gemini 2.5 Flash (@google/genai)"]
     end
 
     UI -->|JSON Over HTTPS| RL
@@ -102,150 +101,77 @@ flowchart TD
     ChatService -.->|Tool: calculateActionImpact| ImpactCalc
 ```
 
+### End-to-End Workflow:
+1. **Onboarding / Profile Ingestion:** The user enters location (area name or 6-digit Indian pincode), occupants (adults, children, seniors, asthma/respiratory conditions), commute mode and distance, cooking fuel, heating source, and budget. Profile is saved in `localStorage`.
+2. **Microclimate Fetching:** Server queries Google Geocoding and Google Air Quality APIs, requesting the Indian National AQI (`ind_cpcb`) and an explicit 24-hour forecast window. Cached for 15 minutes.
+3. **Hybrid AI & Arithmetic Planning:**
+   - Server builds a structured prompt for Gemini 2.5 Flash with the household profile and AQI context.
+   - Gemini selects 6–8 action IDs from our 20-action catalogue with timing and reason.
+   - Server drops any unrecognized IDs, executes pure TypeScript arithmetic formulas to compute inhaled dose avoided ($\mu\text{g}$) and emissions saved ($\text{g}$), and returns the complete verified payload.
+4. **Interactive Dashboard:** Displays real-time AQI with category text, WHO comparison, total household savings banner, grouped action cards, interactive chat panel, and community advisory generator.
+
 ---
 
-## 🌐 Google Services Used & Why
+## 4. Assumptions Made
 
-| Service | Why We Selected It | Implementation Detail |
+1. **Inhalation Rates:** Inhalation volumes are modeled from the US EPA Exposure Factors Handbook: $0.45\text{ m}^3/\text{hr}$ for resting adults, $0.60\text{ m}^3/\text{hr}$ for light domestic activity, $0.42\text{ m}^3/\text{hr}$ for children, and $0.52\text{ m}^3/\text{hr}$ for elderly occupants.
+2. **Indoor Infiltration Ratio:** Baseline indoor-to-outdoor ($I/O$) PM2.5 infiltration for standard Indian construction with closed windows is assumed to be $0.50$ (50%), rising to $0.80$ with open/drafty windows, based on Lawrence Berkeley National Laboratory (LBNL) domestic studies.
+3. **N95 Respirator Efficacy:** Real-world fitted filtration efficiency of certified N95 respirators is estimated at $85\%$ (accounting for real-world facial seal leaks), following MacIntyre et al. (BMJ 2009).
+4. **HEPA & Box-Fan Clean Air Rates:** Standard domestic HEPA purifiers achieve $75\%$ particulate reduction in sleeping quarters over 8 hours; DIY 4-filter Corsi-Rosenthal boxes achieve $68\%$ reduction in living rooms (UC Davis 2021).
+5. **Vehicular Tailpipe Baselines:** Commute emissions reflect Automotive Research Association of India (ARAI) factors: $150\text{ g CO}_2/\text{km}$ and $0.045\text{ g PM}_{2.5}/\text{km}$ for petrol cars, $145\text{ g CO}_2/\text{km}$ and $0.070\text{ g PM}_{2.5}/\text{km}$ for diesel cars, and $18\text{ g CO}_2/\text{p-km}$ for Delhi Metro.
+6. **Diurnal Temperature Inversion:** Diurnal variation exhibits peak ground-level particulate accumulation during early morning inversion (6 AM – 9 AM) and lowest concentrations during afternoon solar dispersion (1 PM – 3 PM).
+
+---
+
+## 5. Requirements Traceability Matrix
+
+The table below maps each requirement from the problem statement to its implementing source file and verifying automated test:
+
+| Requirement / Problem Statement Phrase | Implementing File(s) | Verifying Automated Test(s) |
 | :--- | :--- | :--- |
-| **Google Geocoding API** | Accurately resolves Indian 6-digit postal pincodes (e.g., `110001`, `560001`), colloquial area names, and landmarks into precise coordinates. | Cached on the server; handles input normalization and location bounds. |
-| **Google Air Quality API** | Provides both India's official Central Pollution Control Board scale (`ind_cpcb`, 0–500) and Universal AQI (`uaqi`), dominant pollutant identification, real-time $\text{PM}_{2.5}$/$\text{PM}_{10}$ concentrations, and 24-hour hourly forecast curves. | Requests an explicit 24-hr `dateTime` window; falls back to current conditions if forecast lookup times out. |
-| **Google Gemini 2.5 Flash (`@google/genai`)** | Ultra-low latency, cost-effective multimodal LLM with native support for structured JSON schema outputs (`responseSchema`) and multi-turn function calling. | **Two Distinct Roles**: <br>1. *Action Planning*: Returns only 6–8 curated action IDs and timing rationales without numerical guessing.<br>2. *Chat Assistant*: Grounded via function calling (`getAirQualityAndForecast`, `calculateActionImpact`, `listCatalogueActions`). |
-| **Google Cloud Run** | Fully managed serverless container runtime that scales to zero, handles automated TLS termination, and runs Next.js standalone output efficiently in the `asia-south1` (Mumbai) region. | Packaged using a multi-stage Dockerfile running non-root `nextjs` user on port 8080. |
+| **India Local AQI (`ind_cpcb`) priority with universal fallback** | [`src/lib/air-quality/index-extractor.ts`](file:///src/lib/air-quality/index-extractor.ts) | [`src/test/air-quality-cache-index.test.ts`](file:///src/test/air-quality-cache-index.test.ts) |
+| **Null AQI when no index returned (never 0)** | [`src/lib/air-quality/index-extractor.ts`](file:///src/lib/air-quality/index-extractor.ts) | [`src/test/air-quality-cache-index.test.ts`](file:///src/test/air-quality-cache-index.test.ts) |
+| **Explicit forecast time period & resilient forecast failure recovery** | [`src/lib/air-quality/forecast-period.ts`](file:///src/lib/air-quality/forecast-period.ts), [`src/lib/air-quality/service.ts`](file:///src/lib/air-quality/service.ts) | [`src/test/air-quality-client.test.ts`](file:///src/test/air-quality-client.test.ts), [`src/test/air-quality-service-route.test.ts`](file:///src/test/air-quality-service-route.test.ts) |
+| **Quota exceeded (429) & network error (503) without leaking raw internals** | [`src/lib/air-quality/google-client.ts`](file:///src/lib/air-quality/google-client.ts), [`src/lib/air-quality/types.ts`](file:///src/lib/air-quality/types.ts) | [`src/test/air-quality-client.test.ts`](file:///src/test/air-quality-client.test.ts), [`src/test/air-quality-service-route.test.ts`](file:///src/test/air-quality-service-route.test.ts) |
+| **Single query param `place`, 120-char limit, capped cache** | [`src/lib/air-quality/cache.ts`](file:///src/lib/air-quality/cache.ts), [`src/app/api/air-quality/route.ts`](file:///src/app/api/air-quality/route.ts) | [`src/test/air-quality-cache-index.test.ts`](file:///src/test/air-quality-cache-index.test.ts), [`src/test/air-quality-service-route.test.ts`](file:///src/test/air-quality-service-route.test.ts) |
+| **Catalogue of ~20 actions across routine, indoor, and swaps** | [`src/lib/impact/catalogue.ts`](file:///src/lib/impact/catalogue.ts) | [`src/test/impact-catalogue.test.ts`](file:///src/test/impact-catalogue.test.ts) |
+| **Pure TypeScript arithmetic: dose avoided ($\mu\text{g}$) & emissions saved ($\text{g}$)** | [`src/lib/impact/calculator.ts`](file:///src/lib/impact/calculator.ts), [`src/lib/impact/routine-impact.ts`](file:///src/lib/impact/routine-impact.ts), [`src/lib/impact/indoor-impact.ts`](file:///src/lib/impact/indoor-impact.ts), [`src/lib/impact/commute-swaps.ts`](file:///src/lib/impact/commute-swaps.ts), [`src/lib/impact/combustion-swaps.ts`](file:///src/lib/impact/combustion-swaps.ts) | [`src/test/impact-catalogue.test.ts`](file:///src/test/impact-catalogue.test.ts), [`src/test/impact-indoor-swaps.test.ts`](file:///src/test/impact-indoor-swaps.test.ts), [`src/test/impact-edge-cases.test.ts`](file:///src/test/impact-edge-cases.test.ts) |
+| **Scientific citations for every factor with NEEDS VERIFICATION markers** | [`src/lib/impact/factors.ts`](file:///src/lib/impact/factors.ts) | [`src/test/impact-catalogue.test.ts`](file:///src/test/impact-catalogue.test.ts) |
+| **Edge cases: household with no car, very clean air ($5\ \mu\text{g}/\text{m}^3$)** | [`src/lib/impact/calculator.ts`](file:///src/lib/impact/calculator.ts) | [`src/test/impact-edge-cases.test.ts`](file:///src/test/impact-edge-cases.test.ts) |
+| **POST /api/plan with Zod validation of household profile** | [`src/lib/plan/types.ts`](file:///src/lib/plan/types.ts), [`src/app/api/plan/route.ts`](file:///src/app/api/plan/route.ts) | [`src/test/plan-validation.test.ts`](file:///src/test/plan-validation.test.ts) |
+| **Gemini structured JSON selection of 6-8 actions without numbers** | [`src/lib/plan/service.ts`](file:///src/lib/plan/service.ts), [`src/lib/plan/prompt-builder.ts`](file:///src/lib/plan/prompt-builder.ts) | [`src/test/plan-validation.test.ts`](file:///src/test/plan-validation.test.ts), [`src/test/plan-generation.test.ts`](file:///src/test/plan-generation.test.ts) |
+| **Drop unrecognized action IDs & rule-based fallback when Gemini fails** | [`src/lib/plan/service.ts`](file:///src/lib/plan/service.ts), [`src/lib/plan/fallback.ts`](file:///src/lib/plan/fallback.ts) | [`src/test/plan-generation.test.ts`](file:///src/test/plan-generation.test.ts) |
+| **Onboarding form with localStorage persistence** | [`src/components/OnboardingForm.tsx`](file:///src/components/OnboardingForm.tsx), [`src/app/page.tsx`](file:///src/app/page.tsx) | [`src/test/components-form.test.tsx`](file:///src/test/components-form.test.tsx), [`e2e/smoke.spec.ts`](file:///e2e/smoke.spec.ts) |
+| **Dashboard with AirQualityCard, PlanCards, Total savings** | [`src/components/AirQualityCard.tsx`](file:///src/components/AirQualityCard.tsx), [`src/components/PlanCard.tsx`](file:///src/components/PlanCard.tsx), [`src/components/TotalSavingsBanner.tsx`](file:///src/components/TotalSavingsBanner.tsx) | [`src/test/components-cards.test.tsx`](file:///src/test/components-cards.test.tsx), [`e2e/smoke.spec.ts`](file:///e2e/smoke.spec.ts) |
+| **Accessibility: semantic HTML, keyboard use, no color-alone, live region** | [`src/app/page.tsx`](file:///src/app/page.tsx), [`src/components/AirQualityCard.tsx`](file:///src/components/AirQualityCard.tsx), [`src/components/ForecastTimeline.tsx`](file:///src/components/ForecastTimeline.tsx) | [`src/test/components-form.test.tsx`](file:///src/test/components-form.test.tsx), [`src/test/components-cards.test.tsx`](file:///src/test/components-cards.test.tsx) |
+| **Chat panel with Gemini function calling and medical disclaimer** | [`src/components/ChatPanel.tsx`](file:///src/components/ChatPanel.tsx), [`src/lib/chat/service.ts`](file:///src/lib/chat/service.ts), [`src/lib/chat/tools.ts`](file:///src/lib/chat/tools.ts) | [`src/test/chat-tools-exec.test.ts`](file:///src/test/chat-tools-exec.test.ts), [`src/test/chat-advisory-rate.test.ts`](file:///src/test/chat-advisory-rate.test.ts) |
+| **Community advisory button (WhatsApp-ready English/Hindi)** | [`src/components/CommunityAdvisoryModal.tsx`](file:///src/components/CommunityAdvisoryModal.tsx), [`src/lib/community/advisory-generator.ts`](file:///src/lib/community/advisory-generator.ts) | [`src/test/chat-advisory-rate.test.ts`](file:///src/test/chat-advisory-rate.test.ts), [`src/test/components-cards.test.tsx`](file:///src/test/components-cards.test.tsx) |
+| **Rate limiting per IP & message length cap** | [`src/lib/rate-limit.ts`](file:///src/lib/rate-limit.ts), [`src/lib/chat/types.ts`](file:///src/lib/chat/types.ts) | [`src/test/security.test.ts`](file:///src/test/security.test.ts), [`src/test/chat-tools-exec.test.ts`](file:///src/test/chat-tools-exec.test.ts) |
+| **Zero-key mode: Delhi reference sample data & visible label** | [`src/lib/air-quality/sample-data.ts`](file:///src/lib/air-quality/sample-data.ts), [`src/components/AirQualityCard.tsx`](file:///src/components/AirQualityCard.tsx) | [`src/test/air-quality-service-route.test.ts`](file:///src/test/air-quality-service-route.test.ts), [`src/test/plan-generation.test.ts`](file:///src/test/plan-generation.test.ts), [`src/test/components-cards.test.tsx`](file:///src/test/components-cards.test.tsx) |
+| **Security headers (CSP), request body cap (64KB)** | [`src/lib/security.ts`](file:///src/lib/security.ts), [`next.config.ts`](file:///next.config.ts) | [`src/test/security.test.ts`](file:///src/test/security.test.ts) |
+| **Docker standalone Cloud Run deployment & GitHub Actions CI** | [`Dockerfile`](file:///Dockerfile), [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) | Verified in CI workflow and Docker multi-stage build |
 
 ---
 
-## 🔬 Scientific Impact Factors & Literature Sources
-
-All mathematical equations in `src/lib/impact/calculator.ts` and baseline coefficients in `src/lib/impact/factors.ts` are cited from peer-reviewed journals, national standards, or environmental agencies:
-
-| Impact Constant / Parameter | Value Used | Published Scientific Source |
-| :--- | :--- | :--- |
-| **Resting Inhalation Rate (Adult)** | $0.45\text{ m}^3/\text{hr}$ | **US EPA Exposure Factors Handbook (2011)**, Table 6-1. |
-| **Light Domestic Inhalation Rate** | $0.60\text{ m}^3/\text{hr}$ | **US EPA Exposure Factors Handbook (2011)**, Table 6-1. |
-| **Child Inhalation Rate (Age 6–11)** | $0.42\text{ m}^3/\text{hr}$ | **US EPA Child-Specific Exposure Factors Handbook (2008)**, Ch. 6. |
-| **Senior Inhalation Rate (>65 yrs)** | $0.52\text{ m}^3/\text{hr}$ | **US EPA Exposure Factors Handbook (2011)**, Table 6-1. |
-| **Real-World N95 Mask Protection** | $85\%$ effective | **MacIntyre et al., BMJ (2009)**; CDC/NIOSH fit-testing adjustments. |
-| **HEPA Air Purifier Efficiency** | $75\%$ reduction | **US EPA (EPA 402-F-08-004)** "Residential Air Cleaners" & CPCB clean room metrics. |
-| **DIY Corsi-Rosenthal Box Clean Air Rate** | $68\%$ reduction | **Rosenthal, J. & Corsi, R., UC Davis (2021)** "Corsi-Rosenthal Box Air Cleaner Testing". |
-| **Closed-Window Baseline Infiltration** | $0.50$ ($I/O$ ratio) | **Lawrence Berkeley National Laboratory (LBNL-44933)**; Chen & Zhao, *Atmospheric Environment (2011)*. |
-| **Kitchen Cooking $\text{PM}_{2.5}$ Spike** | $250.0\ \mu\text{g}/\text{m}^3$ | **Pant, P. et al., Atmospheric Environment (2016)** "Indoor PM in Indian Homes". |
-| **Kitchen Exhaust Capture Rate** | $70\%$ capture | **Singer, B. C. et al., Lawrence Berkeley National Lab (2012)** *Atmospheric Environment*. |
-| **Wet Mopping Resuspension Prevention**| $25.0\ \mu\text{g}/\text{m}^3$ | **WHO Guidelines for Indoor Air Quality** & CPCB domestic dust studies. |
-| **Incense / Mosquito Coil $\text{PM}_{2.5}$** | $0.035\text{ g/stick}$ ($180\ \mu\text{g}/\text{m}^3$) | **Liu, W. et al., Environmental Health Perspectives / Chest (2003)**. |
-| **Petrol Car Emissions** | $150\text{ g CO}_2/\text{km}$, $0.045\text{ g PM}_{2.5}/\text{km}$ | **ARAI (Automotive Research Association of India)** & **TERI (2021)**. |
-| **Diesel Car Emissions** | $145\text{ g CO}_2/\text{km}$, $0.070\text{ g PM}_{2.5}/\text{km}$ | **ARAI** & **CPCB In-Use Vehicle Emission Factors**. |
-| **Delhi Metro Transit Factor** | $18\text{ g CO}_2/\text{p-km}$, $0.001\text{ g PM}_{2.5}/\text{p-km}$ | **Delhi Metro Rail Corporation (DMRC) Annual Sustainability Report (2022)**. |
-| **Traditional Chulha Biomass Cooking**| $34\text{ g PM}_{2.5}/\text{day}$, $6.0\text{ kg CO}_2/\text{day}$ | **WHO Guidelines for Indoor Air Quality: Household Fuel Combustion (2014)**; IPCC 2006. |
-| **Residential Leaf / Garden Burning** | $25.0\text{ g PM}_{2.5}/\text{kg}$, $1.25\text{ kg CO}_2/\text{kg}$ | **US EPA AP-42 (Section 2.5 Open Burning)** & CPCB Source Apportionment. |
-| **Cigarette Inhaled Particulate Equiv**| $1\text{ cig} \approx 180\ \mu\text{g}\ \text{PM}_{2.5}$ | **Berkeley Earth Air Quality & Cigarette Inhalation Equivalence Studies**. |
-
----
-
-## 🔒 Security & Production Hardening
-
-- **Zero Client Credential Exposure**: API keys (`GOOGLE_MAPS_API_KEY`, `GEMINI_API_KEY`) are read strictly on the server side. No sensitive environment variables use the `NEXT_PUBLIC_` prefix.
-- **Rate Limiting Across All Routes**:
-  - `GET /api/air-quality`: 60 requests / min / IP
-  - `POST /api/plan`: 30 requests / min / IP
-  - `POST /api/chat`: 15 requests / min / IP
-  - `POST /api/community-advisory`: 20 requests / min / IP
-- **Security Headers Enabled (`next.config.ts`)**:
-  - `Content-Security-Policy`: Strictly scopes script, style, image, and connect origins.
-  - `X-Frame-Options: DENY`: Blocks clickjacking and frame embedding.
-  - `X-Content-Type-Options: nosniff`: Prevents MIME-type sniffing.
-  - `Strict-Transport-Security`: Enforces HTTPS (`max-age=63072000; includeSubDomains; preload`).
-  - `Referrer-Policy: origin-when-cross-origin`.
-  - `Permissions-Policy`: Disables unused camera, microphone, and geolocation hardware.
-- **Input Sanitization & Error Masking**:
-  - Zod schemas validate length, types, and allowed enumeration on all endpoints.
-  - Raw upstream provider error traces and internal stack details are scrubbed before sending client responses.
-- **Medical Disclaimer Guardrail**:
-  - Conversational assistant is strictly forbidden from diagnosing symptoms or altering prescriptions. For health inquiries, it offers immediate environmental precautions (HEPA filtration, sealed room) and advises consulting a qualified doctor.
-
----
-
-## 📁 Repository Structure
-
-```
-.
-├── .env.example                     # Environment variables template
-├── .github/
-│   └── workflows/
-│       └── ci.yml                   # Automated CI: lint, typecheck, vitest & playwright
-├── Dockerfile                       # Multi-stage production container for Cloud Run
-├── .dockerignore                    # Excluded files for lean Docker build context
-├── eslint.config.mjs                # ESLint flat configuration
-├── next.config.ts                   # Next.js standalone output & security headers
-├── package.json                     # Project scripts and pinned dependencies
-├── playwright.config.ts             # Playwright E2E configuration & webServer
-├── tsconfig.json                    # Strict TypeScript configuration
-├── vitest.config.mts                # Vitest configuration with JSDOM
-├── e2e/
-│   └── smoke.spec.ts                # Playwright smoke test (Onboarding to Dashboard)
-└── src/
-    ├── app/
-    │   ├── api/
-    │   │   ├── air-quality/route.ts # GET /api/air-quality (CPCB/UAQI with rate-limiting)
-    │   │   ├── chat/route.ts        # POST /api/chat (Gemini function calling)
-    │   │   ├── community-advisory/  # POST /api/community-advisory (WhatsApp broadcast)
-    │   │   └── plan/route.ts        # POST /api/plan (Hybrid AI + impact calculator)
-    │   ├── globals.css              # Tailwind CSS imports & global base styles
-    │   ├── layout.tsx               # Root layout & meta tags
-    │   └── page.tsx                 # Main application dashboard & state manager
-    ├── components/
-    │   ├── AirQualityCard.tsx       # Live AQI gauge, pollutant levels & hourly forecast
-    │   ├── ChatPanel.tsx            # Follow-up conversational assistant UI
-    │   ├── CommunityAdvisoryModal.tsx # Bilingual WhatsApp advisory generator modal
-    │   ├── LoadingState.tsx         # Accessible skeleton loader
-    │   ├── Navbar.tsx               # Header with location, refresh & community share
-    │   ├── OnboardingForm.tsx       # Accessible profile setup form (saved in localStorage)
-    │   ├── PlanCard.tsx             # Action intervention cards with plain-language metrics
-    │   └── TotalSavingsBanner.tsx   # Cumulative daily avoided dose & emission savings
-    ├── lib/
-    │   ├── air-quality/             # Google Maps client, cache & sample Delhi data
-    │   ├── chat/                    # Function declarations, tools & Gemini loop
-    │   ├── community/               # English & Hindi WhatsApp advisory templates
-    │   ├── impact/                  # Deterministic arithmetic calculator & factor science
-    │   ├── plan/                    # Hybrid plan orchestration & fallback rules
-    │   └── rate-limit.ts            # Sliding-window IP rate limiter
-    └── test/                        # Vitest unit, integration & Testing Library suites
-        ├── air-quality.test.ts      # Air quality caching, sample fallback & Google client
-        ├── chat-tools.test.ts       # Function-calling tools, rate limiting & safety tests
-        ├── components.test.tsx      # Testing Library: landmarks, labels & keyboard use
-        ├── impact.test.ts           # Pure arithmetic calculator unit tests
-        └── plan.test.ts             # Plan prompt builder, validation & fallback tests
-```
-
----
-
-## 🚀 Getting Started
+## 6. Setup and Testing
 
 ### 1. Prerequisites
-- **Node.js**: `v20.x` or `v22.x` (LTS recommended)
+- **Node.js**: `v20.x` or `v22.x` (LTS)
 - **npm**: `v10.x` or higher
-- **Google Cloud API Key** with access to:
-  - Google Maps Geocoding API
-  - Google Air Quality API
-- **Google Gemini API Key** (from [Google AI Studio](https://aistudio.google.com/))
+- Optional: `GOOGLE_MAPS_API_KEY` (Geocoding & Air Quality) and `GEMINI_API_KEY` (Google AI Studio). *App runs 100% functional in zero-key sample data mode without them.*
 
 ### 2. Installation
 ```bash
-# Clone the repository
 git clone https://github.com/sirajju/saafhawa.git
 cd saafhawa
-
-# Install dependencies cleanly
 npm install
 ```
 
-### 3. Environment Configuration
-Copy the template and configure your server-side keys:
+### 3. Environment Configuration (Optional)
 ```bash
 cp .env.example .env.local
 ```
-
-Edit `.env.local`:
+If configuring live API keys, edit `.env.local`:
 ```env
 GOOGLE_MAPS_API_KEY=your_google_maps_platform_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
@@ -258,61 +184,36 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
----
+### 5. Running the Complete Verification Suite
 
-## 🧪 Testing & Quality Assurance
-
-### Run Unit & Accessibility Component Tests (Vitest + Testing Library)
-Executes all 79 comprehensive tests across the arithmetic calculator, air quality service, Gemini prompts, rate limiters, and React Testing Library component tests (verifying landmarks, form labels, screen reader text equivalents, live region announcements, and keyboard navigation):
 ```bash
+# 1. Run ESLint check
+npm run lint
+
+# 2. Run TypeScript compiler check
+npx tsc --noEmit
+
+# 3. Run all unit and component tests (89 tests, 100% offline)
 npm test
-```
-> **Note**: Tests run in 100% offline mode with zero live API keys needed. All tests pass with `GOOGLE_MAPS_API_KEY` and `GEMINI_API_KEY` completely unset.
-To run tests in watch mode during development:
-```bash
-npm run test:watch
-```
 
-### Run End-to-End Smoke Tests (Playwright)
-Validates the complete user journey (onboarding form, localStorage caching, dashboard rendering, real-time cards, action groups, and chat panel) with deterministic API mocks:
-```bash
-# Install Playwright browser binary (first time only)
-npx playwright install chromium
-
-# Build and run the headless smoke test
+# 4. Run production standalone build
 npm run build
+
+# 5. Run Playwright E2E smoke test
 npm run test:e2e
 ```
 
-### Code Style & Type Safety
+### 6. Production Deployment (Google Cloud Run)
+
+SaafHawa is packaged with a multi-stage Dockerfile utilizing Next.js standalone output:
 ```bash
-# Run ESLint check
-npm run lint
-
-# Run strict TypeScript compilation check
-npx tsc --noEmit
-```
-
----
-
-## ☁️ Deployment to Google Cloud Run
-
-SaafHawa uses Next.js `output: 'standalone'` to compile a minimal Node.js server container image without bloated build tools or dev dependencies.
-
-### Step 1: Set Google Cloud Project
-```bash
+# Set Google Cloud Project
 gcloud config set project YOUR_GCP_PROJECT_ID
-```
 
-### Step 2: Build & Push Container Image
-Using Google Cloud Build:
-```bash
+# Build container image with Cloud Build
 gcloud builds submit --tag gcr.io/YOUR_GCP_PROJECT_ID/saafhawa:latest
-```
 
-### Step 3: Deploy to Cloud Run
-Deploy with serverless scaling and environment secrets:
-```bash
+# Deploy to Cloud Run
 gcloud run deploy saafhawa \
   --image gcr.io/YOUR_GCP_PROJECT_ID/saafhawa:latest \
   --platform managed \
@@ -321,12 +222,22 @@ gcloud run deploy saafhawa \
   --port 8080 \
   --memory 1Gi \
   --cpu 1 \
-  --set-env-vars "NODE_ENV=production,GEMINI_MODEL=gemini-2.5-flash" \
-  --set-secrets "GOOGLE_MAPS_API_KEY=GOOGLE_MAPS_API_KEY:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest"
+  --set-env-vars "NODE_ENV=production,GEMINI_MODEL=gemini-2.5-flash"
 ```
 
 ---
 
-## 📜 License & Acknowledgments
+## 7. Evidence Documentation Index
 
-Built for good during winter smog crises. All calculations are released under the MIT License for public health and civic technology applications.
+For in-depth audits of each scoring criterion, see the dedicated documentation files:
+- 🛡️ [`SECURITY.md`](file:///SECURITY.md) — Threat models, CSP, 64KB streaming body caps, rate limiters, credential hygiene.
+- ♿ [`ACCESSIBILITY.md`](file:///ACCESSIBILITY.md) — WCAG 2.1 AA landmarks, fieldsets, live regions, text equivalents, keyboard tests.
+- 🧪 [`TESTING.md`](file:///TESTING.md) — Real command execution logs (89 Vitest tests, Playwright E2E, ESLint, TypeScript).
+- ⚡ [`EFFICIENCY.md`](file:///EFFICIENCY.md) — Measured bundle sizes, Next.js standalone containerization, TTL cache bounding.
+- 📐 [`docs/DECISIONS.md`](file:///docs/DECISIONS.md) — 5 architectural design decision records with trade-off analysis.
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License — see the [`LICENSE`](file:///LICENSE) file for details.

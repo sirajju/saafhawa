@@ -1,10 +1,10 @@
-import { GoogleGenAI, Type } from '@google/genai';
 import { ACTION_CATALOGUE, ActionDefinition } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { buildPlanPrompt } from './prompt-builder';
 import { getRuleBasedFallbackActions } from './fallback';
+import { defaultGeminiGenerator } from './gemini-client';
 import {
   GeminiPlanOutputSchema,
   GeminiSelectedAction,
@@ -36,58 +36,6 @@ function resolveGeminiApiKey(customApiKey?: string): string | undefined {
 }
 
 /**
- * Default generator invoking the official @google/genai SDK with structured JSON output.
- */
-async function defaultGeminiGenerator(
-  systemInstruction: string,
-  userPrompt: string,
-  model: string,
-  apiKey: string
-): Promise<string | null> {
-  const ai = new GoogleGenAI({ apiKey });
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: userPrompt,
-    config: {
-      systemInstruction,
-      responseMimeType: 'application/json',
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          selectedActions: {
-            type: Type.ARRAY,
-            description: 'The 6 to 8 most useful actions selected from the catalogue.',
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                actionId: {
-                  type: Type.STRING,
-                  description: 'The exact ID of the action from the provided catalogue.',
-                },
-                suggestedTimeOfDay: {
-                  type: Type.STRING,
-                  description: 'When to perform this action (e.g. Morning, Evening, Night).',
-                },
-                reason: {
-                  type: Type.STRING,
-                  description:
-                    'A short friendly explanation of why this action suits this family today without mentioning numbers.',
-                },
-              },
-              required: ['actionId', 'suggestedTimeOfDay', 'reason'],
-            },
-          },
-        },
-        required: ['selectedActions'],
-      },
-    },
-  });
-
-  return response.text ?? null;
-}
-
-/**
  * Main service to generate a customized smog mitigation plan for a household.
  * 1. Validates input profile via Zod
  * 2. Fetches real-time AQI from existing air quality module
@@ -99,10 +47,7 @@ export async function generateHouseholdPlan(
   rawInput: unknown,
   options: GeneratePlanOptions = {}
 ): Promise<PlanResponse> {
-  // Step 1: Validate input
   const profile: PlanRequest = PlanRequestSchema.parse(rawInput);
-
-  // Step 2: Fetch air quality
   const fetchAirQuality = options.airQualityFetcher ?? getAirQualityByLocation;
   const airQuality = await fetchAirQuality(profile.place);
 
@@ -116,7 +61,6 @@ export async function generateHouseholdPlan(
   let selectedActions: GeminiSelectedAction[] = [];
   let generationMethod: 'gemini' | 'rule_based_fallback' = 'gemini';
 
-  // Step 3: Ask Gemini if API key is configured
   if (apiKey) {
     try {
       const { systemInstruction, userPrompt } = buildPlanPrompt(
@@ -131,12 +75,10 @@ export async function generateHouseholdPlan(
         const parsed = JSON.parse(rawJson);
         const validatedOutput = GeminiPlanOutputSchema.parse(parsed);
 
-        // Filter and drop any action IDs that are NOT in the catalogue
         const validActions = validatedOutput.selectedActions.filter((item) =>
           catalogueMap.has(item.actionId)
         );
 
-        // Accept if Gemini returned at least 4 valid actions (targeting 6-8)
         if (validActions.length >= 4) {
           selectedActions = validActions.slice(0, 8);
         } else {
@@ -146,45 +88,39 @@ export async function generateHouseholdPlan(
         generationMethod = 'rule_based_fallback';
       }
     } catch {
-      // If Gemini fails entirely (timeout, parse error, network, etc.), fall back
       generationMethod = 'rule_based_fallback';
     }
   } else {
     generationMethod = 'rule_based_fallback';
   }
 
-  // Step 4: Fall back to rule-based selection if needed
   if (generationMethod === 'rule_based_fallback' || selectedActions.length === 0) {
     selectedActions = getRuleBasedFallbackActions(profile, airQuality);
     generationMethod = 'rule_based_fallback';
   }
 
-  // Step 5: Attach scientific calculator impact figures in code
   const airQualityContext = {
     currentPm25: airQuality.current.pm25?.value ?? 100,
     hourlyForecast: airQuality.hourlyForecast,
   };
 
-  const plannedActions: PlannedAction[] = [];
-  for (const item of selectedActions) {
-    const def = catalogueMap.get(item.actionId);
-    if (!def) continue;
+  const plannedActions: PlannedAction[] = selectedActions.map((selected) => {
+    const actionDef = catalogueMap.get(selected.actionId)!;
+    const impact = calculateActionImpact(actionDef, profile, airQualityContext);
 
-    const impact = calculateActionImpact(def, profile, airQualityContext);
-    plannedActions.push({
-      actionId: def.id,
-      title: def.title,
-      description: def.description,
-      category: def.category,
-      suggestedTimeOfDay: item.suggestedTimeOfDay,
-      reason: item.reason,
+    return {
+      actionId: actionDef.id,
+      title: actionDef.title,
+      description: actionDef.description,
+      category: actionDef.category,
+      suggestedTimeOfDay: selected.suggestedTimeOfDay,
+      reason: selected.reason,
       exposureReduction: impact.exposureReduction,
       emissionReduction: impact.emissionReduction,
       methodologyNotes: impact.methodologyNotes,
-    });
-  }
+    };
+  });
 
-  // Step 6: Compute total impact summary across the planned actions
   const totalPm25InhaledDoseAvoidedUg = Number(
     plannedActions
       .reduce((sum, a) => sum + a.exposureReduction.pm25InhaledDoseAvoidedUg, 0)
@@ -203,12 +139,16 @@ export async function generateHouseholdPlan(
       .toFixed(1)
   );
 
+  const totalCo2EmissionsSavedKg = Number(
+    (totalCo2EmissionsSavedGrams / 1000).toFixed(2)
+  );
+
   const summary: PlanSummary = {
     totalActionsCount: plannedActions.length,
     totalPm25InhaledDoseAvoidedUg,
     totalPm25EmissionsSavedGrams,
     totalCo2EmissionsSavedGrams,
-    totalCo2EmissionsSavedKg: Number((totalCo2EmissionsSavedGrams / 1000).toFixed(2)),
+    totalCo2EmissionsSavedKg,
   };
 
   return {
@@ -219,6 +159,6 @@ export async function generateHouseholdPlan(
     actions: plannedActions,
     summary,
     generationMethod,
-    isSampleData: Boolean(airQuality.isSampleData || (generationMethod === 'rule_based_fallback' && !apiKey)),
+    isSampleData: Boolean(airQuality.isSampleData || airQuality.current.isSampleData),
   };
 }

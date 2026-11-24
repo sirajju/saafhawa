@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { handleChatQuery } from '@/lib/chat/service';
 import { ChatRequestSchema } from '@/lib/chat/types';
 import { chatRateLimiter, getClientIp } from '@/lib/rate-limit';
+import { readJsonBodyWithLimit } from '@/lib/security';
 import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
@@ -25,18 +26,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Parse and validate JSON payload
-    let rawBody: unknown;
-    try {
-      rawBody = await request.json();
-    } catch {
-      return NextResponse.json(
-        {
-          error: 'Invalid JSON Body',
-          message: 'The request body must be valid JSON.',
-        },
-        { status: 400 }
-      );
+    // 2. Safe JSON body reading with size limit enforcement
+    const { data: rawBody, error: bodyError } = await readJsonBodyWithLimit(request);
+    if (bodyError) {
+      return bodyError;
     }
 
     const parseResult = ChatRequestSchema.safeParse(rawBody);

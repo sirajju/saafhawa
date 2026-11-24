@@ -6,56 +6,22 @@ import {
   GoogleGeocodingResponse,
   GoogleGeocodingResponseSchema,
   LocationNotFoundError,
-  ProviderUnavailableError,
   QuotaExceededError,
   AirQualityError,
 } from './types';
+import { safeFetch, ClientRequestOptions, DEFAULT_REQUEST_TIMEOUT_MS } from './safe-fetch';
+import { computeForecastPeriod } from './forecast-period';
+
+export { DEFAULT_REQUEST_TIMEOUT_MS, computeForecastPeriod };
+export type { ClientRequestOptions };
 
 const GEOCODING_BASE_URL = 'https://maps.googleapis.com/maps/api/geocode/json';
 const AIR_QUALITY_BASE_URL = 'https://airquality.googleapis.com/v1';
-export const DEFAULT_REQUEST_TIMEOUT_MS = 7000;
 
 export interface GeocodeLocationResult {
   formattedAddress: string;
   latitude: number;
   longitude: number;
-}
-
-export interface ClientRequestOptions {
-  timeoutMs?: number;
-  fetchFn?: typeof fetch;
-}
-
-/**
- * Executes a fetch request with timeout and translates network/quota errors into domain errors.
- */
-async function safeFetch(
-  url: string,
-  init: RequestInit,
-  options: ClientRequestOptions = {}
-): Promise<Response> {
-  const fetchFn = options.fetchFn ?? fetch;
-  const timeoutMs = options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
-    controller.abort(new Error('Request timed out'));
-  }, timeoutMs);
-
-  try {
-    const response = await fetchFn(url, {
-      ...init,
-      signal: controller.signal,
-    });
-    return response;
-  } catch (err: unknown) {
-    if (err instanceof Error && (err.name === 'AbortError' || err.message.includes('timed out'))) {
-      throw new ProviderUnavailableError('Air quality service request timed out. Please try again shortly.');
-    }
-    throw new ProviderUnavailableError('Unable to connect to air quality provider. Please check your connection.');
-  } finally {
-    clearTimeout(timeoutId);
-  }
 }
 
 /**
@@ -157,7 +123,6 @@ export async function fetchCurrentConditions(
   }
 
   if (!response.ok) {
-    // Check if body hints at resource exhaustion / quota
     try {
       const errText = await response.text();
       if (errText.includes('RESOURCE_EXHAUSTED') || errText.includes('Quota exceeded')) {
@@ -171,33 +136,6 @@ export async function fetchCurrentConditions(
 
   const rawData: unknown = await response.json();
   return GoogleCurrentConditionsResponseSchema.parse(rawData);
-}
-
-/**
- * Computes an explicit 24-hour time period starting from the current UTC hour.
- */
-export function computeForecastPeriod(hours = 24, fromDate = new Date()): {
-  startTime: string;
-  endTime: string;
-} {
-  const start = new Date(
-    Date.UTC(
-      fromDate.getUTCFullYear(),
-      fromDate.getUTCMonth(),
-      fromDate.getUTCDate(),
-      fromDate.getUTCHours(),
-      0,
-      0,
-      0
-    )
-  );
-  // endTime is inclusive in Google Air Quality API
-  const end = new Date(start.getTime() + (hours - 1) * 3600 * 1000);
-
-  return {
-    startTime: start.toISOString(),
-    endTime: end.toISOString(),
-  };
 }
 
 /**

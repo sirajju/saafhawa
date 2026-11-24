@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import { PlanRequest } from '@/lib/plan/types';
+import { DemographicsFields } from './onboarding/DemographicsFields';
+import { CommuteFields } from './onboarding/CommuteFields';
+import { IndoorEnvironmentFields } from './onboarding/IndoorEnvironmentFields';
 
 interface OnboardingFormProps {
   initialProfile?: Partial<PlanRequest> | null;
@@ -85,7 +88,6 @@ export function OnboardingForm({
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6">
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
-        {/* Header */}
         <div className="border-b border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900/60">
           <div className="flex items-center gap-3">
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-2xl text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
@@ -102,7 +104,6 @@ export function OnboardingForm({
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} aria-label="Household Profile Form" className="p-6 sm:p-8" noValidate>
           {errorMessage && (
             <div
@@ -117,7 +118,6 @@ export function OnboardingForm({
           )}
 
           <div className="space-y-6">
-            {/* 1. Location / Pincode */}
             <div>
               <label
                 htmlFor="place-input"
@@ -142,231 +142,11 @@ export function OnboardingForm({
               </div>
             </div>
 
-            {/* 2. Demographics */}
-            <fieldset className="rounded-xl border border-slate-200 p-4 sm:p-5 dark:border-slate-800">
-              <legend className="px-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Who lives in your home?
-              </legend>
-              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <label
-                    htmlFor="adults-count"
-                    className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Adults (18-64 yrs)
-                  </label>
-                  <input
-                    id="adults-count"
-                    type="number"
-                    min="1"
-                    max="15"
-                    value={formData.adultsCount}
-                    onChange={(e) => handleChange('adultsCount', Math.max(1, parseInt(e.target.value) || 1))}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="children-count"
-                    className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Children (0-17 yrs)
-                  </label>
-                  <input
-                    id="children-count"
-                    type="number"
-                    min="0"
-                    max="10"
-                    value={formData.childrenCount}
-                    onChange={(e) => handleChange('childrenCount', Math.max(0, parseInt(e.target.value) || 0))}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="elderly-count"
-                    className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Seniors (65+ yrs)
-                  </label>
-                  <input
-                    id="elderly-count"
-                    type="number"
-                    min="0"
-                    max="10"
-                    value={formData.elderlyCount}
-                    onChange={(e) => handleChange('elderlyCount', Math.max(0, parseInt(e.target.value) || 0))}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                  />
-                </div>
-              </div>
-
-              {/* Respiratory condition checkbox */}
-              <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.hasAsthmaOrRespiratoryCondition}
-                    onChange={(e) => handleChange('hasAsthmaOrRespiratoryCondition', e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                  />
-                  <div>
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      Someone in the home has Asthma, COPD, or a respiratory condition
-                    </span>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      We will prioritize clinical-grade indoor filtration and high-filtration routines.
-                    </p>
-                  </div>
-                </label>
-              </div>
-            </fieldset>
-
-            {/* 3. Commute Details */}
-            <fieldset className="rounded-xl border border-slate-200 p-4 sm:p-5 dark:border-slate-800">
-              <legend className="px-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Daily Commute & Travel
-              </legend>
-              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="commute-mode"
-                    className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Primary Commute Mode
-                  </label>
-                  <select
-                    id="commute-mode"
-                    value={formData.primaryCommuteMode}
-                    onChange={(e) => handleChange('primaryCommuteMode', e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                  >
-                    <option value="petrol_car">Petrol Car</option>
-                    <option value="diesel_car">Diesel Car</option>
-                    <option value="two_wheeler">Two-Wheeler (Motorcycle / Scooter)</option>
-                    <option value="public_transit">Metro / Bus / Train</option>
-                    <option value="walking_cycling">Walking / Bicycle</option>
-                    <option value="none">Work from Home / No Daily Commute</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="commute-distance"
-                    className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Round-Trip Distance (km/day)
-                  </label>
-                  <input
-                    id="commute-distance"
-                    type="number"
-                    min="0"
-                    max="150"
-                    value={formData.dailyCommuteDistanceKm}
-                    onChange={(e) => handleChange('dailyCommuteDistanceKm', Math.max(0, parseFloat(e.target.value) || 0))}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-4">
-                <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.canWorkFromHome}
-                    onChange={(e) => handleChange('canWorkFromHome', e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                  />
-                  <span>Can work from home on peak smog days</span>
-                </label>
-
-                <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.hasCarpoolOption}
-                    onChange={(e) => handleChange('hasCarpoolOption', e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                  />
-                  <span>Has carpool or ride-sharing options</span>
-                </label>
-              </div>
-            </fieldset>
-
-            {/* 4. Cooking & Indoor Environment */}
-            <fieldset className="rounded-xl border border-slate-200 p-4 sm:p-5 dark:border-slate-800">
-              <legend className="px-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Indoor Air & Cooking Setup
-              </legend>
-              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="cooking-fuel"
-                    className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Primary Cooking Fuel
-                  </label>
-                  <select
-                    id="cooking-fuel"
-                    value={formData.cookingFuel}
-                    onChange={(e) => handleChange('cookingFuel', e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                  >
-                    <option value="lpg">LPG Cylinder</option>
-                    <option value="piped_gas">Piped Natural Gas (PNG)</option>
-                    <option value="induction">Electric Induction Cooktop</option>
-                    <option value="biomass">Traditional Biomass / Firewood / Chulha</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="budget-preference"
-                    className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Action Budget Preference
-                  </label>
-                  <select
-                    id="budget-preference"
-                    value={formData.budget}
-                    onChange={(e) => handleChange('budget', e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                  >
-                    <option value="zero_cost">Zero Cost Only (DIY & Behavioural routines)</option>
-                    <option value="low">Low Budget (N95 masks, DIY box fan filter, weatherseals)</option>
-                    <option value="moderate">Moderate (Ready for air purifiers or induction swaps)</option>
-                    <option value="flexible">Flexible / Any budget</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Toggles */}
-              <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 dark:border-slate-800">
-                <label className="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.hasAirPurifier}
-                    onChange={(e) => handleChange('hasAirPurifier', e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                  />
-                  <span>Household already owns a HEPA air purifier</span>
-                </label>
-
-                <label className="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.usesIncenseOrMosquitoCoils}
-                    onChange={(e) => handleChange('usesIncenseOrMosquitoCoils', e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                  />
-                  <span>Regularly burns incense sticks (agarbatti), dhoop, or mosquito coils</span>
-                </label>
-              </div>
-            </fieldset>
+            <DemographicsFields formData={formData} onChange={handleChange} />
+            <CommuteFields formData={formData} onChange={handleChange} />
+            <IndoorEnvironmentFields formData={formData} onChange={handleChange} />
           </div>
 
-          {/* Form Actions */}
           <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             {onCancel && (
               <button
