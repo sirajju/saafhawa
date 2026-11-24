@@ -1,7 +1,9 @@
 import { GoogleGenAI, Type } from '@google/genai';
+import { capTextLength, withTimeout } from '../gemini-utils';
 
 /**
  * Default generator invoking the official @google/genai SDK with structured JSON output.
+ * Enforces a 15-second timeout and 10,000-character cap on raw JSON text.
  */
 export async function defaultGeminiGenerator(
   systemInstruction: string,
@@ -11,7 +13,7 @@ export async function defaultGeminiGenerator(
 ): Promise<string | null> {
   const ai = new GoogleGenAI({ apiKey });
 
-  const response = await ai.models.generateContent({
+  const generatePromise = ai.models.generateContent({
     model,
     contents: userPrompt,
     config: {
@@ -49,5 +51,7 @@ export async function defaultGeminiGenerator(
     },
   });
 
-  return response.text ?? null;
+  const response = await withTimeout(generatePromise, 15000, 'Gemini Plan Generation');
+
+  return capTextLength(response.text, 10000) || null;
 }

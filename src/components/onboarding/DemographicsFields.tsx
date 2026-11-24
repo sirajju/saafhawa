@@ -80,7 +80,7 @@ export function DemographicsFields({ formData, onChange }: DemographicsFieldsPro
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
               Someone in the home has Asthma, COPD, or a respiratory condition
             </span>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               We will prioritize clinical-grade indoor filtration and high-filtration routines.
             </p>
           </div>

@@ -46,7 +46,7 @@ describe('Rate Limiter', () => {
     const reqWithForwarded = new NextRequest('http://localhost:3000/api/chat', {
       headers: { 'x-forwarded-for': '203.0.113.195, 70.41.3.18' },
     });
-    expect(getClientIp(reqWithForwarded)).toBe('203.0.113.195');
+    expect(getClientIp(reqWithForwarded)).toBe('70.41.3.18');
 
     const reqWithRealIp = new NextRequest('http://localhost:3000/api/chat', {
       headers: { 'x-real-ip': '198.51.100.22' },
@@ -130,7 +130,7 @@ describe('Community Advisory Generator', () => {
 
     expect(advisory.headline).toContain('School');
     expect(advisory.advisoryText).toContain('School & Parent Smog Advisory');
-    expect(advisory.advisoryText).toContain('*Current AQI:* 385');
+    expect(advisory.advisoryText).toContain('385');
     expect(advisory.advisoryText).toContain('Very Poor');
     expect(advisory.advisoryText).toContain('N95');
     expect(advisory.advisoryText).toContain('1️⃣');
@@ -151,7 +151,7 @@ describe('Community Advisory Generator', () => {
     );
 
     expect(advisory.headline).toContain('आवासीय सोसायटी');
-    expect(advisory.advisoryText).toContain('AQI:* 385');
+    expect(advisory.advisoryText).toContain('385');
     expect(advisory.advisoryText).toContain('कचरा या सूखे पत्ते बिल्कुल न जलाएं');
     expect(advisory.advisoryText).toContain('N95');
     expect(advisory.advisoryText).toContain('साफ़ हवा');

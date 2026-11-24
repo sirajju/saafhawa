@@ -15,77 +15,88 @@ export function AdvisorySelectorBar({
 }: AdvisorySelectorBarProps) {
   return (
     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-      {/* Audience Segment Tabs */}
-      <div
-        role="radiogroup"
-        aria-label="Target community audience"
-        className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-sm dark:border-slate-700 dark:bg-slate-950"
-      >
-        <button
-          type="button"
-          role="radio"
-          aria-checked={audience === 'housing_society'}
-          onClick={() => onAudienceChange('housing_society')}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold transition ${
+      {/* Audience Segment Radios */}
+      <fieldset className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-sm dark:border-slate-700 dark:bg-slate-950">
+        <legend className="sr-only">Target community audience</legend>
+        <label
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-emerald-500 ${
             audience === 'housing_society'
-              ? 'bg-emerald-600 text-white shadow-sm'
+              ? 'bg-emerald-700 text-white shadow-sm'
               : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
           }`}
         >
-          <span>🏘️</span>
+          <input
+            type="radio"
+            name="audience"
+            value="housing_society"
+            checked={audience === 'housing_society'}
+            onChange={() => onAudienceChange('housing_society')}
+            className="sr-only"
+          />
+          <span aria-hidden="true">🏘️</span>
           <span>Housing Society (RWA)</span>
-        </button>
+        </label>
 
-        <button
-          type="button"
-          role="radio"
-          aria-checked={audience === 'school_group'}
-          onClick={() => onAudienceChange('school_group')}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold transition ${
+        <label
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-emerald-500 ${
             audience === 'school_group'
-              ? 'bg-emerald-600 text-white shadow-sm'
+              ? 'bg-emerald-700 text-white shadow-sm'
               : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
           }`}
         >
-          <span>🏫</span>
+          <input
+            type="radio"
+            name="audience"
+            value="school_group"
+            checked={audience === 'school_group'}
+            onChange={() => onAudienceChange('school_group')}
+            className="sr-only"
+          />
+          <span aria-hidden="true">🏫</span>
           <span>School / Parents</span>
-        </button>
-      </div>
+        </label>
+      </fieldset>
 
-      {/* Language Tabs */}
-      <div
-        role="radiogroup"
-        aria-label="Select language"
-        className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-sm dark:border-slate-700 dark:bg-slate-950"
-      >
-        <button
-          type="button"
-          role="radio"
-          aria-checked={language === 'en'}
-          onClick={() => onLanguageChange('en')}
-          className={`rounded-lg px-3 py-1.5 font-semibold transition ${
+      {/* Language Radios */}
+      <fieldset className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-sm dark:border-slate-700 dark:bg-slate-950">
+        <legend className="sr-only">Select language</legend>
+        <label
+          className={`rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-emerald-500 ${
             language === 'en'
-              ? 'bg-emerald-600 text-white shadow-sm'
+              ? 'bg-emerald-700 text-white shadow-sm'
               : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
           }`}
         >
-          English
-        </button>
+          <input
+            type="radio"
+            name="language"
+            value="en"
+            checked={language === 'en'}
+            onChange={() => onLanguageChange('en')}
+            className="sr-only"
+          />
+          <span>English</span>
+        </label>
 
-        <button
-          type="button"
-          role="radio"
-          aria-checked={language === 'hi'}
-          onClick={() => onLanguageChange('hi')}
-          className={`rounded-lg px-3 py-1.5 font-semibold transition ${
+        <label
+          lang="hi"
+          className={`rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-emerald-500 ${
             language === 'hi'
-              ? 'bg-emerald-600 text-white shadow-sm'
+              ? 'bg-emerald-700 text-white shadow-sm'
               : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
           }`}
         >
-          हिंदी (Hindi)
-        </button>
-      </div>
+          <input
+            type="radio"
+            name="language"
+            value="hi"
+            checked={language === 'hi'}
+            onChange={() => onLanguageChange('hi')}
+            className="sr-only"
+          />
+          <span>हिंदी (Hindi)</span>
+        </label>
+      </fieldset>
     </div>
   );
 }

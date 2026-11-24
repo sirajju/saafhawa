@@ -172,13 +172,13 @@ The table below maps each requirement from the problem statement to its implemen
 | **Gemini structured JSON selection of 6-8 actions without numbers** | [`src/lib/plan/service.ts`](src/lib/plan/service.ts), [`src/lib/plan/prompt-builder.ts`](src/lib/plan/prompt-builder.ts) | [`src/test/plan-validation.test.ts`](src/test/plan-validation.test.ts), [`src/test/plan-generation.test.ts`](src/test/plan-generation.test.ts) |
 | **Drop unrecognized action IDs & rule-based fallback when Gemini fails** | [`src/lib/plan/service.ts`](src/lib/plan/service.ts), [`src/lib/plan/fallback.ts`](src/lib/plan/fallback.ts) | [`src/test/plan-generation.test.ts`](src/test/plan-generation.test.ts) |
 | **Onboarding form with localStorage persistence** | [`src/components/OnboardingForm.tsx`](src/components/OnboardingForm.tsx), [`src/app/page.tsx`](src/app/page.tsx) | [`src/test/components-form.test.tsx`](src/test/components-form.test.tsx), [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) |
-| **Dashboard with AirQualityCard, PlanCards, Total savings** | [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx), [`src/components/PlanCard.tsx`](src/components/PlanCard.tsx), [`src/components/TotalSavingsBanner.tsx`](src/components/TotalSavingsBanner.tsx) | [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx), [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) |
-| **Accessibility: semantic HTML, keyboard use, no color-alone, live region** | [`src/app/page.tsx`](src/app/page.tsx), [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx), [`src/components/ForecastTimeline.tsx`](src/components/ForecastTimeline.tsx) | [`src/test/components-form.test.tsx`](src/test/components-form.test.tsx), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) |
+| **Dashboard with AirQualityCard, PlanCards, Total savings** | [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx), [`src/components/PlanCard.tsx`](src/components/PlanCard.tsx), [`src/components/TotalSavingsBanner.tsx`](src/components/TotalSavingsBanner.tsx), [`src/components/ActionCategorySection.tsx`](src/components/ActionCategorySection.tsx) | [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx), [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) |
+| **Accessibility: semantic HTML, keyboard use, no color-alone, live region** | [`src/app/page.tsx`](src/app/page.tsx), [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx), [`src/components/ForecastTimeline.tsx`](src/components/ForecastTimeline.tsx), [`src/lib/use-focus-trap.ts`](src/lib/use-focus-trap.ts) | [`src/test/components-form.test.tsx`](src/test/components-form.test.tsx), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx), [`src/test/components-advisory-dialog.test.tsx`](src/test/components-advisory-dialog.test.tsx) |
 | **Chat panel with Gemini function calling and medical disclaimer** | [`src/components/ChatPanel.tsx`](src/components/ChatPanel.tsx), [`src/lib/chat/service.ts`](src/lib/chat/service.ts), [`src/lib/chat/tools.ts`](src/lib/chat/tools.ts) | [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts), [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts) |
-| **Community advisory button (WhatsApp-ready English/Hindi)** | [`src/components/CommunityAdvisoryModal.tsx`](src/components/CommunityAdvisoryModal.tsx), [`src/lib/community/advisory-generator.ts`](src/lib/community/advisory-generator.ts) | [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) |
-| **Rate limiting per IP & message length cap** | [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts), [`src/lib/chat/types.ts`](src/lib/chat/types.ts) | [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts) |
+| **Community advisory button (WhatsApp-ready English/Hindi)** | [`src/components/CommunityAdvisoryModal.tsx`](src/components/CommunityAdvisoryModal.tsx), [`src/lib/community/advisory-generator.ts`](src/lib/community/advisory-generator.ts) | [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx), [`src/test/components-advisory-dialog.test.tsx`](src/test/components-advisory-dialog.test.tsx) |
+| **Rate limiting per IP & message length cap** | [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts), [`src/lib/chat/types.ts`](src/lib/chat/types.ts) | [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts) |
 | **Zero-key mode: Delhi reference sample data & visible label** | [`src/lib/air-quality/sample-data.ts`](src/lib/air-quality/sample-data.ts), [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx) | [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts), [`src/test/plan-generation.test.ts`](src/test/plan-generation.test.ts), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) |
-| **Security headers (CSP), request body cap (64KB)** | [`src/lib/security.ts`](src/lib/security.ts), [`next.config.ts`](next.config.ts) | [`src/test/security.test.ts`](src/test/security.test.ts) |
+| **Security headers (CSP), request body cap (64KB)** | [`src/lib/security.ts`](src/lib/security.ts), [`next.config.ts`](next.config.ts) | [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) |
 | **Docker standalone Cloud Run deployment & GitHub Actions CI** | [`Dockerfile`](Dockerfile), [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Verified in CI workflow and Docker multi-stage build |
 
 ---
@@ -224,13 +224,13 @@ npm run lint
 # 2. Run TypeScript compiler check
 npx tsc --noEmit
 
-# 3. Run all unit and component tests (99 tests, 100% offline)
+# 3. Run all unit and component tests (111 tests, 100% offline)
 npm test
 
 # 4. Run production standalone build
 npm run build
 
-# 5. Run Playwright E2E smoke test
+# 5. Run Playwright E2E smoke tests (2 tests)
 npm run test:e2e
 ```
 
@@ -263,7 +263,7 @@ gcloud run deploy saafhawa \
 For in-depth audits of each scoring criterion, see the dedicated documentation files:
 - 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64KB body caps, rate limiters, credential hygiene.
 - ♿ [`ACCESSIBILITY.md`](ACCESSIBILITY.md) — Semantic landmarks, fieldsets, live regions, text equivalents, keyboard tests.
-- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (99 Vitest tests, Playwright E2E, ESLint, TypeScript).
+- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (111 Vitest tests, 2 Playwright E2E tests, ESLint, TypeScript).
 - ⚡ [`EFFICIENCY.md`](EFFICIENCY.md) — Measured build assets, Next.js standalone containerization, TTL cache bounding.
 - 📐 [`docs/DECISIONS.md`](docs/DECISIONS.md) — 5 architectural design decision records with trade-off analysis.
 

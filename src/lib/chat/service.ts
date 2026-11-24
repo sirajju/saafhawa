@@ -1,12 +1,10 @@
 import { GoogleGenAI, type Content, type Part } from '@google/genai';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
-import {
-  CHAT_TOOLS,
-  executeCalculateImpactTool,
-  executeGetAirQualityTool,
-  executeListActionsTool,
-} from './tools';
+import { capTextLength, withTimeout } from '../gemini-utils';
+import { logServerError } from '../logger';
+import { CHAT_TOOLS } from './tools';
+import { executeSingleToolCall } from './tool-runner';
 import { ChatRequestSchema, ChatResponse, ExecutedToolRecord } from './types';
 import { buildChatSystemInstruction } from './instruction';
 import { generateFallbackChatResponse } from './fallback';
@@ -30,6 +28,9 @@ function resolveApiKey(customApiKey?: string): string | undefined {
 
 /**
  * Handles conversational queries with Gemini Function Calling.
+ * Correctly builds history for multiple simultaneous tool calls,
+ * allows up to 2 rounds of function execution, returns tool errors to the model,
+ * and enforces timeout and response length caps.
  */
 export async function handleChatQuery(
   rawRequest: z.input<typeof ChatRequestSchema>,
@@ -46,9 +47,20 @@ export async function handleChatQuery(
 
   try {
     const ai = new GoogleGenAI({ apiKey });
+
+    // Check if location uses sample data to inform the system prompt
+    let isSampleData = false;
+    try {
+      const checkReport = await fetcher(request.place || '110001');
+      isSampleData = Boolean(checkReport.isSampleData || checkReport.current.isSampleData);
+    } catch {
+      isSampleData = false;
+    }
+
     const systemInstruction = buildChatSystemInstruction(
       request.householdProfile,
-      request.place
+      request.place,
+      isSampleData
     );
 
     const toolsExecuted: ExecutedToolRecord[] = [];
@@ -67,107 +79,83 @@ export async function handleChatQuery(
       parts: [{ text: request.message }],
     });
 
-    const initialResponse = await ai.models.generateContent({
-      model,
-      contents,
-      config: {
-        systemInstruction,
-        tools: CHAT_TOOLS,
-      },
-    });
-
-    if (initialResponse.functionCalls && initialResponse.functionCalls.length > 0) {
-      for (const fc of initialResponse.functionCalls) {
-        let toolResult: unknown;
-
-        if (fc.name === 'getAirQualityAndForecast') {
-          const placeArg =
-            typeof fc.args?.place === 'string' && fc.args.place.trim()
-              ? fc.args.place.trim()
-              : request.place || '110001';
-          const airResult = await executeGetAirQualityTool({ place: placeArg }, request.place, fetcher);
-          toolResult = airResult;
-          toolsExecuted.push({
-            toolName: fc.name,
-            args: fc.args as Record<string, unknown>,
-            resultSummary: `Retrieved AQI ${airResult.currentAqi} (${airResult.category}) for ${airResult.locationName}`,
-          });
-        } else if (fc.name === 'calculateActionImpact') {
-          const actionId =
-            typeof fc.args?.actionId === 'string' && fc.args.actionId.trim()
-              ? fc.args.actionId.trim()
-              : 'wear_n95_mask_outside';
-          const targetPlace = request.place || request.householdProfile?.place || '110001';
-          let livePm25: number | null = null;
-          try {
-            const airReport = await fetcher(targetPlace);
-            livePm25 = airReport.current.pm25?.value ?? null;
-          } catch {
-            livePm25 = null;
-          }
-          const impactResult = executeCalculateImpactTool(
-            { actionId },
-            request.householdProfile || {},
-            livePm25
-          );
-          toolResult = impactResult;
-          toolsExecuted.push({
-            toolName: fc.name,
-            args: fc.args as Record<string, unknown>,
-            resultSummary: `Calculated impact for ${impactResult.actionTitle} using live PM2.5 (${livePm25 ?? 'unknown'} µg/m³): ${impactResult.pm25InhaledDoseAvoidedUg ?? 'unknown'} µg dose avoided`,
-          });
-        } else if (fc.name === 'listCatalogueActions') {
-          const categoryArg =
-            typeof fc.args?.category === 'string' ? fc.args.category : undefined;
-          const listResult = executeListActionsTool({ category: categoryArg });
-          toolResult = listResult;
-          toolsExecuted.push({
-            toolName: fc.name,
-            args: fc.args as Record<string, unknown>,
-            resultSummary: `Listed ${listResult.length} catalogue actions`,
-          });
-        } else {
-          toolResult = { error: `Unknown tool name ${fc.name}` };
-        }
-
-        contents.push(initialResponse.candidates?.[0]?.content || {
-          role: 'model',
-          parts: [{ functionCall: fc }],
-        });
-
-        const functionResponsePart: Part = {
-          functionResponse: {
-            name: fc.name,
-            response: { result: toolResult as Record<string, unknown> },
-          },
-        };
-
-        contents.push({
-          role: 'user',
-          parts: [functionResponsePart],
-        });
-      }
-
-      const finalResponse = await ai.models.generateContent({
+    let currentResponse = await withTimeout(
+      ai.models.generateContent({
         model,
         contents,
         config: {
           systemInstruction,
           tools: CHAT_TOOLS,
         },
+      }),
+      15000,
+      'Gemini Chat Initial'
+    );
+
+    // Support up to 2 rounds of function calls
+    for (let round = 0; round < 2; round++) {
+      const calls = currentResponse.functionCalls;
+      if (!calls || calls.length === 0) {
+        break;
+      }
+
+      // Add the model turn with all function calls
+      const modelContent: Content = currentResponse.candidates?.[0]?.content || {
+        role: 'model',
+        parts: calls.map((fc) => ({ functionCall: fc })),
+      };
+      contents.push(modelContent);
+
+      // Execute each tool and collect responses; return errors to model rather than throwing
+      const responseParts: Part[] = [];
+      for (const fc of calls) {
+        let toolResult: Record<string, unknown>;
+        try {
+          toolResult = await executeSingleToolCall(fc, request, fetcher, toolsExecuted);
+        } catch (err: unknown) {
+          logServerError(`ChatTool:${fc.name}`, err);
+          toolResult = {
+            error: err instanceof Error ? err.message : 'Tool execution encountered an error',
+          };
+        }
+
+        responseParts.push({
+          functionResponse: {
+            name: fc.name,
+            response: { result: toolResult },
+          },
+        });
+      }
+
+      // Add the user/tool response turn containing all function responses
+      contents.push({
+        role: 'user',
+        parts: responseParts,
       });
 
-      return {
-        reply: finalResponse.text || 'I checked the latest air quality data for your area to advise you.',
-        toolsExecuted,
-      };
+      // Call Gemini with the updated multi-turn tool history
+      currentResponse = await withTimeout(
+        ai.models.generateContent({
+          model,
+          contents,
+          config: {
+            systemInstruction,
+            tools: CHAT_TOOLS,
+          },
+        }),
+        15000,
+        `Gemini Chat Round ${round + 2}`
+      );
     }
 
+    const replyText = capTextLength(currentResponse.text?.trim(), 3000);
+
     return {
-      reply: initialResponse.text || 'I am ready to help with your clean air questions.',
+      reply: replyText || 'I am ready to help with your clean air questions.',
       toolsExecuted,
     };
-  } catch {
+  } catch (err: unknown) {
+    logServerError('ChatService', err);
     return generateFallbackChatResponse(request, fetcher);
   }
 }

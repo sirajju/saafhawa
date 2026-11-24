@@ -16,37 +16,42 @@ This document details the security controls implemented in **SaafHawa**, linking
 - Implementation: [`src/lib/security.ts`](src/lib/security.ts).
 - Verification: [`src/test/security.test.ts`](src/test/security.test.ts).
 
-### 3. Per-IP Sliding Window Rate Limiting
-- Every API endpoint is protected by an in-memory sliding window rate limiter tracking client IP addresses extracted from `x-forwarded-for` and `x-real-ip` headers:
+### 3. Per-IP Sliding Window Rate Limiting & Cloud Run IP Trust
+- Every API endpoint is protected by an in-memory sliding window rate limiter:
   - `GET /api/air-quality`: 60 requests per minute ([`src/app/api/air-quality/route.ts`](src/app/api/air-quality/route.ts))
   - `POST /api/plan`: 30 requests per minute ([`src/app/api/plan/route.ts`](src/app/api/plan/route.ts))
   - `POST /api/chat`: 15 requests per minute ([`src/app/api/chat/route.ts`](src/app/api/chat/route.ts))
   - `POST /api/community-advisory`: 20 requests per minute ([`src/app/api/community-advisory/route.ts`](src/app/api/community-advisory/route.ts))
+- **Cloud Run Trusted Client IP:** Instead of trusting spoofable client-supplied leftmost headers, `getClientIp` extracts the rightmost IP in `X-Forwarded-For` (appended by Cloud Run's Google Front End). Port numbers on IPv4 addresses are stripped.
+- **Memory Bounding & Eviction:** The internal map is capped at 5,000 keys (`maxKeys`). Expired timestamps are pruned automatically on check, and the oldest entry is evicted if the cap is reached.
 - Exceeded limits return HTTP 429 with standard `Retry-After` headers.
 - Implementation: [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts).
-- Verification: [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts).
+- Verification: [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts).
 
-### 4. Input Validation & Strict Allow-Lists
-- All inputs are parsed and sanitized using strict Zod schemas before being passed to business logic:
-  - Location queries capped at 120 characters to prevent buffer and URI abuse: [`src/lib/air-quality/types.ts`](src/lib/air-quality/types.ts)
-  - Chat messages capped at 500 characters: [`src/lib/chat/types.ts`](src/lib/chat/types.ts)
-  - Household profile demographic bounds enforced: [`src/lib/plan/types.ts`](src/lib/plan/types.ts)
-  - Single query parameter accepted (`place` only): [`src/app/api/air-quality/route.ts`](src/app/api/air-quality/route.ts)
-
-### 5. Sensitive Error Masking
-- Upstream Google API errors (e.g. `OVER_QUERY_LIMIT`, raw quota strings, stack traces) are intercepted by custom error classes and mapped to clean, user-friendly messages:
-  - Quota errors map to HTTP 429: [`src/lib/air-quality/types.ts`](src/lib/air-quality/types.ts)
-  - Network timeouts map to HTTP 503: [`src/lib/air-quality/types.ts`](src/lib/air-quality/types.ts)
-- Raw provider internals are never forwarded to the client.
-- Verification: [`src/test/air-quality-client.test.ts`](src/test/air-quality-client.test.ts), [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts).
-
-### 6. Security Headers & Content Security Policy (CSP)
-- HTTP response headers configured on all responses:
-  - `Content-Security-Policy`: Restricts scripts, styles, frames, and connects to self and trusted endpoints.
+### 4. Single Definition of Security Headers & Server Inspection
+- A single canonical list of security headers (`SECURITY_HEADERS_LIST`) is maintained in [`src/lib/security.ts`](src/lib/security.ts) and imported directly into [`next.config.ts`](next.config.ts):
+  - `Content-Security-Policy`: Strictly excludes `'unsafe-eval'`; restricts `script-src` to `'self' 'unsafe-inline'`, preventing arbitrary code execution.
   - `X-Frame-Options: DENY`: Prevents clickjacking in iframes.
   - `X-Content-Type-Options: nosniff`: Prevents MIME-type sniffing.
   - `Referrer-Policy: origin-when-cross-origin`: Restricts referrer transmission.
-  - `Strict-Transport-Security`: Enforces HTTPS (HSTS).
-  - `Permissions-Policy`: Disables unused device APIs (geolocation, microphone, camera).
-- Implementation: [`src/lib/security.ts`](src/lib/security.ts), [`next.config.ts`](next.config.ts).
-- Verification: [`src/test/security.test.ts`](src/test/security.test.ts).
+  - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`: Enforces HTTPS (HSTS).
+  - `Permissions-Policy: camera=(), microphone=(), geolocation=()`: Disables sensitive hardware APIs.
+  - `poweredByHeader: false`: Explicitly disables the `X-Powered-By: Next.js` fingerprint header in [`next.config.ts`](next.config.ts).
+- Verification: [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), and live server verification in [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts).
+
+### 5. Secret-Redacted Server Error Logging
+- Server-side exceptions are logged via `logServerError(context, error)` ([`src/lib/logger.ts`](src/lib/logger.ts)), which strips sensitive API keys, auth tokens, and secret patterns from messages and stack traces. Errors are never swallowed silently.
+- Implementation: [`src/lib/logger.ts`](src/lib/logger.ts), used across all API route handlers.
+
+### 6. External Call Timeouts & Output Caps
+- All generative AI calls to Google Gemini are bounded by a 15-second abort timeout via `withTimeout` to prevent thread hanging on degraded upstream connections.
+- Output response strings are truncated to length limits (e.g. 2,500 characters for advisories, 3,000 for chat responses) via `capTextLength`.
+- Implementation: [`src/lib/gemini-utils.ts`](src/lib/gemini-utils.ts), integrated into [`src/lib/plan/gemini-client.ts`](src/lib/plan/gemini-client.ts), [`src/lib/community/advisory-generator.ts`](src/lib/community/advisory-generator.ts), and [`src/lib/chat/service.ts`](src/lib/chat/service.ts).
+
+### 7. Input Validation & Strict Allow-Lists
+- All inputs are parsed and sanitized using strict Zod schemas before being passed to business logic:
+  - Location queries capped at 120 characters: [`src/lib/air-quality/types.ts`](src/lib/air-quality/types.ts)
+  - Chat messages capped at 500 characters: [`src/lib/chat/types.ts`](src/lib/chat/types.ts)
+  - Household profile demographics with realistic upper bounds (e.g., adults max 15, children max 10, distance max 300 km, area max 25,000 sq ft): [`src/lib/plan/types.ts`](src/lib/plan/types.ts)
+  - Single query parameter accepted (`place` only): [`src/app/api/air-quality/route.ts`](src/app/api/air-quality/route.ts)
+- Verification: [`src/test/plan-validation.test.ts`](src/test/plan-validation.test.ts).

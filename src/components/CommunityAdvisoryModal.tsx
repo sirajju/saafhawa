@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AdvisoryResponse } from '@/lib/community/types';
+import { useFocusTrap } from '@/lib/use-focus-trap';
 import { AdvisorySelectorBar } from './AdvisorySelectorBar';
 import { AdvisoryModalBody } from './AdvisoryModalBody';
 
@@ -22,6 +23,8 @@ export function CommunityAdvisoryModal({
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const modalRef = useFocusTrap<HTMLDivElement>(isOpen, onClose);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -60,16 +63,6 @@ export function CommunityAdvisoryModal({
     };
   }, [isOpen, place, audience, language]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
   const handleAudienceChange = (newAudience: 'housing_society' | 'school_group') => {
     setAudience(newAudience);
     setIsLoading(true);
@@ -91,7 +84,7 @@ export function CommunityAdvisoryModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      // Fallback
+      // Clipboard access denied
     }
   };
 
@@ -103,6 +96,7 @@ export function CommunityAdvisoryModal({
 
   return (
     <div
+      ref={modalRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="advisory-modal-title"
@@ -128,8 +122,8 @@ export function CommunityAdvisoryModal({
                 >
                   Share Smog Advisory with Your Community
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Ready-to-copy WhatsApp advisory based on today&apos;s live air quality in {place}.
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Ready-to-copy WhatsApp advisory based on today&apos;s air quality in {place}.
                 </p>
               </div>
             </div>
@@ -162,7 +156,7 @@ export function CommunityAdvisoryModal({
         />
 
         <div className="border-t border-slate-200 bg-slate-50/80 p-4 sm:flex sm:items-center sm:justify-between sm:px-6 dark:border-slate-800 dark:bg-slate-950/70">
-          <span className="text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-xs text-slate-600 dark:text-slate-400">
             {copied ? '✅ Copied to clipboard!' : 'One-click copy or share directly to WhatsApp'}
           </span>
 
@@ -173,7 +167,7 @@ export function CommunityAdvisoryModal({
               onClick={handleCopyText}
               className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-xs font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 ${
                 copied
-                  ? 'border-emerald-600 bg-emerald-600 text-white'
+                  ? 'border-emerald-700 bg-emerald-700 text-white'
                   : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
               }`}
             >
@@ -185,7 +179,7 @@ export function CommunityAdvisoryModal({
               target="_blank"
               rel="noopener noreferrer"
               aria-disabled={isLoading || !advisory}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 dark:hover:bg-emerald-500"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50"
             >
               <span>Share on WhatsApp ↗</span>
             </a>

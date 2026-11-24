@@ -6,23 +6,30 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export const MAX_REQUEST_BODY_BYTES = 64 * 1024; // 64 KB
 
-export const SECURITY_HEADERS: Record<string, string> = {
-  'X-DNS-Prefetch-Control': 'on',
-  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
-  'X-Frame-Options': 'DENY',
-  'X-Content-Type-Options': 'nosniff',
-  'Referrer-Policy': 'origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy': [
-    "default-src 'self';",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline';",
-    "style-src 'self' 'unsafe-inline';",
-    "img-src 'self' data: https:;",
-    "font-src 'self';",
-    "connect-src 'self' https://maps.googleapis.com;",
-    "frame-ancestors 'none';",
-  ].join(' '),
-};
+export const SECURITY_HEADERS_LIST = [
+  { key: 'X-DNS-Prefetch-Control', value: 'on' },
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self';",
+      "script-src 'self' 'unsafe-inline';",
+      "style-src 'self' 'unsafe-inline';",
+      "img-src 'self' data: https:;",
+      "font-src 'self';",
+      "connect-src 'self' https://maps.googleapis.com;",
+      "frame-ancestors 'none';",
+    ].join(' '),
+  },
+] as const;
+
+export const SECURITY_HEADERS: Record<string, string> = Object.fromEntries(
+  SECURITY_HEADERS_LIST.map((h) => [h.key, h.value])
+);
 
 /**
  * Validates request payload size and safely parses JSON.

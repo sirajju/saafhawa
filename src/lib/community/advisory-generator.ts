@@ -1,6 +1,8 @@
 import { GoogleGenAI } from '@google/genai';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
+import { capTextLength, withTimeout } from '../gemini-utils';
+import { logServerError } from '../logger';
 import { AdvisoryRequest, AdvisoryResponse } from './types';
 import { generateTemplateAdvisory } from './advisory-templates';
 
@@ -40,6 +42,8 @@ export async function generateCommunityAdvisory(
     pm25UgM3: report.current.pm25 ? report.current.pm25.value : null,
   };
 
+  const isSample = Boolean(report.isSampleData || report.current.isSampleData);
+
   if (!apiKey) {
     const template = generateTemplateAdvisory(report, request.audience, request.language);
     return {
@@ -47,21 +51,24 @@ export async function generateCommunityAdvisory(
       advisoryText: template.advisoryText,
       audience: request.audience,
       language: request.language,
+      isSampleData: isSample,
       airQualitySnapshot: snapshot,
     };
   }
 
   try {
     const ai = new GoogleGenAI({ apiKey });
+    const isSample = Boolean(report.isSampleData || report.current.isSampleData);
 
     const prompt = `You are a public health and air quality communication specialist in India.
 Write a concise, impactful WhatsApp broadcast advisory in ${request.language === 'hi' ? 'Hindi (Devanagari script)' : 'English'} for a ${request.audience === 'school_group' ? 'School / Parent Teacher Group' : 'Housing Society / Resident Welfare Association (RWA)'}.
 
 LOCATION & AIR QUALITY:
 - Location: ${report.location.name}
-- Current AQI: ${report.current.aqi ?? 'Severe'} (${report.current.category ?? 'Unhealthy'})
+- Air Quality: AQI ${report.current.aqi ?? 'Severe'} (${report.current.category ?? 'Unhealthy'})
 - PM2.5 Level: ${report.current.pm25?.value ?? 'Elevated'} µg/m³
 - Dominant Pollutant: ${report.current.dominantPollutant ?? 'PM2.5'}
+${isSample ? '- DATA NOTE: This advisory is based on sample reference conditions for New Delhi, not live sensor data. State clearly that this is sample reference data for planning, and do NOT use words like "live" or "real-time".' : ''}
 
 REQUIREMENTS:
 1. Format for WhatsApp: use bold headers (*Title*), numbered points (1️⃣, 2️⃣), and clean bullet points with relevant emojis.
@@ -69,42 +76,43 @@ REQUIREMENTS:
 3. Keep it brief (under 250 words) so it fits in a single mobile screen and is ready to copy-paste.
 4. Output ONLY the raw WhatsApp text with no conversational preamble or markdown code fences.`;
 
-    const response = await ai.models.generateContent({
+    const generatePromise = ai.models.generateContent({
       model,
       contents: prompt,
     });
 
-    const advisoryText = response.text?.trim();
+    const response = await withTimeout(generatePromise, 15000, 'Gemini Advisory Generation');
+    const rawText = capTextLength(response.text?.trim(), 2500);
 
-    if (advisoryText && advisoryText.length > 50) {
+    if (rawText && rawText.length > 50) {
       const headline = request.language === 'hi'
         ? (request.audience === 'school_group' ? `🏫 स्कूल परामर्श: ${report.location.name}` : `🏘️ सोसायटी परामर्श: ${report.location.name}`)
         : (request.audience === 'school_group' ? `🏫 School Smog Advisory: ${report.location.name}` : `🏘️ Community Clean Air Advisory: ${report.location.name}`);
 
       return {
         headline,
-        advisoryText,
+        advisoryText: rawText,
         audience: request.audience,
         language: request.language,
+        isSampleData: isSample,
         airQualitySnapshot: snapshot,
       };
     }
 
-    const template = generateTemplateAdvisory(report, request.audience, request.language);
     return {
-      headline: template.headline,
-      advisoryText: template.advisoryText,
+      ...generateTemplateAdvisory(report, request.audience, request.language),
       audience: request.audience,
       language: request.language,
+      isSampleData: isSample,
       airQualitySnapshot: snapshot,
     };
-  } catch {
-    const template = generateTemplateAdvisory(report, request.audience, request.language);
+  } catch (err: unknown) {
+    logServerError('AdvisoryGenerator', err);
     return {
-      headline: template.headline,
-      advisoryText: template.advisoryText,
+      ...generateTemplateAdvisory(report, request.audience, request.language),
       audience: request.audience,
       language: request.language,
+      isSampleData: isSample,
       airQualitySnapshot: snapshot,
     };
   }

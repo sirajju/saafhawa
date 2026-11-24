@@ -30,7 +30,7 @@ export function AirQualityCard({
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               <span aria-hidden="true">📍</span>
-              <span>Live Air Quality Monitoring</span>
+              <span>{isSample ? 'Reference Air Quality Overview' : 'Local Air Quality Monitoring'}</span>
             </div>
             <h2
               id="air-quality-heading"

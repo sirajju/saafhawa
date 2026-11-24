@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAirQualityByLocation } from '@/lib/air-quality/service';
 import { AirQualityError, AirQualityQuerySchema } from '@/lib/air-quality/types';
 import { airQualityRateLimiter, getClientIp } from '@/lib/rate-limit';
+import { logServerError } from '@/lib/logger';
 import { ZodError } from 'zod';
 
 export async function GET(request: NextRequest) {
@@ -82,6 +83,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fallback for unexpected internal errors (prevent leaking raw Google text or stack traces)
+    logServerError('API:air-quality', error);
     return NextResponse.json(
       {
         error: 'Internal Server Error',

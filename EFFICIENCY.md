@@ -26,7 +26,7 @@ This document details the efficiency and resource optimization strategies implem
   ○  (Static)   prerendered as static content
   ƒ  (Dynamic)  server-rendered on demand
   ```
-- **Static Assets:** Client chunks in `.next/static/chunks` total 8 files (7 JavaScript chunks, 1 CSS stylesheet) with a cumulative size of 694,357 bytes (~678.1 KB uncompressed across shared dependencies, React runtime, and Tailwind stylesheet).
+- **Measured Static Assets:** Client chunks in `.next/static/chunks` total 8 files (7 JavaScript chunks, 1 CSS stylesheet) with a cumulative size of 940,646 bytes (~918.6 KB uncompressed across shared dependencies, React runtime, and Tailwind stylesheet). Total `.next/static` directory size across all assets is 1,102,591 bytes (23 files).
 
 ---
 
@@ -37,11 +37,11 @@ This document details the efficiency and resource optimization strategies implem
 ---
 
 ### 4. Sliding Window Rate Limiting Memory Management
-- **In-Memory Map Pruning:** The sliding window rate limiter stores timestamps in small integer arrays per IP: [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts).
-- **Bounded Retention:** Entries are automatically pruned on each check as timestamps fall outside the sliding window.
+- **In-Memory Map Pruning & Capping:** The sliding window rate limiter stores timestamps in small integer arrays per IP, with map growth strictly capped at 5,000 keys (`maxKeys = 5000`): [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts).
+- **Bounded Retention & Oldest Eviction:** Expired timestamps outside the sliding window are pruned automatically during rate limit checks. When the 5,000 key capacity is reached, the oldest key is evicted to protect against memory exhaustion attacks.
 
 ---
 
 ### 5. Client-Side Persistence
 - **LocalStorage Caching:** Returning households skip the onboarding form by retrieving their profile from browser `localStorage`: [`src/app/page.tsx`](src/app/page.tsx).
-- **Network Savings:** Avoids redundant network round-trips for profile retrieval.
+- **Instant First-Time Rendering:** First-time visitors are presented with the onboarding form immediately on initial load without a loading screen flash (`isLoading: false` initial state).

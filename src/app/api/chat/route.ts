@@ -3,6 +3,7 @@ import { handleChatQuery } from '@/lib/chat/service';
 import { ChatRequestSchema } from '@/lib/chat/types';
 import { chatRateLimiter, getClientIp } from '@/lib/rate-limit';
 import { readJsonBodyWithLimit } from '@/lib/security';
+import { logServerError } from '@/lib/logger';
 import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    logServerError('API:chat', error);
     return NextResponse.json(
       {
         error: 'Chat Service Error',

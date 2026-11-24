@@ -63,4 +63,38 @@ describe('Accessibility - OnboardingForm (Landmarks, Labels & Keyboard)', () => 
       })
     );
   });
+
+  it('tabs sequentially through form controls and ties errors to invalid input', async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+    render(<OnboardingForm onSubmit={handleSubmit} />);
+
+    const placeInput = screen.getByLabelText(/Where do you live/i) as HTMLInputElement;
+
+    // Clear place input to trigger validation error
+    await user.clear(placeInput);
+    const submitBtn = screen.getByRole('button', { name: /Generate My Smog Action Plan/i });
+    await user.click(submitBtn);
+
+    // Verify error alert and accessibility linkage
+    const alert = screen.getByRole('alert');
+    expect(alert).toBeDefined();
+    expect(alert.textContent).toContain('valid place name');
+    expect(placeInput.getAttribute('aria-invalid')).toBe('true');
+    expect(placeInput.getAttribute('aria-describedby')).toContain('form-error-alert');
+
+    // Type valid place and tab through fields
+    await user.type(placeInput, 'Dwarka');
+    expect(placeInput.getAttribute('aria-invalid')).toBe('false');
+
+    // Tab through successive controls
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByLabelText(/Adults/i));
+
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByLabelText(/Children/i));
+
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByLabelText(/Seniors/i));
+  });
 });

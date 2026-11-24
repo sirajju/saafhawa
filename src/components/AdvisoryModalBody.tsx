@@ -18,7 +18,7 @@ export function AdvisoryModalBody({
     <div className="flex-1 overflow-y-auto p-5 sm:p-6">
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <span className="text-3xl animate-spin" aria-hidden="true">
+          <span className="text-3xl animate-spin motion-reduce:animate-none" aria-hidden="true">
             ⚙️
           </span>
           <p className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -41,13 +41,29 @@ export function AdvisoryModalBody({
 
       {advisory && !isLoading && (
         <div className="space-y-4">
+          {advisory.isSampleData && (
+            <div
+              role="status"
+              aria-label="Sample data advisory notice"
+              className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-200"
+            >
+              <div className="flex items-center gap-2">
+                <span aria-hidden="true">⚠️</span>
+                <span><strong>Sample Data Active:</strong> This advisory was generated using reference baseline data.</span>
+              </div>
+            </div>
+          )}
+
           <div className="relative rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 font-mono text-xs text-slate-800 shadow-inner sm:p-5 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-slate-200">
             <div className="absolute top-2.5 right-3 flex items-center gap-1 text-[11px] font-sans font-bold text-emerald-800 dark:text-emerald-400">
               <span aria-hidden="true">📱</span>
               <span>WhatsApp Ready</span>
             </div>
 
-            <div className="whitespace-pre-wrap font-sans text-xs sm:text-sm leading-relaxed pr-16">
+            <div
+              lang={language === 'hi' ? 'hi' : 'en'}
+              className="whitespace-pre-wrap font-sans text-xs sm:text-sm leading-relaxed pr-16"
+            >
               {advisory.advisoryText}
             </div>
           </div>

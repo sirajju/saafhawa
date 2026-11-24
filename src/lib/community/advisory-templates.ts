@@ -13,6 +13,10 @@ export function generateTemplateAdvisory(
   const cat = report.current.category || 'Severe';
   const pm25 = report.current.pm25 ? `${report.current.pm25.value} µg/m³` : 'Extremely High';
 
+  const isSample = Boolean(report.isSampleData || report.current.isSampleData);
+  const aqiLabelHi = isSample ? '⚠️ *वायु गुणवत्ता (नमूना संदर्भ डेटा):*' : '⚠️ *वायु गुणवत्ता:*';
+  const aqiLabelEn = isSample ? '⚠️ *Air Quality (Reference Sample Data):*' : '⚠️ *Air Quality:*';
+
   if (language === 'hi') {
     if (audience === 'school_group') {
       const headline = `🏫 स्कूल एवं अभिभावक समूह: वायु प्रदूषण सुरक्षा परामर्श (${loc})`;
@@ -20,7 +24,7 @@ export function generateTemplateAdvisory(
 `*${headline}*
 📅 दिनांक: ${new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 क्षेत्र: ${loc}
-⚠️ *वायु गुणवत्ता (AQI): ${aqi}* (${cat} श्रेणी)
+${aqiLabelHi} ${aqi} (${cat} श्रेणी)
 🌫️ *PM2.5 स्तर:* ${pm25}
 
 सभी अभिभावकों, शिक्षकों और स्कूल प्रबंधन के लिए महत्वपूर्ण दिशा-निर्देश:
@@ -40,7 +44,7 @@ _साफ़ हवा (SaafHawa) द्वारा जनहित में 
 `*${headline}*
 📅 दिनांक: ${new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 क्षेत्र: ${loc}
-⚠️ *वर्तमान AQI:* ${aqi} (${cat})
+${aqiLabelHi} ${aqi} (${cat})
 🌫️ *PM2.5 प्रदूषण:* ${pm25}
 
 सोसायटी के सभी निवासियों और सुरक्षा गार्ड्स के लिए महत्वपूर्ण सुझाव:
@@ -64,7 +68,7 @@ _साफ़ हवा (SaafHawa) द्वारा जनहित में 
 `*${headline}*
 📅 Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 Area: ${loc}
-⚠️ *Current AQI:* ${aqi} (${cat})
+${aqiLabelEn} ${aqi} (${cat})
 🌫️ *PM2.5 Level:* ${pm25}
 
 Key health precautions for students, parents, and teachers today:
@@ -84,7 +88,7 @@ _Shared via SaafHawa Community Defense — Please forward to class & parent What
 `*${headline}*
 📅 Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 Location: ${loc}
-⚠️ *Current Air Quality:* ${aqi} (${cat})
+${aqiLabelEn} ${aqi} (${cat})
 🌫️ *PM2.5 Concentration:* ${pm25}
 
 Urgent cooperative actions for all residents & facility management today:

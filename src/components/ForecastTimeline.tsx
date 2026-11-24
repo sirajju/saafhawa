@@ -1,5 +1,6 @@
 import React from 'react';
 import { getAqiCategoryDetails } from '@/lib/impact/comparisons';
+import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
 
 export interface ForecastPoint {
   dateTime: string;
@@ -15,12 +16,7 @@ interface ForecastTimelineProps {
 }
 
 function formatHour(dateTimeIso: string): string {
-  try {
-    const d = new Date(dateTimeIso);
-    return d.toLocaleTimeString([], { hour: 'numeric', hour12: true });
-  } catch {
-    return dateTimeIso;
-  }
+  return formatHourInPlaceLocalTime(dateTimeIso);
 }
 
 export function ForecastTimeline({ hourlyForecast }: ForecastTimelineProps) {
@@ -32,7 +28,7 @@ export function ForecastTimeline({ hourlyForecast }: ForecastTimelineProps) {
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
           24-Hour Hourly Forecast
         </h3>
-        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+        <span className="text-[11px] text-slate-600 dark:text-slate-300">
           Scroll to view upcoming hours →
         </span>
       </div>

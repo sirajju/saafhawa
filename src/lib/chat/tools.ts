@@ -7,8 +7,28 @@ import { getEmissionComparisonText, getExposureComparisonText } from '../impact/
 
 export * from './tool-declarations';
 
+export function formatHourInPlaceLocalTime(
+  dateTimeIso: string,
+  timeZone = 'Asia/Kolkata'
+): string {
+  try {
+    const d = new Date(dateTimeIso);
+    return d
+      .toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone,
+      })
+      .replace(':00', '');
+  } catch {
+    return dateTimeIso;
+  }
+}
+
 export interface AirQualityToolResult {
   locationName: string;
+  isSampleData?: boolean;
   currentAqi: number | null;
   category: string | null;
   dominantPollutant: string | null;
@@ -30,25 +50,16 @@ export async function executeGetAirQualityTool(
   const queryPlace = args.place && args.place.trim().length >= 2 ? args.place.trim() : defaultPlace;
   const report = await fetcher(queryPlace);
 
-  const forecastSummary = (report.hourlyForecast || []).slice(0, 24).map((f) => {
-    let hourFormatted = f.dateTime;
-    try {
-      const d = new Date(f.dateTime);
-      hourFormatted = d.toLocaleTimeString([], { hour: 'numeric', hour12: true });
-    } catch {
-      // ignore
-    }
-
-    return {
-      hour: hourFormatted,
-      aqi: f.aqi,
-      category: f.category,
-      pm25UgM3: f.pm25 ? f.pm25.value : null,
-    };
-  });
+  const forecastSummary = (report.hourlyForecast || []).slice(0, 24).map((f) => ({
+    hour: formatHourInPlaceLocalTime(f.dateTime),
+    aqi: f.aqi,
+    category: f.category,
+    pm25UgM3: f.pm25 ? f.pm25.value : null,
+  }));
 
   return {
     locationName: report.location.name,
+    isSampleData: Boolean(report.isSampleData || report.current.isSampleData),
     currentAqi: report.current.aqi,
     category: report.current.category,
     dominantPollutant: report.current.dominantPollutant,

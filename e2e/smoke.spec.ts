@@ -125,7 +125,8 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     await submitButton.click();
 
     // 6. Verify dashboard displays the real-time air quality card and visible sample data label
-    await expect(page.getByRole('heading', { name: /Connaught Place/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { level: 1, name: /Clean Air Action Plan/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { level: 2, name: /Connaught Place/i })).toBeVisible();
     await expect(page.getByText('Very Poor').first()).toBeVisible();
     await expect(page.getByText('Sample Data').first()).toBeVisible();
 
@@ -143,5 +144,20 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
 
     // 10. Verify the conversational smog assistant chat panel is mounted
     await expect(page.getByText('Ask SaafHawa Assistant')).toBeVisible();
+  });
+
+  test('serves strict security headers without unsafe-eval and without x-powered-by', async ({ request }) => {
+    const response = await request.get('/');
+    expect(response.status()).toBe(200);
+
+    const headers = response.headers();
+    expect(headers['x-frame-options']).toBe('DENY');
+    expect(headers['x-content-type-options']).toBe('nosniff');
+    expect(headers['referrer-policy']).toBe('origin-when-cross-origin');
+    expect(headers['x-powered-by']).toBeUndefined();
+
+    const csp = headers['content-security-policy'] || '';
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).not.toContain("'unsafe-eval'");
   });
 });

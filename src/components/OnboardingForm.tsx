@@ -108,6 +108,7 @@ export function OnboardingForm({
         <form onSubmit={handleSubmit} aria-label="Household Profile Form" className="p-6 sm:p-8" noValidate>
           {errorMessage && (
             <div
+              id="form-error-alert"
               role="alert"
               className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-900 dark:border-rose-900 dark:bg-rose-950/80 dark:text-rose-200"
             >
@@ -126,7 +127,7 @@ export function OnboardingForm({
               >
                 Where do you live? <span className="text-rose-600">*</span>
               </label>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              <p id="place-hint" className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
                 Enter your area name, landmark, city, or 6-digit Indian pincode.
               </p>
               <div className="relative mt-2">
@@ -135,8 +136,13 @@ export function OnboardingForm({
                   type="text"
                   required
                   aria-required="true"
+                  aria-invalid={Boolean(errorMessage)}
+                  aria-describedby={errorMessage ? "form-error-alert place-hint" : "place-hint"}
                   value={formData.place}
-                  onChange={(e) => handleChange('place', e.target.value)}
+                  onChange={(e) => {
+                    setErrorMessage(null);
+                    handleChange('place', e.target.value);
+                  }}
                   placeholder="e.g. Connaught Place, New Delhi or 110001"
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 />
@@ -153,14 +159,14 @@ export function OnboardingForm({
               <button
                 type="button"
                 onClick={onCancel}
-                className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 sm:w-auto dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                className="inline-flex min-h-[44px] min-w-[44px] w-full items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 sm:w-auto dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
             )}
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-7 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 sm:w-auto dark:hover:bg-emerald-500"
+              className="inline-flex min-h-[44px] min-w-[44px] w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-7 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 sm:w-auto"
             >
               <span>{isEditing ? 'Save & Regenerate Plan' : 'Generate My Smog Action Plan'}</span>
               <span aria-hidden="true">→</span>

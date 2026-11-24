@@ -3,6 +3,7 @@ import { generateCommunityAdvisory } from '@/lib/community/advisory-generator';
 import { AdvisoryRequestSchema } from '@/lib/community/types';
 import { advisoryRateLimiter, getClientIp } from '@/lib/rate-limit';
 import { readJsonBodyWithLimit } from '@/lib/security';
+import { logServerError } from '@/lib/logger';
 import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    logServerError('API:community-advisory', error);
     return NextResponse.json(
       {
         error: 'Advisory Generation Error',

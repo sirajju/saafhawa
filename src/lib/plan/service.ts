@@ -1,3 +1,4 @@
+import { logServerError } from '../logger';
 import { ACTION_CATALOGUE, ActionDefinition } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { calculateDeduplicatedTotals } from '../impact/deduplication';
@@ -89,7 +90,8 @@ export async function generateHouseholdPlan(
       } else {
         generationMethod = 'rule_based_fallback';
       }
-    } catch {
+    } catch (err: unknown) {
+      logServerError('PlanService', err);
       generationMethod = 'rule_based_fallback';
     }
   } else {

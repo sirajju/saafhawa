@@ -13,7 +13,7 @@ const STORAGE_KEY = 'saafhawa_profile';
 export default function HomePage() {
   const [profile, setProfile] = useState<PlanRequest | null>(null);
   const [plan, setPlan] = useState<PlanResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isEditingProfile, setIsEditingProfile] = useState<boolean>(false);
   const [isAdvisoryModalOpen, setIsAdvisoryModalOpen] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
