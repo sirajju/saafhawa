@@ -7,6 +7,8 @@ import { AirQualityCard } from '@/components/AirQualityCard';
 import { TotalSavingsBanner } from '@/components/TotalSavingsBanner';
 import { PlanCard } from '@/components/PlanCard';
 import { LoadingState } from '@/components/LoadingState';
+import { ChatPanel } from '@/components/ChatPanel';
+import { CommunityAdvisoryModal } from '@/components/CommunityAdvisoryModal';
 import { PlannedAction, PlanRequest, PlanResponse } from '@/lib/plan/types';
 
 const STORAGE_KEY = 'saafhawa_profile';
@@ -16,6 +18,7 @@ export default function HomePage() {
   const [plan, setPlan] = useState<PlanResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isEditingProfile, setIsEditingProfile] = useState<boolean>(false);
+  const [isAdvisoryModalOpen, setIsAdvisoryModalOpen] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchPlan = async (currentProfile: PlanRequest) => {
@@ -98,12 +101,15 @@ export default function HomePage() {
   const sustainableSwapActions: PlannedAction[] =
     plan?.actions.filter((a) => a.category === 'sustainable_swaps') || [];
 
+  const currentPlaceName = plan?.location.name || profile?.place || '110001';
+
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-50">
       <Navbar
-        currentPlace={plan?.location.name || profile?.place}
+        currentPlace={currentPlaceName}
         onEditProfile={profile ? () => setIsEditingProfile(true) : undefined}
         onRefresh={profile ? () => fetchPlan(profile) : undefined}
+        onOpenCommunityAdvisory={profile ? () => setIsAdvisoryModalOpen(true) : undefined}
         isLoading={isLoading}
       />
 
@@ -170,6 +176,7 @@ export default function HomePage() {
             <AirQualityCard
               location={plan.location}
               current={plan.currentAirQuality}
+              hourlyForecast={plan.hourlyForecast || []}
             />
 
             {/* Total Collective Household Savings Banner */}
@@ -177,6 +184,32 @@ export default function HomePage() {
               summary={plan.summary}
               generationMethod={plan.generationMethod}
             />
+
+            {/* Community Share CTA Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+              <div className="flex items-center gap-3 text-center sm:text-left">
+                <span className="text-2xl" aria-hidden="true">
+                  📢
+                </span>
+                <div>
+                  <h3 className="text-sm font-bold text-emerald-950 dark:text-emerald-100">
+                    Empower Your Neighborhood or School Today
+                  </h3>
+                  <p className="text-xs text-emerald-800/80 dark:text-emerald-300/80">
+                    Generate an instant WhatsApp advisory formatted in English or Hindi for your RWA or parent group.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAdvisoryModalOpen(true)}
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:hover:bg-emerald-500"
+              >
+                <span>Share with My Community</span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
 
             {/* Grouped Action Cards */}
             <div className="space-y-10 pt-2">
@@ -268,6 +301,14 @@ export default function HomePage() {
               )}
             </div>
 
+            {/* Interactive Chat Assistant Panel */}
+            <div className="pt-4">
+              <ChatPanel
+                place={currentPlaceName}
+                householdProfile={profile}
+              />
+            </div>
+
             {/* Bottom Community Empowerment Note */}
             <footer className="mt-12 rounded-2xl border border-slate-200 bg-white p-6 text-center text-xs text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
               <p className="font-medium text-slate-700 dark:text-slate-300">
@@ -280,6 +321,13 @@ export default function HomePage() {
           </div>
         )}
       </main>
+
+      {/* Community Advisory Modal */}
+      <CommunityAdvisoryModal
+        isOpen={isAdvisoryModalOpen}
+        onClose={() => setIsAdvisoryModalOpen(false)}
+        place={currentPlaceName}
+      />
     </div>
   );
 }

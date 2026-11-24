@@ -93,6 +93,45 @@ The application provides a hybrid AI + scientific arithmetic endpoint to craft c
 
 ---
 
+## 💬 Conversational Smog Assistant (Function Calling)
+
+Users can ask context-aware follow-up questions (e.g., *"Can my daughter play outside at 5 PM?"*, *"How much PM2.5 do we save if I bike?"*, *"What purifier works on a budget?"*).
+
+- **Endpoint**: `POST /api/chat`
+- **Grounding via Function Calling**:
+  Instead of guessing air quality numbers or inventing physics equations, Gemini calls tools in code:
+  1. `getAirQualityAndForecast`: Retrieves real-time AQI, PM2.5, PM10, and hourly 24-hr forecast via our cached Air Quality module.
+  2. `calculateActionImpact`: Runs our deterministic scientific calculator to return exact avoided $\mu\text{g}$ inhaled dose and emissions saved.
+  3. `listCatalogueActions`: Explores interventions across daily routines, indoor air hacks, and sustainable swaps.
+- **Safety & Boundary Rules**:
+  - **Zero Guessing**: Models are forbidden from hallucinating numeric AQI or impact figures.
+  - **Strict Scope**: Remains focused on air quality, protective health precautions, and low-emission routines.
+  - **Medical Disclaimer**: For questions concerning respiratory symptoms, medication, or asthma attacks, provides general air filtration and sealing precautions while explicitly advising consulting a medical doctor.
+- **Protection**:
+  - Max 500 characters per message.
+  - In-memory sliding-window rate limiting (15 requests/minute per client IP).
+  - Graceful rule-based fallback if offline or API key is unconfigured.
+
+---
+
+## 📢 Community Smog Advisory (WhatsApp-Ready)
+
+Enables users to broadcast hyper-local, action-oriented smog advisories to their housing society (RWA) or school/parent groups.
+
+- **Endpoint**: `POST /api/community-advisory`
+- **Target Audiences**:
+  - `housing_society`: Emphasizes stopping leaf/waste burning, shifting outdoor stroll times, wet mopping common areas, avoiding idle engines, and distributing N95 masks to guards and housekeeping.
+  - `school_group`: Focuses on suspending morning outdoor assemblies and sports, enforcing N95 masks on commutes, inhaler preparedness, classroom window sealing, and warm water hydration.
+- **Bilingual**: Ready in both **English** and **Hindi** (Devnagari).
+- **One-Click Sharing**:
+  - Pre-formatted for WhatsApp with bold headers, numbered emojis (`1️⃣`, `2️⃣`), and crisp bullet points.
+  - One-click "Copy to Clipboard" with animated visual feedback.
+  - Direct "Share to WhatsApp" button (`https://api.whatsapp.com/send?text=...`).
+- **Protection**:
+  - In-memory sliding-window rate limiting (20 requests/minute per client IP).
+
+---
+
 ## 🔒 Security & Environment Variables
 
 All API keys **must remain server-only**.
@@ -128,19 +167,33 @@ GEMINI_MODEL=gemini-2.5-flash
 └── src/
     ├── app/                # Next.js App Router
     │   ├── api/
-    │   │   └── air-quality/
-    │   │       └── route.ts # GET /api/air-quality?place=...
-    │   ├── globals.css     # Global styles & Tailwind CSS imports
+    │   │   ├── air-quality/route.ts        # GET /api/air-quality?place=...
+    │   │   ├── chat/route.ts               # POST /api/chat (function calling)
+    │   │   ├── community-advisory/route.ts # POST /api/community-advisory
+    │   │   └── plan/route.ts               # POST /api/plan
+    │   ├── globals.css     # Global styles & Tailwind CSS
     │   ├── layout.tsx      # Root layout
-    │   └── page.tsx        # Application landing page
+    │   └── page.tsx        # Dashboard, onboarding, chat & advisory modal
+    ├── components/         # Accessible, responsive UI components
+    │   ├── AirQualityCard.tsx
+    │   ├── ChatPanel.tsx
+    │   ├── CommunityAdvisoryModal.tsx
+    │   ├── Navbar.tsx
+    │   ├── OnboardingModal.tsx
+    │   ├── PlanActionCard.tsx
+    │   └── PlanImpactSummary.tsx
     ├── lib/
-    │   └── air-quality/    # Core air quality domain logic
-    │       ├── cache.ts    # 15-minute TTL capped cache
-    │       ├── google-client.ts # Google Geocoding & Air Quality client
-    │       ├── service.ts  # Orchestration service
-    │       └── types.ts    # Zod schemas, types & domain errors
-    └── test/               # Unit and integration test suites
-        └── air-quality.test.ts # Comprehensive air quality tests
+    │   ├── air-quality/    # CPCB & UAQI index fetching, 15-min capped cache
+    │   ├── chat/           # Gemini function-calling tools & handlers
+    │   ├── community/      # WhatsApp advisory generator in EN & HI
+    │   ├── impact/         # Deterministic scientific impact arithmetic
+    │   ├── plan/           # Hybrid Gemini + fallback plan generator
+    │   └── rate-limit.ts   # Sliding-window IP rate limiter
+    └── test/               # Vitest unit & integration test suites
+        ├── air-quality.test.ts
+        ├── chat-tools.test.ts
+        ├── impact.test.ts
+        └── plan.test.ts
 ```
 
 ---

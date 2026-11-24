@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ActionCategory, ExposureReduction, EmissionReduction } from '../impact/types';
-import { CleanLocation, CurrentAirQuality } from '../air-quality/types';
+import { CleanLocation, CurrentAirQuality, HourlyForecastPoint } from '../air-quality/types';
 
 // ============================================================================
 // Plan Request Schema
@@ -83,6 +83,7 @@ export interface PlanSummary {
 export interface PlanResponse {
   location: CleanLocation;
   currentAirQuality: CurrentAirQuality;
+  hourlyForecast?: HourlyForecastPoint[];
   householdProfile: PlanRequest;
   actions: PlannedAction[];
   summary: PlanSummary;

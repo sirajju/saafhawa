@@ -214,6 +214,7 @@ export async function generateHouseholdPlan(
   return {
     location: airQuality.location,
     currentAirQuality: airQuality.current,
+    hourlyForecast: airQuality.hourlyForecast,
     householdProfile: profile,
     actions: plannedActions,
     summary,

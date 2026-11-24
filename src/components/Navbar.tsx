@@ -4,6 +4,7 @@ interface NavbarProps {
   currentPlace?: string;
   onEditProfile?: () => void;
   onRefresh?: () => void;
+  onOpenCommunityAdvisory?: () => void;
   isLoading?: boolean;
 }
 
@@ -11,6 +12,7 @@ export function Navbar({
   currentPlace,
   onEditProfile,
   onRefresh,
+  onOpenCommunityAdvisory,
   isLoading = false,
 }: NavbarProps) {
   return (
@@ -70,6 +72,18 @@ export function Navbar({
                 🔄
               </span>
               <span className="hidden sm:inline">Refresh</span>
+            </button>
+          )}
+
+          {onOpenCommunityAdvisory && (
+            <button
+              type="button"
+              onClick={onOpenCommunityAdvisory}
+              aria-label="Share advisory with your community or school"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 dark:hover:bg-emerald-900"
+            >
+              <span aria-hidden="true">📢</span>
+              <span className="hidden sm:inline">Share Advisory</span>
             </button>
           )}
 
