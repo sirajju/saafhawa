@@ -20,10 +20,12 @@ export default function HomePage() {
   const [isEditingProfile, setIsEditingProfile] = useState<boolean>(false);
   const [isAdvisoryModalOpen, setIsAdvisoryModalOpen] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [liveAnnouncement, setLiveAnnouncement] = useState<string>('');
 
   const fetchPlan = async (currentProfile: PlanRequest) => {
     setIsLoading(true);
     setErrorMessage(null);
+    setLiveAnnouncement('Generating your clean air action plan...');
 
     try {
       const response = await fetch('/api/plan', {
@@ -42,10 +44,14 @@ export default function HomePage() {
       const planData: PlanResponse = await response.json();
       setPlan(planData);
       setIsEditingProfile(false);
-    } catch (err: unknown) {
-      setErrorMessage(
-        err instanceof Error ? err.message : 'An unexpected error occurred while generating your plan.'
+      setLiveAnnouncement(
+        `Action plan ready for ${planData.location.name}. ${planData.actions.length} clean air interventions recommended, avoiding ${planData.summary.totalPm25InhaledDoseAvoidedUg} micrograms of PM2.5 inhaled dose.`
       );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'An unexpected error occurred while generating your plan.';
+      setErrorMessage(message);
+      setLiveAnnouncement(`Error: ${message}`);
     } finally {
       setIsLoading(false);
     }
@@ -114,6 +120,16 @@ export default function HomePage() {
       />
 
       <main id="main-content" className="flex-1 pb-16">
+        {/* Screen Reader Live Region for Announcements */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {liveAnnouncement}
+        </div>
+
         {/* State 1: Onboarding or Editing Profile */}
         {(!profile || isEditingProfile) && !isLoading && (
           <OnboardingForm
@@ -172,11 +188,35 @@ export default function HomePage() {
         {/* State 4: Active Dashboard */}
         {plan && !isLoading && !isEditingProfile && (
           <div className="mx-auto max-w-6xl space-y-8 px-4 pt-6 sm:px-6 sm:pt-8">
+            {/* Sample Data Banner Notice */}
+            {plan.isSampleData && (
+              <div
+                role="status"
+                aria-label="Sample data mode active notice"
+                className="rounded-2xl border border-amber-300 bg-amber-50/90 p-4 shadow-sm dark:border-amber-800 dark:bg-amber-950/60"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl" aria-hidden="true">
+                    ⚠️
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-bold text-amber-950 dark:text-amber-100">
+                      Sample Data Mode Active
+                    </h3>
+                    <p className="text-xs text-amber-900/90 dark:text-amber-200/90">
+                      Operating with built-in reference air quality for New Delhi and rule-based action planning because Google API keys are not configured. All features, arithmetic, and recommendations remain fully functional.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Top Section: Real-time Air Quality */}
             <AirQualityCard
               location={plan.location}
               current={plan.currentAirQuality}
               hourlyForecast={plan.hourlyForecast || []}
+              isSampleData={plan.isSampleData}
             />
 
             {/* Total Collective Household Savings Banner */}

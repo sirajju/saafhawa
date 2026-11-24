@@ -219,5 +219,6 @@ export async function generateHouseholdPlan(
     actions: plannedActions,
     summary,
     generationMethod,
+    isSampleData: Boolean(airQuality.isSampleData || (generationMethod === 'rule_based_fallback' && !apiKey)),
   };
 }

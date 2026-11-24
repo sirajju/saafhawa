@@ -315,6 +315,18 @@ describe('Air Quality - Service Orchestration', () => {
     process.env.GOOGLE_MAPS_API_KEY = originalEnv;
   });
 
+  it('returns built-in sample Delhi report when no GOOGLE_MAPS_API_KEY is configured', async () => {
+    delete process.env.GOOGLE_MAPS_API_KEY;
+
+    const report = await getAirQualityByLocation('110001');
+
+    expect(report.isSampleData).toBe(true);
+    expect(report.location.name).toContain('New Delhi');
+    expect(report.current.aqi).toBe(342);
+    expect(report.current.category).toBe('Very Poor');
+    expect(report.hourlyForecast.length).toBe(24);
+  });
+
   it('returns clean report using ind_cpcb when available and includes indexCode', async () => {
     const mockFetch = vi.fn().mockImplementation((url: string) => {
       if (url.includes('maps.googleapis.com/maps/api/geocode')) {

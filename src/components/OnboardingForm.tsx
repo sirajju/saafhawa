@@ -103,7 +103,7 @@ export function OnboardingForm({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 sm:p-8" noValidate>
+        <form onSubmit={handleSubmit} aria-label="Household Profile Form" className="p-6 sm:p-8" noValidate>
           {errorMessage && (
             <div
               role="alert"

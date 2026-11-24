@@ -39,7 +39,8 @@ During north Indian and South Asian winters, atmospheric temperature inversions 
 | **No Client-Exposed API Keys** | All Google Geocoding, Air Quality, and Gemini requests execute strictly on the server runtime. | Zero `NEXT_PUBLIC_` secrets; keys loaded only in route handlers and server services. |
 | **Interactive Follow-ups** | Context-aware chat panel with Gemini function calling and strict medical disclaimers. | Multi-turn `@google/genai` tool use with factual fallbacks. |
 | **Community Scaling** | Pre-formatted WhatsApp advisories in English & Hindi for housing societies & schools. | Modal with copy-to-clipboard and WhatsApp deep link (`https://api.whatsapp.com/send`). |
-| **Accessibility & Performance** | Calm visual design, high contrast, text-first AQI categories (never color alone), full keyboard navigation, screen reader labels. | Strict semantic HTML, WCAG AA compliance, responsive mobile layout. |
+| **Zero-Config Fallback (No Keys Needed)** | Works completely out of the box with no Gemini key and no Google Maps key set: uses rule-based action planning and a built-in Delhi winter air quality reference, with prominent "Sample Data" labels. | Built-in sample Delhi data generator (`src/lib/air-quality/sample-data.ts`) + rule-based selection. |
+| **Accessibility & Screen Reader Live Regions** | WCAG AA compliance: text equivalents for all colored badges/charts, live region announcements for loading & plan readiness, full keyboard navigation, landmarks & labels verified via Testing Library. | Semantic HTML, `<div role="status" aria-live="polite">`, Testing Library component suite (`src/test/components.test.tsx`). |
 
 ---
 
@@ -202,15 +203,16 @@ All mathematical equations in `src/lib/impact/calculator.ts` and baseline coeffi
     │   ├── PlanCard.tsx             # Action intervention cards with plain-language metrics
     │   └── TotalSavingsBanner.tsx   # Cumulative daily avoided dose & emission savings
     ├── lib/
-    │   ├── air-quality/             # Google Maps Geocoding & Air Quality client + cache
+    │   ├── air-quality/             # Google Maps client, cache & sample Delhi data
     │   ├── chat/                    # Function declarations, tools & Gemini loop
     │   ├── community/               # English & Hindi WhatsApp advisory templates
     │   ├── impact/                  # Deterministic arithmetic calculator & factor science
     │   ├── plan/                    # Hybrid plan orchestration & fallback rules
     │   └── rate-limit.ts            # Sliding-window IP rate limiter
-    └── test/                        # Vitest unit & integration test suites
-        ├── air-quality.test.ts      # Air quality caching, Google client & route tests
+    └── test/                        # Vitest unit, integration & Testing Library suites
+        ├── air-quality.test.ts      # Air quality caching, sample fallback & Google client
         ├── chat-tools.test.ts       # Function-calling tools, rate limiting & safety tests
+        ├── components.test.tsx      # Testing Library: landmarks, labels & keyboard use
         ├── impact.test.ts           # Pure arithmetic calculator unit tests
         └── plan.test.ts             # Plan prompt builder, validation & fallback tests
 ```
@@ -260,11 +262,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🧪 Testing & Quality Assurance
 
-### Run Unit Tests (Vitest)
-Executes all 67 comprehensive unit and integration tests across the arithmetic calculator, air quality service, Gemini prompts, and rate limiters:
+### Run Unit & Accessibility Component Tests (Vitest + Testing Library)
+Executes all 79 comprehensive tests across the arithmetic calculator, air quality service, Gemini prompts, rate limiters, and React Testing Library component tests (verifying landmarks, form labels, screen reader text equivalents, live region announcements, and keyboard navigation):
 ```bash
 npm test
 ```
+> **Note**: Tests run in 100% offline mode with zero live API keys needed. All tests pass with `GOOGLE_MAPS_API_KEY` and `GEMINI_API_KEY` completely unset.
 To run tests in watch mode during development:
 ```bash
 npm run test:watch

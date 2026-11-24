@@ -1,4 +1,5 @@
 import { airQualityCache, normalizeLocationKey } from './cache';
+import { getSampleDelhiAirQualityReport } from './sample-data';
 import {
   fetchCurrentConditions,
   fetchHourlyForecast,
@@ -7,7 +8,6 @@ import {
   ClientRequestOptions,
 } from './google-client';
 import {
-  AirQualityError,
   AirQualityIndexSchema,
   AirQualityQuerySchema,
   AirQualityReport,
@@ -27,14 +27,11 @@ export interface GetAirQualityOptions extends ClientRequestOptions {
   forecastHours?: number;
 }
 
-function resolveApiKey(providedKey?: string): string {
+function resolveApiKey(providedKey?: string): string | null {
   const key = providedKey || process.env.GOOGLE_MAPS_API_KEY;
 
-  if (!key) {
-    throw new AirQualityError(
-      'Server configuration error: GOOGLE_MAPS_API_KEY is not set.',
-      500
-    );
+  if (!key || key.trim() === '' || key === 'undefined') {
+    return null;
   }
 
   return key;
@@ -133,6 +130,12 @@ export async function getAirQualityByLocation(
 ): Promise<AirQualityReport> {
   const { place } = AirQualityQuerySchema.parse({ place: rawPlace });
   const apiKey = resolveApiKey(options.apiKey);
+
+  // If no Google Maps API key is configured, return built-in sample Delhi air quality report
+  if (!apiKey) {
+    return getSampleDelhiAirQualityReport(place);
+  }
+
   const cacheKey = normalizeLocationKey(place);
   const forecastHours = options.forecastHours ?? 24;
   const clientOptions: ClientRequestOptions = {
@@ -202,10 +205,12 @@ export async function getAirQualityByLocation(
       indexDisplayName: primaryCurrentIndex.indexDisplayName,
       pm25: currentPm25,
       pm10: currentPm10,
+      isSampleData: false,
     },
     hourlyForecast,
     cachedAt: new Date(now).toISOString(),
     expiresAt: new Date(now + ttlMs).toISOString(),
+    isSampleData: false,
   };
 
   // Step 5: Validate clean unified format through Zod

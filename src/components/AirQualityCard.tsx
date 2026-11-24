@@ -5,6 +5,7 @@ import { getAqiCategoryDetails } from '@/lib/impact/comparisons';
 interface AirQualityCardProps {
   location: CleanLocation;
   current: CurrentAirQuality;
+  isSampleData?: boolean;
   hourlyForecast?: Array<{
     dateTime: string;
     aqi: number | null;
@@ -27,9 +28,11 @@ function formatHour(dateTimeIso: string): string {
 export function AirQualityCard({
   location,
   current,
+  isSampleData,
   hourlyForecast = [],
 }: AirQualityCardProps) {
   const categoryInfo = getAqiCategoryDetails(current.category, current.aqi);
+  const isSample = Boolean(isSampleData || current.isSampleData);
 
   return (
     <section
@@ -53,6 +56,19 @@ export function AirQualityCard({
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Reported Index: {current.indexDisplayName || current.indexCode || 'National Air Quality Standard'}
             </p>
+
+            {/* Visible Sample Data Indicator */}
+            {isSample && (
+              <div className="mt-2.5 flex flex-wrap items-center gap-2" role="status" aria-label="Sample data notice">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-0.5 text-xs font-bold text-amber-900 dark:border-amber-700 dark:bg-amber-950/80 dark:text-amber-200">
+                  <span aria-hidden="true">⚠️</span>
+                  <span>Sample Data</span>
+                </span>
+                <span className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                  Displaying built-in New Delhi reference data (API key not configured)
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Accessible Category Badge */}
@@ -70,6 +86,9 @@ export function AirQualityCard({
                 {categoryInfo.categoryText}
               </div>
             </div>
+            <span className="sr-only">
+              Current air quality category is {categoryInfo.categoryText}.
+            </span>
           </div>
         </div>
 
@@ -91,6 +110,9 @@ export function AirQualityCard({
             <div className="mt-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
               Category: {categoryInfo.categoryText}
             </div>
+            <span className="sr-only">
+              Current Air Quality Index is {current.aqi !== null ? current.aqi : 'unavailable'} on {current.indexCode === 'ind_cpcb' ? '500 scale' : '100 scale'}, rated as {categoryInfo.categoryText}.
+            </span>
           </div>
 
           {/* PM2.5 */}
@@ -111,6 +133,9 @@ export function AirQualityCard({
                 ? `${Math.round(current.pm25.value / 15)}× WHO 24-hr guideline`
                 : 'Primary respirable winter pollutant'}
             </p>
+            <span className="sr-only">
+              PM2.5 particulate level is {current.pm25 ? `${current.pm25.value} micrograms per cubic meter` : 'not available'}.
+            </span>
           </div>
 
           {/* PM10 */}
@@ -129,6 +154,9 @@ export function AirQualityCard({
             <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">
               Dominant Pollutant: <span className="font-semibold uppercase">{current.dominantPollutant || 'PM2.5'}</span>
             </p>
+            <span className="sr-only">
+              PM10 coarse dust level is {current.pm10 ? `${current.pm10.value} micrograms per cubic meter` : 'not available'}. Dominant pollutant is {current.dominantPollutant || 'PM2.5'}.
+            </span>
           </div>
         </div>
 
@@ -179,6 +207,9 @@ export function AirQualityCard({
                         {Math.round(point.pm25.value)} µg/m³
                       </span>
                     )}
+                    <span className="sr-only">
+                      Forecast at {formatHour(point.dateTime)}: AQI {point.aqi}, category {hourCat.categoryText}, PM2.5 {point.pm25 ? `${point.pm25.value} µg/m³` : 'not available'}.
+                    </span>
                   </div>
                 );
               })}

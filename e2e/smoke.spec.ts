@@ -92,6 +92,7 @@ const MOCK_PLAN = {
     totalCo2EmissionsSavedGrams: 3400,
     dailyInhaledDoseEquivalentCigarettesAvoided: 18.3,
   },
+  isSampleData: true,
 };
 
 test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
@@ -123,19 +124,24 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     await expect(submitButton).toBeVisible();
     await submitButton.click();
 
-    // 6. Verify dashboard displays the real-time air quality card
+    // 6. Verify dashboard displays the real-time air quality card and visible sample data label
     await expect(page.getByRole('heading', { name: /Connaught Place/i })).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Very Poor').first()).toBeVisible();
+    await expect(page.getByText('Sample Data').first()).toBeVisible();
 
-    // 7. Verify total daily household impact summary
+    // 7. Verify live region announced the plan readiness
+    const liveRegion = page.locator('div[role="status"][aria-live="polite"]');
+    await expect(liveRegion).toContainText(/Action plan ready/i);
+
+    // 8. Verify total daily household impact summary
     await expect(page.getByText('What Following This Plan Saves Today')).toBeVisible();
 
-    // 8. Verify action cards are rendered
+    // 9. Verify action cards are rendered
     await expect(page.getByText('Wear Certified N95 Mask During Outdoor Commutes')).toBeVisible();
     await expect(page.getByText('Run HEPA Air Purifier in Sleeping Area')).toBeVisible();
     await expect(page.getByText('Take Metro Instead of Driving a Petrol Car')).toBeVisible();
 
-    // 9. Verify the conversational smog assistant chat panel is mounted
+    // 10. Verify the conversational smog assistant chat panel is mounted
     await expect(page.getByText('Ask SaafHawa Assistant')).toBeVisible();
   });
 });

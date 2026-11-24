@@ -226,6 +226,23 @@ describe('Plan Module - POST /api/plan Route Handler', () => {
     planRateLimiter.reset();
   });
 
+  it('generates complete rule-based plan with sample data when no keys are configured', async () => {
+    const originalMapsKey = process.env.GOOGLE_MAPS_API_KEY;
+    const originalGeminiKey = process.env.GEMINI_API_KEY;
+    delete process.env.GOOGLE_MAPS_API_KEY;
+    delete process.env.GEMINI_API_KEY;
+
+    const plan = await generateHouseholdPlan(MOCK_PROFILE);
+
+    expect(plan.generationMethod).toBe('rule_based_fallback');
+    expect(plan.isSampleData).toBe(true);
+    expect(plan.actions.length).toBeGreaterThanOrEqual(6);
+    expect(plan.summary.totalPm25InhaledDoseAvoidedUg).toBeGreaterThan(0);
+
+    process.env.GOOGLE_MAPS_API_KEY = originalMapsKey;
+    process.env.GEMINI_API_KEY = originalGeminiKey;
+  });
+
   it('returns 200 with full plan on valid POST request', async () => {
     vi.stubEnv('GOOGLE_MAPS_API_KEY', 'test-maps-key');
     vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key');

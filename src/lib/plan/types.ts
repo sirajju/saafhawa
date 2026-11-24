@@ -88,4 +88,5 @@ export interface PlanResponse {
   actions: PlannedAction[];
   summary: PlanSummary;
   generationMethod: 'gemini' | 'rule_based_fallback';
+  isSampleData?: boolean;
 }
