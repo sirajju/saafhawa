@@ -29,7 +29,7 @@ During north Indian and South Asian winters, atmospheric thermal inversions trap
 SaafHawa is engineered around five fundamental design principles:
 
 1. **Separation of Cognitive Selection and Physical Arithmetic:**
-   Large Language Models cannot reliably perform arithmetic or physical exposure modeling without numerical hallucinations. In SaafHawa, Gemini's role is strictly cognitive: selecting the 6–8 most suitable action IDs for a given household and providing empathetic timing rationales without numbers. All exposure reductions ($\mu\text{g}$ PM2.5 inhaled dose avoided) and emission reductions ($\text{g}$ of PM2.5, $\text{g}$ of $\text{CO}_2$ saved) are computed deterministically in pure TypeScript using peer-reviewed physical inhalation formulas.
+   Large Language Models cannot reliably perform arithmetic or physical exposure modeling without numerical hallucinations. In SaafHawa, Gemini's role is strictly cognitive: selecting the 6–8 most suitable action IDs for a given household and providing empathetic timing rationales without numbers. All exposure reductions ($\mu\text{g}$ PM2.5 inhaled dose avoided) and emission reductions ($\text{g}$ of PM2.5, $\text{g}$ of $\text{CO}_2$ saved) are computed deterministically in pure TypeScript using published environmental agency benchmarks (EPA, ARAI, CPCB) and physical mass-balance formulas.
 2. **Context-Grounded Conversational Follow-up:**
    Rather than relying on generic AI advice, the follow-up chat assistant uses Gemini function calling. When users ask questions like *"Can my daughter play outside at 5 PM?"*, Gemini calls real registered tools (`getAirQualityAndForecast`, `calculateActionImpact`) to inspect the live 24-hour hourly forecast before giving a grounded answer.
 3. **Medical Safety Boundaries:**
@@ -106,7 +106,7 @@ flowchart TD
 2. **Microclimate Fetching:** Server queries Google Geocoding and Google Air Quality APIs, requesting the Indian National AQI (`ind_cpcb`) and an explicit 24-hour forecast window. Cached for 15 minutes.
 3. **Hybrid AI & Arithmetic Planning:**
    - Server builds a structured prompt for Gemini 2.5 Flash with the household profile and AQI context.
-   - Gemini selects 6–8 action IDs from our 20-action catalogue with timing and reason.
+   - Gemini selects 6–8 action IDs from our 21-action catalogue with timing and reason.
    - Server drops any unrecognized IDs, executes pure TypeScript arithmetic formulas to compute inhaled dose avoided ($\mu\text{g}$) and emissions saved ($\text{g}$), and returns the complete verified payload.
 4. **Interactive Dashboard:** Displays real-time AQI with category text, WHO comparison, total household savings banner, grouped action cards, interactive chat panel, and community advisory generator.
 
@@ -114,7 +114,7 @@ flowchart TD
 
 ## 4. Assumptions Made
 
-All calculations follow pure deterministic arithmetic based on peer-reviewed literature and official environmental agency benchmarks. Where exact empirical real-world parameters vary by micro-environment or vehicle condition, factors are explicitly marked with `// [NEEDS VERIFICATION]` in [`src/lib/impact/emission-factors.ts`](file:///src/lib/impact/emission-factors.ts) and [`src/lib/impact/factors.ts`](file:///src/lib/impact/factors.ts).
+All calculations follow pure deterministic arithmetic based on published literature and official environmental agency benchmarks. Where exact empirical real-world parameters vary by micro-environment or vehicle condition, factors are explicitly marked with `// [NEEDS VERIFICATION]` in [`src/lib/impact/emission-factors.ts`](src/lib/impact/emission-factors.ts) and [`src/lib/impact/factors.ts`](src/lib/impact/factors.ts).
 
 ### Verified Empirical Baselines
 1. **Inhalation Volumes:** Modeled from the US EPA Exposure Factors Handbook: $0.45\text{ m}^3/\text{hr}$ for resting adults, $0.60\text{ m}^3/\text{hr}$ for light domestic activity, $0.42\text{ m}^3/\text{hr}$ for children, and $0.52\text{ m}^3/\text{hr}$ for elderly occupants.
@@ -159,27 +159,27 @@ The table below maps each requirement from the problem statement to its implemen
 
 | Requirement / Problem Statement Phrase | Implementing File(s) | Verifying Automated Test(s) |
 | :--- | :--- | :--- |
-| **India Local AQI (`ind_cpcb`) priority with universal fallback** | [`src/lib/air-quality/index-extractor.ts`](file:///src/lib/air-quality/index-extractor.ts) | [`src/test/air-quality-cache-index.test.ts`](file:///src/test/air-quality-cache-index.test.ts) |
-| **Null AQI when no index returned (never 0)** | [`src/lib/air-quality/index-extractor.ts`](file:///src/lib/air-quality/index-extractor.ts) | [`src/test/air-quality-cache-index.test.ts`](file:///src/test/air-quality-cache-index.test.ts) |
-| **Explicit forecast time period & resilient forecast failure recovery** | [`src/lib/air-quality/forecast-period.ts`](file:///src/lib/air-quality/forecast-period.ts), [`src/lib/air-quality/service.ts`](file:///src/lib/air-quality/service.ts) | [`src/test/air-quality-client.test.ts`](file:///src/test/air-quality-client.test.ts), [`src/test/air-quality-service.test.ts`](file:///src/test/air-quality-service.test.ts) |
-| **Quota exceeded (429) & network error (503) without leaking raw internals** | [`src/lib/air-quality/google-client.ts`](file:///src/lib/air-quality/google-client.ts), [`src/lib/air-quality/types.ts`](file:///src/lib/air-quality/types.ts) | [`src/test/air-quality-client.test.ts`](file:///src/test/air-quality-client.test.ts), [`src/test/air-quality-service.test.ts`](file:///src/test/air-quality-service.test.ts) |
-| **Single query param `place`, 120-char limit, capped cache** | [`src/lib/air-quality/cache.ts`](file:///src/lib/air-quality/cache.ts), [`src/app/api/air-quality/route.ts`](file:///src/app/api/air-quality/route.ts) | [`src/test/air-quality-cache-index.test.ts`](file:///src/test/air-quality-cache-index.test.ts), [`src/test/air-quality-route.test.ts`](file:///src/test/air-quality-route.test.ts) |
-| **Catalogue of ~20 actions across routine, indoor, and swaps** | [`src/lib/impact/catalogue.ts`](file:///src/lib/impact/catalogue.ts) | [`src/test/impact-catalogue.test.ts`](file:///src/test/impact-catalogue.test.ts) |
-| **Pure TypeScript arithmetic: dose avoided ($\mu\text{g}$) & emissions saved ($\text{g}$)** | [`src/lib/impact/calculator.ts`](file:///src/lib/impact/calculator.ts), [`src/lib/impact/routine-impact.ts`](file:///src/lib/impact/routine-impact.ts), [`src/lib/impact/indoor-impact.ts`](file:///src/lib/impact/indoor-impact.ts), [`src/lib/impact/commute-swaps.ts`](file:///src/lib/impact/commute-swaps.ts), [`src/lib/impact/combustion-swaps.ts`](file:///src/lib/impact/combustion-swaps.ts) | [`src/test/impact-catalogue.test.ts`](file:///src/test/impact-catalogue.test.ts), [`src/test/impact-indoor-swaps.test.ts`](file:///src/test/impact-indoor-swaps.test.ts), [`src/test/impact-edge-cases.test.ts`](file:///src/test/impact-edge-cases.test.ts), [`src/test/impact-corrections.test.ts`](file:///src/test/impact-corrections.test.ts) |
-| **Scientific citations for every factor with NEEDS VERIFICATION markers** | [`src/lib/impact/factors.ts`](file:///src/lib/impact/factors.ts) | [`src/test/impact-catalogue.test.ts`](file:///src/test/impact-catalogue.test.ts), [`src/test/impact-corrections.test.ts`](file:///src/test/impact-corrections.test.ts) |
-| **Edge cases: household with no car, very clean air ($5\ \mu\text{g}/\text{m}^3$)** | [`src/lib/impact/calculator.ts`](file:///src/lib/impact/calculator.ts) | [`src/test/impact-edge-cases.test.ts`](file:///src/test/impact-edge-cases.test.ts), [`src/test/impact-corrections.test.ts`](file:///src/test/impact-corrections.test.ts) |
-| **POST /api/plan with Zod validation of household profile** | [`src/lib/plan/types.ts`](file:///src/lib/plan/types.ts), [`src/app/api/plan/route.ts`](file:///src/app/api/plan/route.ts) | [`src/test/plan-validation.test.ts`](file:///src/test/plan-validation.test.ts) |
-| **Gemini structured JSON selection of 6-8 actions without numbers** | [`src/lib/plan/service.ts`](file:///src/lib/plan/service.ts), [`src/lib/plan/prompt-builder.ts`](file:///src/lib/plan/prompt-builder.ts) | [`src/test/plan-validation.test.ts`](file:///src/test/plan-validation.test.ts), [`src/test/plan-generation.test.ts`](file:///src/test/plan-generation.test.ts) |
-| **Drop unrecognized action IDs & rule-based fallback when Gemini fails** | [`src/lib/plan/service.ts`](file:///src/lib/plan/service.ts), [`src/lib/plan/fallback.ts`](file:///src/lib/plan/fallback.ts) | [`src/test/plan-generation.test.ts`](file:///src/test/plan-generation.test.ts) |
-| **Onboarding form with localStorage persistence** | [`src/components/OnboardingForm.tsx`](file:///src/components/OnboardingForm.tsx), [`src/app/page.tsx`](file:///src/app/page.tsx) | [`src/test/components-form.test.tsx`](file:///src/test/components-form.test.tsx), [`e2e/smoke.spec.ts`](file:///e2e/smoke.spec.ts) |
-| **Dashboard with AirQualityCard, PlanCards, Total savings** | [`src/components/AirQualityCard.tsx`](file:///src/components/AirQualityCard.tsx), [`src/components/PlanCard.tsx`](file:///src/components/PlanCard.tsx), [`src/components/TotalSavingsBanner.tsx`](file:///src/components/TotalSavingsBanner.tsx) | [`src/test/components-cards.test.tsx`](file:///src/test/components-cards.test.tsx), [`e2e/smoke.spec.ts`](file:///e2e/smoke.spec.ts) |
-| **Accessibility: semantic HTML, keyboard use, no color-alone, live region** | [`src/app/page.tsx`](file:///src/app/page.tsx), [`src/components/AirQualityCard.tsx`](file:///src/components/AirQualityCard.tsx), [`src/components/ForecastTimeline.tsx`](file:///src/components/ForecastTimeline.tsx) | [`src/test/components-form.test.tsx`](file:///src/test/components-form.test.tsx), [`src/test/components-cards.test.tsx`](file:///src/test/components-cards.test.tsx) |
-| **Chat panel with Gemini function calling and medical disclaimer** | [`src/components/ChatPanel.tsx`](file:///src/components/ChatPanel.tsx), [`src/lib/chat/service.ts`](file:///src/lib/chat/service.ts), [`src/lib/chat/tools.ts`](file:///src/lib/chat/tools.ts) | [`src/test/chat-tools-exec.test.ts`](file:///src/test/chat-tools-exec.test.ts), [`src/test/chat-advisory-rate.test.ts`](file:///src/test/chat-advisory-rate.test.ts) |
-| **Community advisory button (WhatsApp-ready English/Hindi)** | [`src/components/CommunityAdvisoryModal.tsx`](file:///src/components/CommunityAdvisoryModal.tsx), [`src/lib/community/advisory-generator.ts`](file:///src/lib/community/advisory-generator.ts) | [`src/test/chat-advisory-rate.test.ts`](file:///src/test/chat-advisory-rate.test.ts), [`src/test/components-cards.test.tsx`](file:///src/test/components-cards.test.tsx) |
-| **Rate limiting per IP & message length cap** | [`src/lib/rate-limit.ts`](file:///src/lib/rate-limit.ts), [`src/lib/chat/types.ts`](file:///src/lib/chat/types.ts) | [`src/test/security.test.ts`](file:///src/test/security.test.ts), [`src/test/chat-tools-exec.test.ts`](file:///src/test/chat-tools-exec.test.ts) |
-| **Zero-key mode: Delhi reference sample data & visible label** | [`src/lib/air-quality/sample-data.ts`](file:///src/lib/air-quality/sample-data.ts), [`src/components/AirQualityCard.tsx`](file:///src/components/AirQualityCard.tsx) | [`src/test/air-quality-service.test.ts`](file:///src/test/air-quality-service.test.ts), [`src/test/plan-generation.test.ts`](file:///src/test/plan-generation.test.ts), [`src/test/components-cards.test.tsx`](file:///src/test/components-cards.test.tsx) |
-| **Security headers (CSP), request body cap (64KB)** | [`src/lib/security.ts`](file:///src/lib/security.ts), [`next.config.ts`](file:///next.config.ts) | [`src/test/security.test.ts`](file:///src/test/security.test.ts) |
-| **Docker standalone Cloud Run deployment & GitHub Actions CI** | [`Dockerfile`](file:///Dockerfile), [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) | Verified in CI workflow and Docker multi-stage build |
+| **India Local AQI (`ind_cpcb`) priority with universal fallback** | [`src/lib/air-quality/index-extractor.ts`](src/lib/air-quality/index-extractor.ts) | [`src/test/air-quality-cache-index.test.ts`](src/test/air-quality-cache-index.test.ts) |
+| **Null AQI when no index returned (never 0)** | [`src/lib/air-quality/index-extractor.ts`](src/lib/air-quality/index-extractor.ts) | [`src/test/air-quality-cache-index.test.ts`](src/test/air-quality-cache-index.test.ts) |
+| **Explicit forecast time period & resilient forecast failure recovery** | [`src/lib/air-quality/forecast-period.ts`](src/lib/air-quality/forecast-period.ts), [`src/lib/air-quality/service.ts`](src/lib/air-quality/service.ts) | [`src/test/air-quality-client.test.ts`](src/test/air-quality-client.test.ts), [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts) |
+| **Quota exceeded (429) & network error (503) without leaking raw internals** | [`src/lib/air-quality/google-client.ts`](src/lib/air-quality/google-client.ts), [`src/lib/air-quality/types.ts`](src/lib/air-quality/types.ts) | [`src/test/air-quality-client.test.ts`](src/test/air-quality-client.test.ts), [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts) |
+| **Single query param `place`, 120-char limit, capped cache** | [`src/lib/air-quality/cache.ts`](src/lib/air-quality/cache.ts), [`src/app/api/air-quality/route.ts`](src/app/api/air-quality/route.ts) | [`src/test/air-quality-cache-index.test.ts`](src/test/air-quality-cache-index.test.ts), [`src/test/air-quality-route.test.ts`](src/test/air-quality-route.test.ts) |
+| **Catalogue of 21 actions across routine, indoor, and swaps** | [`src/lib/impact/catalogue.ts`](src/lib/impact/catalogue.ts) | [`src/test/impact-catalogue.test.ts`](src/test/impact-catalogue.test.ts) |
+| **Pure TypeScript arithmetic: dose avoided ($\mu\text{g}$) & emissions saved ($\text{g}$)** | [`src/lib/impact/calculator.ts`](src/lib/impact/calculator.ts), [`src/lib/impact/routine-impact.ts`](src/lib/impact/routine-impact.ts), [`src/lib/impact/indoor-impact.ts`](src/lib/impact/indoor-impact.ts), [`src/lib/impact/commute-swaps.ts`](src/lib/impact/commute-swaps.ts), [`src/lib/impact/combustion-swaps.ts`](src/lib/impact/combustion-swaps.ts) | [`src/test/impact-catalogue.test.ts`](src/test/impact-catalogue.test.ts), [`src/test/impact-indoor-swaps.test.ts`](src/test/impact-indoor-swaps.test.ts), [`src/test/impact-edge-cases.test.ts`](src/test/impact-edge-cases.test.ts), [`src/test/impact-corrections.test.ts`](src/test/impact-corrections.test.ts) |
+| **Scientific citations for every factor with NEEDS VERIFICATION markers** | [`src/lib/impact/factors.ts`](src/lib/impact/factors.ts) | [`src/test/impact-catalogue.test.ts`](src/test/impact-catalogue.test.ts), [`src/test/impact-corrections.test.ts`](src/test/impact-corrections.test.ts) |
+| **Edge cases: household with no car, very clean air ($5\ \mu\text{g}/\text{m}^3$)** | [`src/lib/impact/calculator.ts`](src/lib/impact/calculator.ts) | [`src/test/impact-edge-cases.test.ts`](src/test/impact-edge-cases.test.ts), [`src/test/impact-corrections.test.ts`](src/test/impact-corrections.test.ts) |
+| **POST /api/plan with Zod validation of household profile** | [`src/lib/plan/types.ts`](src/lib/plan/types.ts), [`src/app/api/plan/route.ts`](src/app/api/plan/route.ts) | [`src/test/plan-validation.test.ts`](src/test/plan-validation.test.ts) |
+| **Gemini structured JSON selection of 6-8 actions without numbers** | [`src/lib/plan/service.ts`](src/lib/plan/service.ts), [`src/lib/plan/prompt-builder.ts`](src/lib/plan/prompt-builder.ts) | [`src/test/plan-validation.test.ts`](src/test/plan-validation.test.ts), [`src/test/plan-generation.test.ts`](src/test/plan-generation.test.ts) |
+| **Drop unrecognized action IDs & rule-based fallback when Gemini fails** | [`src/lib/plan/service.ts`](src/lib/plan/service.ts), [`src/lib/plan/fallback.ts`](src/lib/plan/fallback.ts) | [`src/test/plan-generation.test.ts`](src/test/plan-generation.test.ts) |
+| **Onboarding form with localStorage persistence** | [`src/components/OnboardingForm.tsx`](src/components/OnboardingForm.tsx), [`src/app/page.tsx`](src/app/page.tsx) | [`src/test/components-form.test.tsx`](src/test/components-form.test.tsx), [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) |
+| **Dashboard with AirQualityCard, PlanCards, Total savings** | [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx), [`src/components/PlanCard.tsx`](src/components/PlanCard.tsx), [`src/components/TotalSavingsBanner.tsx`](src/components/TotalSavingsBanner.tsx) | [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx), [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) |
+| **Accessibility: semantic HTML, keyboard use, no color-alone, live region** | [`src/app/page.tsx`](src/app/page.tsx), [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx), [`src/components/ForecastTimeline.tsx`](src/components/ForecastTimeline.tsx) | [`src/test/components-form.test.tsx`](src/test/components-form.test.tsx), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) |
+| **Chat panel with Gemini function calling and medical disclaimer** | [`src/components/ChatPanel.tsx`](src/components/ChatPanel.tsx), [`src/lib/chat/service.ts`](src/lib/chat/service.ts), [`src/lib/chat/tools.ts`](src/lib/chat/tools.ts) | [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts), [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts) |
+| **Community advisory button (WhatsApp-ready English/Hindi)** | [`src/components/CommunityAdvisoryModal.tsx`](src/components/CommunityAdvisoryModal.tsx), [`src/lib/community/advisory-generator.ts`](src/lib/community/advisory-generator.ts) | [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) |
+| **Rate limiting per IP & message length cap** | [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts), [`src/lib/chat/types.ts`](src/lib/chat/types.ts) | [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts) |
+| **Zero-key mode: Delhi reference sample data & visible label** | [`src/lib/air-quality/sample-data.ts`](src/lib/air-quality/sample-data.ts), [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx) | [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts), [`src/test/plan-generation.test.ts`](src/test/plan-generation.test.ts), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) |
+| **Security headers (CSP), request body cap (64KB)** | [`src/lib/security.ts`](src/lib/security.ts), [`next.config.ts`](next.config.ts) | [`src/test/security.test.ts`](src/test/security.test.ts) |
+| **Docker standalone Cloud Run deployment & GitHub Actions CI** | [`Dockerfile`](Dockerfile), [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Verified in CI workflow and Docker multi-stage build |
 
 ---
 
@@ -205,6 +205,7 @@ If configuring live API keys, edit `.env.local`:
 ```env
 GOOGLE_MAPS_API_KEY=your_google_maps_platform_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
+# AI_API_KEY is also supported as an alternate fallback
 GEMINI_MODEL=gemini-2.5-flash
 ```
 
@@ -223,7 +224,7 @@ npm run lint
 # 2. Run TypeScript compiler check
 npx tsc --noEmit
 
-# 3. Run all unit and component tests (89 tests, 100% offline)
+# 3. Run all unit and component tests (99 tests, 100% offline)
 npm test
 
 # 4. Run production standalone build
@@ -260,14 +261,14 @@ gcloud run deploy saafhawa \
 ## 7. Evidence Documentation Index
 
 For in-depth audits of each scoring criterion, see the dedicated documentation files:
-- 🛡️ [`SECURITY.md`](file:///SECURITY.md) — Threat models, CSP, 64KB streaming body caps, rate limiters, credential hygiene.
-- ♿ [`ACCESSIBILITY.md`](file:///ACCESSIBILITY.md) — WCAG 2.1 AA landmarks, fieldsets, live regions, text equivalents, keyboard tests.
-- 🧪 [`TESTING.md`](file:///TESTING.md) — Real command execution logs (89 Vitest tests, Playwright E2E, ESLint, TypeScript).
-- ⚡ [`EFFICIENCY.md`](file:///EFFICIENCY.md) — Measured bundle sizes, Next.js standalone containerization, TTL cache bounding.
-- 📐 [`docs/DECISIONS.md`](file:///docs/DECISIONS.md) — 5 architectural design decision records with trade-off analysis.
+- 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64KB body caps, rate limiters, credential hygiene.
+- ♿ [`ACCESSIBILITY.md`](ACCESSIBILITY.md) — Semantic landmarks, fieldsets, live regions, text equivalents, keyboard tests.
+- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (99 Vitest tests, Playwright E2E, ESLint, TypeScript).
+- ⚡ [`EFFICIENCY.md`](EFFICIENCY.md) — Measured build assets, Next.js standalone containerization, TTL cache bounding.
+- 📐 [`docs/DECISIONS.md`](docs/DECISIONS.md) — 5 architectural design decision records with trade-off analysis.
 
 ---
 
 ## 📜 License
 
-This project is licensed under the MIT License — see the [`LICENSE`](file:///LICENSE) file for details.
+This project is licensed under the MIT License — see the [`LICENSE`](LICENSE) file for details.

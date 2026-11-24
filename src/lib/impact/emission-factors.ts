@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * SAAFHHAWA EMISSION & GRID FACTORS
+ * SAAFHAWA EMISSION & GRID FACTORS
  * ============================================================================
  * Empirical vehicular, fuel combustion, and electricity grid emission factors.
  * Factors marked with [NEEDS VERIFICATION] are documented in README Assumptions.

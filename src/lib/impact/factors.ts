@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * SAAFHHAWA IMPACT FACTORS & SCIENTIFIC CONSTANTS
+ * SAAFHAWA IMPACT FACTORS & SCIENTIFIC CONSTANTS
  * ============================================================================
  * Every factor is grounded in published literature, standards, or official data.
  * Unconfirmed empirical consensus is annotated with: // [NEEDS VERIFICATION]

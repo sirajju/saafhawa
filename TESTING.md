@@ -7,10 +7,10 @@ This document records the testing architecture of **SaafHawa** and includes exac
 ### 1. Test Architecture Overview
 
 - **Unit & Integration Suite (Vitest):** Tests cover input validation, rate limiting, deterministic physical arithmetic, Gemini structured prompt building, fallback engines, security headers, request body limits, and component accessibility.
-  - Test files located in [`src/test/`](file:///src/test/).
+  - Test files located in [`src/test/`](src/test/).
   - Executed via `npm test` using JSDOM environment.
 - **End-to-End Smoke Suite (Playwright):** Validates the user onboarding flow through to plan generation against a Next.js server with mocked API endpoints.
-  - Test file located in [`e2e/smoke.spec.ts`](file:///e2e/smoke.spec.ts).
+  - Test file located in [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts).
   - Executed via `npm run test:e2e`.
 
 ---
@@ -77,19 +77,19 @@ Running 1 test using 1 worker
 
 | Test File | Description | Core Coverage |
 | :--- | :--- | :--- |
-| [`src/test/security.test.ts`](file:///src/test/security.test.ts) | Security suite | Request body limit (64 KB cap), Security headers, IP rate limit enforcement |
-| [`src/test/air-quality-cache-index.test.ts`](file:///src/test/air-quality-cache-index.test.ts) | Cache & Index unit tests | 15-min TTL, capacity eviction, `ind_cpcb` priority, null AQI handling |
-| [`src/test/air-quality-client.test.ts`](file:///src/test/air-quality-client.test.ts) | Google API client | Timeout handling, explicit 24h forecast period, quota/network error mapping |
-| [`src/test/air-quality-service.test.ts`](file:///src/test/air-quality-service.test.ts) | Air quality service | Graceful forecast failure recovery, zero-key Delhi sample fallback, geocoding |
-| [`src/test/air-quality-route.test.ts`](file:///src/test/air-quality-route.test.ts) | Air quality route | GET /api/air-quality parameter validation, headers, and rate limits |
-| [`src/test/impact-catalogue.test.ts`](file:///src/test/impact-catalogue.test.ts) | Catalogue & Routine arithmetic | 20 actions catalogue, N95 fitted efficiency, outdoor exercise diurnal shift |
-| [`src/test/impact-indoor-swaps.test.ts`](file:///src/test/impact-indoor-swaps.test.ts) | Indoor & Swaps arithmetic | HEPA bedroom reduction, kitchen exhaust, incense elimination, metro/cookstove swaps |
-| [`src/test/impact-edge-cases.test.ts`](file:///src/test/impact-edge-cases.test.ts) | Edge case calculations | Households with no car, zero/clean ambient air (PM2.5=5), occupant scaling |
-| [`src/test/impact-corrections.test.ts`](file:///src/test/impact-corrections.test.ts) | Impact correctness & deduplication | Overlap sequential discounting, baseline dose capping, missing/zero PM2.5, WFH exposure agreement |
-| [`src/test/plan-validation.test.ts`](file:///src/test/plan-validation.test.ts) | Plan request & prompt | Zod validation with upper bounds, place constraints, Gemini negative constraint prompt |
-| [`src/test/plan-generation.test.ts`](file:///src/test/plan-generation.test.ts) | Plan service & Route | Unknown ID rejection, calculator impact attachment, rule-based fallback, POST route |
-| [`src/test/chat-tools-exec.test.ts`](file:///src/test/chat-tools-exec.test.ts) | Chat tools | Tool execution handlers (`getAirQualityAndForecast`, `calculateActionImpact`, `listCatalogueActions`) |
-| [`src/test/chat-advisory-rate.test.ts`](file:///src/test/chat-advisory-rate.test.ts) | Rate limit & Advisory | Sliding window rate limiter, medical guidance policy, bilingual WhatsApp generator |
-| [`src/test/components-form.test.tsx`](file:///src/test/components-form.test.tsx) | Form accessibility | Semantic fieldsets, explicit input labels, keyboard navigation and submission |
-| [`src/test/components-cards.test.tsx`](file:///src/test/components-cards.test.tsx) | Component accessibility | `role="status"` sample notice, screen reader text equivalents, modal escape key |
-| [`e2e/smoke.spec.ts`](file:///e2e/smoke.spec.ts) | E2E smoke test | Onboarding completion to dashboard rendering with mocked APIs |
+| [`src/test/security.test.ts`](src/test/security.test.ts) | Security suite | Request body limit (64 KB cap), Security headers, IP rate limit enforcement |
+| [`src/test/air-quality-cache-index.test.ts`](src/test/air-quality-cache-index.test.ts) | Cache & Index unit tests | 15-min TTL, capacity eviction, `ind_cpcb` priority, null AQI handling |
+| [`src/test/air-quality-client.test.ts`](src/test/air-quality-client.test.ts) | Google API client | Timeout handling, explicit 24h forecast period, quota/network error mapping |
+| [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts) | Air quality service | Graceful forecast failure recovery, zero-key Delhi sample fallback, geocoding |
+| [`src/test/air-quality-route.test.ts`](src/test/air-quality-route.test.ts) | Air quality route | GET /api/air-quality parameter validation, headers, and rate limits |
+| [`src/test/impact-catalogue.test.ts`](src/test/impact-catalogue.test.ts) | Catalogue & Routine arithmetic | 21 actions catalogue, N95 fitted efficiency, outdoor exercise diurnal shift |
+| [`src/test/impact-indoor-swaps.test.ts`](src/test/impact-indoor-swaps.test.ts) | Indoor & Swaps arithmetic | HEPA bedroom reduction, kitchen exhaust, incense elimination, metro/cookstove swaps |
+| [`src/test/impact-edge-cases.test.ts`](src/test/impact-edge-cases.test.ts) | Edge case calculations | Households with no car, zero/clean ambient air (PM2.5=5), occupant scaling |
+| [`src/test/impact-corrections.test.ts`](src/test/impact-corrections.test.ts) | Impact correctness & deduplication | Overlap sequential discounting, baseline dose capping, missing/zero PM2.5, WFH exposure agreement |
+| [`src/test/plan-validation.test.ts`](src/test/plan-validation.test.ts) | Plan request & prompt | Zod validation with upper bounds, place constraints, Gemini negative constraint prompt |
+| [`src/test/plan-generation.test.ts`](src/test/plan-generation.test.ts) | Plan service & Route | Unknown ID rejection, calculator impact attachment, rule-based fallback, POST route |
+| [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts) | Chat tools | Tool execution handlers (`getAirQualityAndForecast`, `calculateActionImpact`, `listCatalogueActions`) |
+| [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts) | Rate limit & Advisory | Sliding window rate limiter, medical guidance policy, bilingual WhatsApp generator |
+| [`src/test/components-form.test.tsx`](src/test/components-form.test.tsx) | Form accessibility | Semantic fieldsets, explicit input labels, keyboard navigation and submission |
+| [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) | Component accessibility | `role="status"` sample notice, screen reader text equivalents, modal escape key |
+| [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) | E2E smoke test | Onboarding completion to dashboard rendering with mocked APIs |
