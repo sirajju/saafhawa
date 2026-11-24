@@ -27,6 +27,25 @@ describe('Plan Module - Zod Validation', () => {
   it('rejects profiles with adultsCount < 1', () => {
     expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, adultsCount: 0 })).toThrow();
   });
+
+  it('rejects absurd inputs exceeding upper limits on people, distance, and home area', () => {
+    // Absurd adults count
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, adultsCount: 31 })).toThrow(/Cannot exceed 30 adults/);
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, adultsCount: 9999 })).toThrow();
+
+    // Absurd children and elderly counts
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, childrenCount: 31 })).toThrow(/Cannot exceed 30 children/);
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, elderlyCount: 31 })).toThrow(/Cannot exceed 30 seniors/);
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, commutersCount: 31 })).toThrow(/Cannot exceed 30 commuters/);
+
+    // Absurd commute distance
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, dailyCommuteDistanceKm: 301 })).toThrow(/cannot exceed 300 km/);
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, dailyCommuteDistanceKm: 50000 })).toThrow();
+
+    // Absurd home area
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, homeAreaSqFt: 25001 })).toThrow(/cannot exceed 25,000 sq ft/);
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, homeAreaSqFt: 40 })).toThrow(/at least 50 sq ft/);
+  });
 });
 
 describe('Plan Module - Prompt Builder', () => {

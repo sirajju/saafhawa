@@ -47,6 +47,7 @@ describe('Impact Module - Daily Routine Arithmetic', () => {
     elderlyCount: 0,
     primaryCommuteMode: 'petrol_car',
     dailyCommuteDistanceKm: 20,
+    commutersCount: 1,
     hasCarpoolOption: true,
     canWorkFromHome: true,
     dailyOutdoorHoursPerPerson: 2.0,

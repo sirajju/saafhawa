@@ -12,6 +12,7 @@ describe('Impact Module - Edge Cases', () => {
       elderlyCount: 0,
       primaryCommuteMode: 'public_transit',
       dailyCommuteDistanceKm: 10,
+      commutersCount: 1,
       hasCarpoolOption: false,
       canWorkFromHome: false,
       dailyOutdoorHoursPerPerson: 1.0,
@@ -51,6 +52,7 @@ describe('Impact Module - Edge Cases', () => {
       elderlyCount: 0,
       primaryCommuteMode: 'petrol_car',
       dailyCommuteDistanceKm: 25,
+      commutersCount: 1,
       hasCarpoolOption: true,
       canWorkFromHome: true,
       dailyOutdoorHoursPerPerson: 2.0,
@@ -78,9 +80,12 @@ describe('Impact Module - Edge Cases', () => {
     expect(metro.emissionReduction.co2SavedGrams).toBeGreaterThan(0);
     expect(metro.emissionReduction.pm25SavedGrams).toBeGreaterThan(0);
 
-    expect(isNaN(summary.totalPm25InhaledDoseAvoidedUg)).toBe(false);
-    expect(isNaN(summary.totalPm25EmissionsSavedGrams)).toBe(false);
-    expect(isNaN(summary.totalCo2EmissionsSavedGrams)).toBe(false);
+    expect(summary.totalPm25InhaledDoseAvoidedUg).not.toBeNull();
+    expect(isNaN(summary.totalPm25InhaledDoseAvoidedUg!)).toBe(false);
+    expect(summary.totalPm25EmissionsSavedGrams).not.toBeNull();
+    expect(isNaN(summary.totalPm25EmissionsSavedGrams!)).toBe(false);
+    expect(summary.totalCo2EmissionsSavedGrams).not.toBeNull();
+    expect(isNaN(summary.totalCo2EmissionsSavedGrams!)).toBe(false);
   });
 
   it('scales exposure avoided with household occupants', () => {
@@ -92,6 +97,7 @@ describe('Impact Module - Edge Cases', () => {
       elderlyCount: 0,
       primaryCommuteMode: 'none',
       dailyCommuteDistanceKm: 0,
+      commutersCount: 0,
       hasCarpoolOption: false,
       canWorkFromHome: false,
       dailyOutdoorHoursPerPerson: 2.0,
@@ -117,8 +123,8 @@ describe('Impact Module - Edge Cases', () => {
     const smallSummary = calculateHouseholdImpact(smallProfile, airQuality);
     const largeSummary = calculateHouseholdImpact(largeProfile, airQuality);
 
-    expect(largeSummary.totalPm25InhaledDoseAvoidedUg).toBeGreaterThan(
-      smallSummary.totalPm25InhaledDoseAvoidedUg
+    expect(largeSummary.totalPm25InhaledDoseAvoidedUg!).toBeGreaterThan(
+      smallSummary.totalPm25InhaledDoseAvoidedUg!
     );
   });
 
@@ -129,6 +135,7 @@ describe('Impact Module - Edge Cases', () => {
       elderlyCount: 0,
       primaryCommuteMode: 'diesel_car',
       dailyCommuteDistanceKm: 40,
+      commutersCount: 2,
       hasCarpoolOption: true,
       canWorkFromHome: true,
       dailyOutdoorHoursPerPerson: 2.0,
@@ -150,9 +157,9 @@ describe('Impact Module - Edge Cases', () => {
     expect(summary.topActionsByEmissions.length).toBe(3);
 
     expect(
-      summary.topActionsByExposure[0].exposureReduction.pm25InhaledDoseAvoidedUg
+      summary.topActionsByExposure[0].exposureReduction.pm25InhaledDoseAvoidedUg!
     ).toBeGreaterThanOrEqual(
-      summary.topActionsByExposure[1].exposureReduction.pm25InhaledDoseAvoidedUg
+      summary.topActionsByExposure[1].exposureReduction.pm25InhaledDoseAvoidedUg!
     );
 
     expect(

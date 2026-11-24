@@ -46,6 +46,7 @@ export const MOCK_PROFILE: HouseholdProfile = {
   adultsCount: 2,
   childrenCount: 1,
   elderlyCount: 1,
+  commutersCount: 1,
   primaryCommuteMode: 'petrol_car',
   dailyCommuteDistanceKm: 20,
   cookingFuel: 'lpg',

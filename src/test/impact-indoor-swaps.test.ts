@@ -10,6 +10,7 @@ describe('Impact Module - Indoor Air Quality Arithmetic', () => {
     adultsCount: 2,
     childrenCount: 1,
     elderlyCount: 1,
+    commutersCount: 1,
     primaryCommuteMode: 'petrol_car',
     dailyCommuteDistanceKm: 15,
     hasCarpoolOption: false,
@@ -17,9 +18,9 @@ describe('Impact Module - Indoor Air Quality Arithmetic', () => {
     dailyOutdoorHoursPerPerson: 1.0,
     doesOutdoorExercise: false,
     exerciseHoursPerDay: 0,
-    homeAreaSqFt: 1200,
-    hasAirPurifier: false,
-    hasKitchenChimneyOrExhaust: false,
+    homeAreaSqFt: 1000,
+    hasAirPurifier: true,
+    hasKitchenChimneyOrExhaust: true,
     usesIncenseOrMosquitoCoils: true,
     cookingFuel: 'lpg',
     heatingFuel: 'none',
@@ -53,7 +54,7 @@ describe('Impact Module - Indoor Air Quality Arithmetic', () => {
     expect(result.applicable).toBe(true);
     expect(result.exposureReduction.pm25ConcentrationReductionUgM3).toBe(180.0);
     expect(result.emissionReduction.pm25SavedGrams).toBe(0.07);
-    expect(result.emissionReduction.co2SavedGrams).toBe(30.0);
+    expect(result.emissionReduction.co2SavedGrams).toBe(4.4);
   });
 
   it('marks incense action not applicable when household does not use them', () => {
@@ -73,6 +74,7 @@ describe('Impact Module - Sustainable Swaps Arithmetic', () => {
       adultsCount: 2,
       childrenCount: 0,
       elderlyCount: 0,
+      commutersCount: 1,
       primaryCommuteMode: 'petrol_car',
       dailyCommuteDistanceKm: 30,
       hasCarpoolOption: true,
@@ -94,7 +96,7 @@ describe('Impact Module - Sustainable Swaps Arithmetic', () => {
 
     expect(result.applicable).toBe(true);
     expect(result.emissionReduction.co2SavedGrams).toBe(3960.0);
-    expect(result.emissionReduction.pm25SavedGrams).toBe(1.32);
+    expect(result.emissionReduction.pm25SavedGrams).toBe(1.02);
     expect(result.exposureReduction.pm25InhaledDoseAvoidedUg).toBeGreaterThan(0);
   });
 
@@ -104,6 +106,7 @@ describe('Impact Module - Sustainable Swaps Arithmetic', () => {
       adultsCount: 3,
       childrenCount: 1,
       elderlyCount: 0,
+      commutersCount: 0,
       primaryCommuteMode: 'none',
       dailyCommuteDistanceKm: 0,
       hasCarpoolOption: false,
@@ -137,6 +140,7 @@ describe('Impact Module - Sustainable Swaps Arithmetic', () => {
       adultsCount: 2,
       childrenCount: 2,
       elderlyCount: 0,
+      commutersCount: 0,
       primaryCommuteMode: 'walking_cycling',
       dailyCommuteDistanceKm: 0,
       hasCarpoolOption: false,
@@ -158,7 +162,7 @@ describe('Impact Module - Sustainable Swaps Arithmetic', () => {
 
     expect(result.applicable).toBe(true);
     expect(result.emissionReduction.pm25SavedGrams).toBe(34.0);
-    expect(result.emissionReduction.co2SavedGrams).toBe(6000.0);
+    expect(result.emissionReduction.co2SavedGrams).toBe(4711.2);
     expect(result.exposureReduction.pm25ConcentrationReductionUgM3).toBe(350.0);
   });
 });

@@ -12,14 +12,15 @@ export const PlanRequestSchema = z.object({
     .trim()
     .min(2, 'Place name or pincode must be at least 2 characters')
     .max(120, 'Place name or pincode cannot exceed 120 characters'),
-  adultsCount: z.number().int().min(1, 'At least 1 adult is required').default(2),
-  childrenCount: z.number().int().min(0).default(0),
-  elderlyCount: z.number().int().min(0).default(0),
+  adultsCount: z.number().int().min(1, 'At least 1 adult is required').max(30, 'Cannot exceed 30 adults').default(2),
+  childrenCount: z.number().int().min(0).max(30, 'Cannot exceed 30 children').default(0),
+  elderlyCount: z.number().int().min(0).max(30, 'Cannot exceed 30 seniors').default(0),
+  commutersCount: z.number().int().min(0).max(30, 'Cannot exceed 30 commuters').default(1),
   hasAsthmaOrRespiratoryCondition: z.boolean().default(false),
   primaryCommuteMode: z
     .enum(['petrol_car', 'diesel_car', 'two_wheeler', 'public_transit', 'walking_cycling', 'none'])
     .default('petrol_car'),
-  dailyCommuteDistanceKm: z.number().min(0).default(20),
+  dailyCommuteDistanceKm: z.number().min(0).max(300, 'Daily commute distance cannot exceed 300 km').default(20),
   cookingFuel: z.enum(['biomass', 'lpg', 'induction', 'piped_gas']).default('lpg'),
   heatingFuel: z.enum(['biomass', 'kerosene', 'electric', 'none']).default('none'),
   hasAirPurifier: z.boolean().default(false),
@@ -30,7 +31,7 @@ export const PlanRequestSchema = z.object({
   dailyOutdoorHoursPerPerson: z.number().min(0).max(24).default(1.5),
   doesOutdoorExercise: z.boolean().default(false),
   exerciseHoursPerDay: z.number().min(0).max(12).default(1),
-  homeAreaSqFt: z.number().min(100).default(1000),
+  homeAreaSqFt: z.number().min(50, 'Home area must be at least 50 sq ft').max(25000, 'Home area cannot exceed 25,000 sq ft').default(1000),
   canWorkFromHome: z.boolean().default(true),
   hasCarpoolOption: z.boolean().default(true),
   budget: z.enum(['zero_cost', 'low', 'moderate', 'flexible']).default('low'),
@@ -74,7 +75,8 @@ export interface PlannedAction {
 
 export interface PlanSummary {
   totalActionsCount: number;
-  totalPm25InhaledDoseAvoidedUg: number;
+  totalPm25InhaledDoseAvoidedUg: number | null;
+  isExposureUnknown?: boolean;
   totalPm25EmissionsSavedGrams: number;
   totalCo2EmissionsSavedGrams: number;
   totalCo2EmissionsSavedKg: number;

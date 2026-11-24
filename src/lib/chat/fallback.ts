@@ -26,14 +26,15 @@ export async function generateFallbackChatResponse(
   const query = request.message.toLowerCase();
   const aqi = report?.current.aqi ?? 250;
   const category = report?.current.category ?? 'Unhealthy';
-  const pm25 = report?.current.pm25?.value ?? 150;
+  const pm25 = report?.current.pm25?.value;
+  const pm25Text = typeof pm25 === 'number' ? `PM2.5: ${pm25} µg/m³` : 'PM2.5: unavailable';
   const hasAsthma = request.householdProfile?.hasAsthmaOrRespiratoryCondition ?? false;
 
   let reply = '';
 
   if (query.includes('play') || query.includes('outside') || query.includes('run') || query.includes('exercise') || query.includes('walk')) {
-    if (aqi > 250 || pm25 > 120) {
-      reply = `Right now in **${report?.location.name || place}**, the air quality is **${category}** with an AQI of **${aqi}** (PM2.5: ${pm25} µg/m³).\n\n` +
+    if (aqi > 250 || (typeof pm25 === 'number' && pm25 > 120)) {
+      reply = `Right now in **${report?.location.name || place}**, the air quality is **${category}** with an AQI of **${aqi}** (${pm25Text}).\n\n` +
         `🚫 **Recommendation:** Strenuous outdoor play or exercise is **not safe** today, especially for children${hasAsthma ? ' and anyone with asthma' : ''}. Cold winter temperature inversions concentrate toxic particulates near the ground.\n\n` +
         `💡 **What to do instead:** Keep activities indoors in a sealed room. If stepping out is unavoidable, wear a fitted N95 mask and aim for early afternoon (1 PM - 3 PM) when sunlight slightly disperses surface pollution.`;
     } else {

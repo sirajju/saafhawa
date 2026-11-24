@@ -58,6 +58,16 @@ describe('Chat Function-Calling Tools', () => {
       expect(result.exposureSummaryText).toBeTruthy();
     });
 
+    it('returns unknown exposure reduction when PM2.5 is null', () => {
+      const result = executeCalculateImpactTool(
+        { actionId: 'wear_n95_mask_outside' },
+        MOCK_PROFILE,
+        null
+      );
+      expect(result.pm25InhaledDoseAvoidedUg).toBeNull();
+      expect(result.exposureSummaryText).toContain('Impact unknown');
+    });
+
     it('throws a helpful descriptive error for unknown action IDs', () => {
       expect(() =>
         executeCalculateImpactTool({ actionId: 'invalid_action_xyz' }, MOCK_PROFILE, 250)

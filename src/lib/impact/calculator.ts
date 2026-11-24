@@ -10,8 +10,10 @@ import { extractAirQualityParameters } from './air-volume';
 import { evaluateRoutineImpact } from './routine-impact';
 import { evaluateIndoorImpact } from './indoor-impact';
 import { evaluateSwapsImpact } from './swaps-impact';
+import { calculateDeduplicatedTotals } from './deduplication';
 
 export { calculateInhaledAirVolumeM3, extractAirQualityParameters } from './air-volume';
+export { calculateBaselineDailyHouseholdDoseUg, calculateDeduplicatedTotals } from './deduplication';
 
 /**
  * Evaluates the impact of a specific action for a household.
@@ -37,6 +39,8 @@ export function calculateActionImpact(
       methodologyNotes: undefined,
     };
 
+  const isUnknown = evalResult.isUnknown || evalResult.doseAvoidedUg === null;
+
   return {
     actionId: action.id,
     title: action.title,
@@ -45,9 +49,16 @@ export function calculateActionImpact(
     applicable: evalResult.applicable,
     reasonIfNotApplicable: evalResult.reasonIfNotApplicable,
     exposureReduction: {
-      pm25ConcentrationReductionUgM3: Number(Math.max(0, evalResult.concentrationReduction).toFixed(1)),
-      pm25InhaledDoseAvoidedUg: Number(Math.max(0, evalResult.doseAvoidedUg).toFixed(1)),
-      percentageDrop: Number(Math.min(100, Math.max(0, evalResult.percentageDrop)).toFixed(1)),
+      pm25ConcentrationReductionUgM3: isUnknown || evalResult.concentrationReduction === null
+        ? null
+        : Number(Math.max(0, evalResult.concentrationReduction).toFixed(1)),
+      pm25InhaledDoseAvoidedUg: isUnknown || evalResult.doseAvoidedUg === null
+        ? null
+        : Number(Math.max(0, evalResult.doseAvoidedUg).toFixed(1)),
+      percentageDrop: isUnknown || evalResult.percentageDrop === null
+        ? null
+        : Number(Math.min(100, Math.max(0, evalResult.percentageDrop)).toFixed(1)),
+      isUnknown,
     },
     emissionReduction: {
       pm25SavedGrams: Number(Math.max(0, evalResult.pm25SavedGrams).toFixed(3)),
@@ -59,6 +70,7 @@ export function calculateActionImpact(
 
 /**
  * Main calculation entrypoint: evaluates all catalogued actions for a household profile and air quality context.
+ * Deduplicates overlapping actions and caps household total at actual daily inhaled dose.
  */
 export function calculateHouseholdImpact(
   rawProfile: Partial<HouseholdProfile>,
@@ -66,6 +78,7 @@ export function calculateHouseholdImpact(
   customCatalogue: ActionDefinition[] = ACTION_CATALOGUE
 ): HouseholdImpactSummary {
   const profile = HouseholdProfileSchema.parse(rawProfile);
+  const { currentPm25 } = extractAirQualityParameters(airQuality);
 
   const actionResults = customCatalogue.map((action) =>
     calculateActionImpact(action, profile, airQuality)
@@ -73,38 +86,16 @@ export function calculateHouseholdImpact(
 
   const applicableActions = actionResults.filter((a) => a.applicable);
 
-  const totalPm25InhaledDoseAvoidedUg = Number(
-    applicableActions
-      .reduce((acc, curr) => acc + curr.exposureReduction.pm25InhaledDoseAvoidedUg, 0)
-      .toFixed(1)
-  );
-
-  const totalPm25EmissionsSavedGrams = Number(
-    applicableActions
-      .reduce((acc, curr) => acc + curr.emissionReduction.pm25SavedGrams, 0)
-      .toFixed(3)
-  );
-
-  const totalCo2EmissionsSavedGrams = Number(
-    applicableActions
-      .reduce((acc, curr) => acc + curr.emissionReduction.co2SavedGrams, 0)
-      .toFixed(1)
-  );
+  const deduped = calculateDeduplicatedTotals(applicableActions, profile, currentPm25);
 
   const totalCo2EmissionsSavedKg = Number(
-    (totalCo2EmissionsSavedGrams / 1000).toFixed(2)
+    (deduped.totalCo2EmissionsSavedGrams / 1000).toFixed(2)
   );
 
-  // Top actions ranked by inhaled dose avoided
   const topActionsByExposure = [...applicableActions]
-    .sort(
-      (a, b) =>
-        b.exposureReduction.pm25InhaledDoseAvoidedUg -
-        a.exposureReduction.pm25InhaledDoseAvoidedUg
-    )
+    .sort((a, b) => (b.exposureReduction.pm25InhaledDoseAvoidedUg || 0) - (a.exposureReduction.pm25InhaledDoseAvoidedUg || 0))
     .slice(0, 3);
 
-  // Top actions ranked by emissions saved (PM2.5 primary, CO2 secondary)
   const topActionsByEmissions = [...applicableActions]
     .sort((a, b) => {
       if (b.emissionReduction.pm25SavedGrams !== a.emissionReduction.pm25SavedGrams) {
@@ -116,9 +107,10 @@ export function calculateHouseholdImpact(
 
   return {
     totalApplicableActions: applicableActions.length,
-    totalPm25InhaledDoseAvoidedUg,
-    totalPm25EmissionsSavedGrams,
-    totalCo2EmissionsSavedGrams,
+    totalPm25InhaledDoseAvoidedUg: deduped.totalPm25InhaledDoseAvoidedUg,
+    isExposureUnknown: deduped.isExposureUnknown,
+    totalPm25EmissionsSavedGrams: deduped.totalPm25EmissionsSavedGrams,
+    totalCo2EmissionsSavedGrams: deduped.totalCo2EmissionsSavedGrams,
     totalCo2EmissionsSavedKg,
     topActionsByExposure,
     topActionsByEmissions,

@@ -12,7 +12,7 @@ export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmen
       <legend className="px-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
         Indoor Air & Cooking Setup
       </legend>
-      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <label
             htmlFor="cooking-fuel"
@@ -35,6 +35,24 @@ export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmen
 
         <div>
           <label
+            htmlFor="home-area"
+            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
+          >
+            Home Area (sq ft)
+          </label>
+          <input
+            id="home-area"
+            type="number"
+            min="50"
+            max="25000"
+            value={formData.homeAreaSqFt}
+            onChange={(e) => onChange('homeAreaSqFt', Math.max(50, parseInt(e.target.value) || 50))}
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          />
+        </div>
+
+        <div>
+          <label
             htmlFor="budget-preference"
             className="block text-xs font-medium text-slate-700 dark:text-slate-300"
           >
@@ -46,9 +64,9 @@ export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmen
             onChange={(e) => onChange('budget', e.target.value)}
             className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           >
-            <option value="zero_cost">Zero Cost Only (DIY & Behavioural routines)</option>
-            <option value="low">Low Budget (N95 masks, DIY box fan filter, weatherseals)</option>
-            <option value="moderate">Moderate (Ready for air purifiers or induction swaps)</option>
+            <option value="zero_cost">Zero Cost Only</option>
+            <option value="low">Low Budget (N95, DIY box fan)</option>
+            <option value="moderate">Moderate (Air purifiers / induction)</option>
             <option value="flexible">Flexible / Any budget</option>
           </select>
         </div>
@@ -63,6 +81,16 @@ export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmen
             className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
           />
           <span>Household already owns a HEPA air purifier</span>
+        </label>
+
+        <label className="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.hasKitchenChimneyOrExhaust}
+            onChange={(e) => onChange('hasKitchenChimneyOrExhaust', e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+          />
+          <span>Kitchen has exhaust fan or chimney installed</span>
         </label>
 
         <label className="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">

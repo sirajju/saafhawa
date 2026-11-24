@@ -12,7 +12,7 @@ export function CommuteFields({ formData, onChange }: CommuteFieldsProps) {
       <legend className="px-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
         Daily Commute & Travel
       </legend>
-      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <label
             htmlFor="commute-mode"
@@ -46,9 +46,27 @@ export function CommuteFields({ formData, onChange }: CommuteFieldsProps) {
             id="commute-distance"
             type="number"
             min="0"
-            max="150"
+            max="300"
             value={formData.dailyCommuteDistanceKm}
             onChange={(e) => onChange('dailyCommuteDistanceKm', Math.max(0, parseFloat(e.target.value) || 0))}
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="commuters-count"
+            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
+          >
+            Number of Commuters
+          </label>
+          <input
+            id="commuters-count"
+            type="number"
+            min="0"
+            max="15"
+            value={formData.commutersCount ?? 1}
+            onChange={(e) => onChange('commutersCount', Math.max(0, parseInt(e.target.value) || 0))}
             className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
         </div>

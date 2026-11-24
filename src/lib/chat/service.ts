@@ -97,17 +97,24 @@ export async function handleChatQuery(
             typeof fc.args?.actionId === 'string' && fc.args.actionId.trim()
               ? fc.args.actionId.trim()
               : 'wear_n95_mask_outside';
-          const defaultPm25 = 150;
+          const targetPlace = request.place || request.householdProfile?.place || '110001';
+          let livePm25: number | null = null;
+          try {
+            const airReport = await fetcher(targetPlace);
+            livePm25 = airReport.current.pm25?.value ?? null;
+          } catch {
+            livePm25 = null;
+          }
           const impactResult = executeCalculateImpactTool(
             { actionId },
             request.householdProfile || {},
-            defaultPm25
+            livePm25
           );
           toolResult = impactResult;
           toolsExecuted.push({
             toolName: fc.name,
             args: fc.args as Record<string, unknown>,
-            resultSummary: `Calculated impact for ${impactResult.actionTitle}: ${impactResult.pm25InhaledDoseAvoidedUg} µg dose avoided`,
+            resultSummary: `Calculated impact for ${impactResult.actionTitle} using live PM2.5 (${livePm25 ?? 'unknown'} µg/m³): ${impactResult.pm25InhaledDoseAvoidedUg ?? 'unknown'} µg dose avoided`,
           });
         } else if (fc.name === 'listCatalogueActions') {
           const categoryArg =

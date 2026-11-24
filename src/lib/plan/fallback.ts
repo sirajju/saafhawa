@@ -13,7 +13,7 @@ export function getRuleBasedFallbackActions(
   airQuality: AirQualityReport
 ): GeminiSelectedAction[] {
   const airQualityContext = {
-    currentPm25: airQuality.current.pm25?.value ?? 100,
+    currentPm25: airQuality.current.pm25?.value ?? null,
     hourlyForecast: airQuality.hourlyForecast,
   };
 
@@ -69,7 +69,7 @@ export function getRuleBasedFallbackActions(
       score += 45;
     }
 
-    score += Math.min(20, item.impact.exposureReduction.pm25InhaledDoseAvoidedUg / 50);
+    score += Math.min(20, (item.impact.exposureReduction.pm25InhaledDoseAvoidedUg || 0) / 50);
 
     return { ...item, score };
   });

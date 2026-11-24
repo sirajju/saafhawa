@@ -83,7 +83,11 @@ export function PlanCard({ action }: PlanCardProps) {
                 <span>Personal Exposure Avoided</span>
               </span>
               <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                {dose > 0 ? `${dose} µg dose avoided` : 'Shields from peak spikes'}
+                {action.exposureReduction.isUnknown || dose === null
+                  ? 'Impact unknown'
+                  : dose > 0
+                  ? `${dose} µg dose avoided`
+                  : '0 µg (clean air)'}
               </span>
             </div>
             <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">

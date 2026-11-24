@@ -1,8 +1,6 @@
 import { z } from 'zod';
 
-// ============================================================================
 // Custom Domain Errors
-// ============================================================================
 
 export class AirQualityError extends Error {
   public readonly statusCode: number;
@@ -131,9 +129,7 @@ export const GoogleForecastResponseSchema = z.object({
 
 export type GoogleForecastResponse = z.infer<typeof GoogleForecastResponseSchema>;
 
-// ============================================================================
 // Clean Output Application Schemas
-// ============================================================================
 
 export const PollutantMeasurementSchema = z.object({
   value: z.number(),

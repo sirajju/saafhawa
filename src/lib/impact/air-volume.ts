@@ -31,13 +31,22 @@ export function calculateInhaledAirVolumeM3(
 
 /**
  * Extracts ambient diurnal parameters (current, peak, cleanest) from air quality context.
+ * Returns null values when ambient PM2.5 is missing.
  */
 export function extractAirQualityParameters(airQuality: AirQualityContext): {
-  currentPm25: number;
-  peakPm25: number;
-  cleanestPm25: number;
+  currentPm25: number | null;
+  peakPm25: number | null;
+  cleanestPm25: number | null;
 } {
-  const current = Math.max(0, airQuality.currentPm25 || 0);
+  if (airQuality.currentPm25 === null || airQuality.currentPm25 === undefined || isNaN(airQuality.currentPm25)) {
+    return {
+      currentPm25: null,
+      peakPm25: null,
+      cleanestPm25: null,
+    };
+  }
+
+  const current = Math.max(0, airQuality.currentPm25);
 
   if (airQuality.hourlyForecast && airQuality.hourlyForecast.length > 0) {
     const validForecastValues = airQuality.hourlyForecast

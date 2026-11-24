@@ -1,4 +1,3 @@
-import { FunctionDeclaration, Type } from '@google/genai';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { ACTION_CATALOGUE } from '../impact/catalogue';
@@ -6,72 +5,7 @@ import { calculateActionImpact } from '../impact/calculator';
 import { HouseholdProfile, HouseholdProfileSchema } from '../impact/types';
 import { getEmissionComparisonText, getExposureComparisonText } from '../impact/comparisons';
 
-// ============================================================================
-// Tool Declarations for Google Gen AI SDK
-// ============================================================================
-
-export const AIR_QUALITY_TOOL_DECLARATION: FunctionDeclaration = {
-  name: 'getAirQualityAndForecast',
-  description:
-    'Retrieves the real-time Air Quality Index (AQI), PM2.5, PM10, dominant pollutant, and 24-hour hourly forecast for a place name or pincode. Always call this when the user asks about current conditions, specific hours (e.g. 5 PM), or upcoming forecast.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      place: {
-        type: Type.STRING,
-        description: 'The location name, landmark, city, or pincode (e.g. "Connaught Place", "110001", "Lahore").',
-      },
-    },
-    required: ['place'],
-  },
-};
-
-export const CALCULATE_IMPACT_TOOL_DECLARATION: FunctionDeclaration = {
-  name: 'calculateActionImpact',
-  description:
-    'Runs the scientific arithmetic engine to calculate exact PM2.5 inhaled dose avoided (in µg) and emissions saved (PM2.5 and CO2 in grams) for a specific action from the catalogue.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      actionId: {
-        type: Type.STRING,
-        description:
-          'The ID of the action from the catalogue (e.g. "wear_n95_mask_outside", "run_hepa_air_purifier_bedroom", "swap_car_for_metro", "eliminate_incense_and_mosquito_coils", "diy_corsi_rosenthal_box").',
-      },
-    },
-    required: ['actionId'],
-  },
-};
-
-export const LIST_ACTIONS_TOOL_DECLARATION: FunctionDeclaration = {
-  name: 'listCatalogueActions',
-  description:
-    'Lists the verified clean-air actions available in the SaafHawa catalogue grouped by daily routine, indoor air, and sustainable swaps.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      category: {
-        type: Type.STRING,
-        description:
-          'Optional category filter: "daily_routine", "indoor_air", or "sustainable_swaps".',
-      },
-    },
-  },
-};
-
-export const CHAT_TOOLS = [
-  {
-    functionDeclarations: [
-      AIR_QUALITY_TOOL_DECLARATION,
-      CALCULATE_IMPACT_TOOL_DECLARATION,
-      LIST_ACTIONS_TOOL_DECLARATION,
-    ],
-  },
-];
-
-// ============================================================================
-// Tool Execution Handlers
-// ============================================================================
+export * from './tool-declarations';
 
 export interface AirQualityToolResult {
   locationName: string;
@@ -88,9 +22,6 @@ export interface AirQualityToolResult {
   }>;
 }
 
-/**
- * Handler for getAirQualityAndForecast tool.
- */
 export async function executeGetAirQualityTool(
   args: { place?: string },
   defaultPlace: string,
@@ -132,22 +63,19 @@ export interface ImpactToolResult {
   actionTitle: string;
   applicable: boolean;
   reasonIfNotApplicable?: string;
-  pm25InhaledDoseAvoidedUg: number;
-  pm25ConcentrationReductionUgM3: number;
-  percentageDrop: number;
+  pm25InhaledDoseAvoidedUg: number | null;
+  pm25ConcentrationReductionUgM3: number | null;
+  percentageDrop: number | null;
   pm25SavedGrams: number;
   co2SavedGrams: number;
   exposureSummaryText: string;
   emissionSummaryText: string;
 }
 
-/**
- * Handler for calculateActionImpact tool.
- */
 export function executeCalculateImpactTool(
   args: { actionId?: string },
   profile: Partial<HouseholdProfile>,
-  currentPm25: number
+  currentPm25: number | null
 ): ImpactToolResult {
   const targetId = (args.actionId || '').trim();
   const actionDef = ACTION_CATALOGUE.find(
@@ -182,9 +110,6 @@ export function executeCalculateImpactTool(
   };
 }
 
-/**
- * Handler for listCatalogueActions tool.
- */
 export function executeListActionsTool(args: { category?: string }): Array<{
   id: string;
   title: string;

@@ -1,5 +1,7 @@
 import { ACTION_CATALOGUE, ActionDefinition } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
+import { calculateDeduplicatedTotals } from '../impact/deduplication';
+import { ActionImpactResult } from '../impact/types';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { buildPlanPrompt } from './prompt-builder';
@@ -100,13 +102,15 @@ export async function generateHouseholdPlan(
   }
 
   const airQualityContext = {
-    currentPm25: airQuality.current.pm25?.value ?? 100,
+    currentPm25: airQuality.current.pm25?.value ?? null,
     hourlyForecast: airQuality.hourlyForecast,
   };
 
+  const actionImpacts: ActionImpactResult[] = [];
   const plannedActions: PlannedAction[] = selectedActions.map((selected) => {
     const actionDef = catalogueMap.get(selected.actionId)!;
     const impact = calculateActionImpact(actionDef, profile, airQualityContext);
+    actionImpacts.push(impact);
 
     return {
       actionId: actionDef.id,
@@ -121,34 +125,15 @@ export async function generateHouseholdPlan(
     };
   });
 
-  const totalPm25InhaledDoseAvoidedUg = Number(
-    plannedActions
-      .reduce((sum, a) => sum + a.exposureReduction.pm25InhaledDoseAvoidedUg, 0)
-      .toFixed(1)
-  );
-
-  const totalPm25EmissionsSavedGrams = Number(
-    plannedActions
-      .reduce((sum, a) => sum + a.emissionReduction.pm25SavedGrams, 0)
-      .toFixed(3)
-  );
-
-  const totalCo2EmissionsSavedGrams = Number(
-    plannedActions
-      .reduce((sum, a) => sum + a.emissionReduction.co2SavedGrams, 0)
-      .toFixed(1)
-  );
-
-  const totalCo2EmissionsSavedKg = Number(
-    (totalCo2EmissionsSavedGrams / 1000).toFixed(2)
-  );
+  const deduped = calculateDeduplicatedTotals(actionImpacts, profile, airQualityContext.currentPm25);
 
   const summary: PlanSummary = {
     totalActionsCount: plannedActions.length,
-    totalPm25InhaledDoseAvoidedUg,
-    totalPm25EmissionsSavedGrams,
-    totalCo2EmissionsSavedGrams,
-    totalCo2EmissionsSavedKg,
+    totalPm25InhaledDoseAvoidedUg: deduped.totalPm25InhaledDoseAvoidedUg,
+    isExposureUnknown: deduped.isExposureUnknown,
+    totalPm25EmissionsSavedGrams: deduped.totalPm25EmissionsSavedGrams,
+    totalCo2EmissionsSavedGrams: deduped.totalCo2EmissionsSavedGrams,
+    totalCo2EmissionsSavedKg: Number((deduped.totalCo2EmissionsSavedGrams / 1000).toFixed(2)),
   };
 
   return {

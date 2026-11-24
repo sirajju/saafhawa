@@ -18,6 +18,7 @@ const DEFAULT_PROFILE: PlanRequest = {
   adultsCount: 2,
   childrenCount: 0,
   elderlyCount: 0,
+  commutersCount: 1,
   hasAsthmaOrRespiratoryCondition: false,
   primaryCommuteMode: 'petrol_car',
   dailyCommuteDistanceKm: 20,

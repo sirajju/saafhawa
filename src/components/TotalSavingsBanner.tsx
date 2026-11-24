@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlanSummary } from '@/lib/plan/types';
+import { EQUIVALENCY_FACTORS, VEHICULAR_EMISSION_FACTORS } from '@/lib/impact/factors';
 
 interface TotalSavingsBannerProps {
   summary: PlanSummary;
@@ -11,15 +12,16 @@ export function TotalSavingsBanner({
   summary,
   generationMethod = 'gemini',
 }: TotalSavingsBannerProps) {
-  // Plain language comparisons for total plan savings
   const dose = summary.totalPm25InhaledDoseAvoidedUg;
+  const isDoseUnknown = summary.isExposureUnknown || dose === null;
   const co2Kg = summary.totalCo2EmissionsSavedKg;
   const pm25Grams = summary.totalPm25EmissionsSavedGrams;
 
-  // Cigarette equivalence: 1 cigarette delivers roughly 150-200 µg of inhaled particulate dose
-  const cigaretteEquiv = Math.max(1, Math.round(dose / 180));
-  // Car km equivalence: 1 km of driving emits ~150 g CO2
-  const carKmEquiv = Math.round((summary.totalCo2EmissionsSavedGrams || 0) / 150);
+  const cigaretteEquiv = !isDoseUnknown && dose > 0
+    ? Math.round(dose / EQUIVALENCY_FACTORS.CIGARETTE_INHALED_PM25_DOSE_UG)
+    : 0;
+
+  const carKmEquiv = Math.round((summary.totalCo2EmissionsSavedGrams || 0) / VEHICULAR_EMISSION_FACTORS.PETROL_CAR_CO2_G_PER_KM);
 
   return (
     <section
@@ -64,13 +66,23 @@ export function TotalSavingsBanner({
             </div>
             <div className="mt-2 flex items-baseline gap-1.5">
               <span className="text-3xl font-extrabold text-white sm:text-4xl">
-                {dose.toLocaleString()}
+                {isDoseUnknown ? 'Unknown' : dose.toLocaleString()}
               </span>
-              <span className="text-sm font-semibold text-emerald-200">µg PM₂.₅</span>
+              <span className="text-sm font-semibold text-emerald-200">
+                {isDoseUnknown ? '(missing PM2.5)' : 'µg PM₂.₅'}
+              </span>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-emerald-100/80">
-              Equivalent to avoiding the toxic smoke of{' '}
-              <strong className="text-white font-bold">~{cigaretteEquiv} cigarettes</strong> across your family today.
+              {isDoseUnknown ? (
+                'Local PM2.5 measurements are currently unavailable to calculate particulate dose.'
+              ) : dose > 0 ? (
+                <>
+                  Equivalent to avoiding the toxic smoke of{' '}
+                  <strong className="text-white font-bold">~{cigaretteEquiv} cigarettes</strong> across your family today.
+                </>
+              ) : (
+                'Zero particulate dose avoided under clean ambient baseline air.'
+              )}
             </p>
           </div>
 

@@ -15,7 +15,7 @@ This document records the testing architecture of **SaafHawa** and includes exac
 
 ---
 
-### 2. Measured Vitest Output (89 Tests)
+### 2. Measured Vitest Output (99 Tests)
 
 ```
 > saafhawa@0.1.0 test
@@ -23,22 +23,24 @@ This document records the testing architecture of **SaafHawa** and includes exac
 
  RUN  v5.1.1 C:/Users/USER/Desktop/Learn/SAAFHAWA
 
- ✓ src/test/impact-catalogue.test.ts (7 tests) 11ms
- ✓ src/test/impact-edge-cases.test.ts (4 tests) 14ms
- ✓ src/test/air-quality-client.test.ts (6 tests) 79ms
- ✓ src/test/air-quality-service-route.test.ts (8 tests) 49ms
- ✓ src/test/chat-tools-exec.test.ts (12 tests) 55ms
- ✓ src/test/plan-validation.test.ts (5 tests) 23ms
- ✓ src/test/security.test.ts (10 tests) 35ms
- ✓ src/test/chat-advisory-rate.test.ts (8 tests) 48ms
- ✓ src/test/plan-generation.test.ts (6 tests) 305ms
- ✓ src/test/components-cards.test.tsx (7 tests) 352ms
- ✓ src/test/components-form.test.tsx (3 tests) 550ms
- ✓ src/test/air-quality-cache-index.test.ts (6 tests) 5ms
- ✓ src/test/impact-indoor-swaps.test.ts (7 tests) 6ms
+ ✓ src/test/impact-corrections.test.ts (9 tests)
+ ✓ src/test/air-quality-service.test.ts (3 tests)
+ ✓ src/test/air-quality-route.test.ts (4 tests)
+ ✓ src/test/air-quality-client.test.ts (6 tests)
+ ✓ src/test/plan-validation.test.ts (6 tests)
+ ✓ src/test/chat-tools-exec.test.ts (13 tests)
+ ✓ src/test/chat-advisory-rate.test.ts (8 tests)
+ ✓ src/test/security.test.ts (10 tests)
+ ✓ src/test/components-cards.test.tsx (7 tests)
+ ✓ src/test/plan-generation.test.ts (6 tests)
+ ✓ src/test/components-form.test.tsx (3 tests)
+ ✓ src/test/impact-indoor-swaps.test.ts (7 tests)
+ ✓ src/test/impact-edge-cases.test.ts (4 tests)
+ ✓ src/test/air-quality-cache-index.test.ts (6 tests)
+ ✓ src/test/impact-catalogue.test.ts (7 tests)
 
- Test Files  13 passed (13)
-      Tests  89 passed (89)
+ Test Files  15 passed (15)
+      Tests  99 passed (99)
 ```
 
 ---
@@ -51,9 +53,9 @@ This document records the testing architecture of **SaafHawa** and includes exac
 
 Running 1 test using 1 worker
 
-  ok 1 [chromium] › e2e\smoke.spec.ts:99:3 › SaafHawa Onboarding & Plan Smoke Test › completes onboarding and renders the customized clean air action plan (956ms)
+  ok 1 [chromium] › e2e\smoke.spec.ts:99:3 › SaafHawa Onboarding & Plan Smoke Test › completes onboarding and renders the customized clean air action plan (522ms)
 
-  1 passed (3.4s)
+  1 passed (2.3s)
 ```
 
 ---
@@ -78,11 +80,13 @@ Running 1 test using 1 worker
 | [`src/test/security.test.ts`](file:///src/test/security.test.ts) | Security suite | Request body limit (64 KB cap), Security headers, IP rate limit enforcement |
 | [`src/test/air-quality-cache-index.test.ts`](file:///src/test/air-quality-cache-index.test.ts) | Cache & Index unit tests | 15-min TTL, capacity eviction, `ind_cpcb` priority, null AQI handling |
 | [`src/test/air-quality-client.test.ts`](file:///src/test/air-quality-client.test.ts) | Google API client | Timeout handling, explicit 24h forecast period, quota/network error mapping |
-| [`src/test/air-quality-service-route.test.ts`](file:///src/test/air-quality-service-route.test.ts) | Service & Route | Graceful forecast failure recovery, zero-key Delhi sample fallback, GET route |
+| [`src/test/air-quality-service.test.ts`](file:///src/test/air-quality-service.test.ts) | Air quality service | Graceful forecast failure recovery, zero-key Delhi sample fallback, geocoding |
+| [`src/test/air-quality-route.test.ts`](file:///src/test/air-quality-route.test.ts) | Air quality route | GET /api/air-quality parameter validation, headers, and rate limits |
 | [`src/test/impact-catalogue.test.ts`](file:///src/test/impact-catalogue.test.ts) | Catalogue & Routine arithmetic | 20 actions catalogue, N95 fitted efficiency, outdoor exercise diurnal shift |
 | [`src/test/impact-indoor-swaps.test.ts`](file:///src/test/impact-indoor-swaps.test.ts) | Indoor & Swaps arithmetic | HEPA bedroom reduction, kitchen exhaust, incense elimination, metro/cookstove swaps |
 | [`src/test/impact-edge-cases.test.ts`](file:///src/test/impact-edge-cases.test.ts) | Edge case calculations | Households with no car, zero/clean ambient air (PM2.5=5), occupant scaling |
-| [`src/test/plan-validation.test.ts`](file:///src/test/plan-validation.test.ts) | Plan request & prompt | Zod validation, place query constraints, Gemini prompt negative constraint structure |
+| [`src/test/impact-corrections.test.ts`](file:///src/test/impact-corrections.test.ts) | Impact correctness & deduplication | Overlap sequential discounting, baseline dose capping, missing/zero PM2.5, WFH exposure agreement |
+| [`src/test/plan-validation.test.ts`](file:///src/test/plan-validation.test.ts) | Plan request & prompt | Zod validation with upper bounds, place constraints, Gemini negative constraint prompt |
 | [`src/test/plan-generation.test.ts`](file:///src/test/plan-generation.test.ts) | Plan service & Route | Unknown ID rejection, calculator impact attachment, rule-based fallback, POST route |
 | [`src/test/chat-tools-exec.test.ts`](file:///src/test/chat-tools-exec.test.ts) | Chat tools | Tool execution handlers (`getAirQualityAndForecast`, `calculateActionImpact`, `listCatalogueActions`) |
 | [`src/test/chat-advisory-rate.test.ts`](file:///src/test/chat-advisory-rate.test.ts) | Rate limit & Advisory | Sliding window rate limiter, medical guidance policy, bilingual WhatsApp generator |

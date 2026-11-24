@@ -39,6 +39,7 @@ export const MOCK_PROFILE: PlanRequest = {
   hasAsthmaOrRespiratoryCondition: true,
   primaryCommuteMode: 'petrol_car',
   dailyCommuteDistanceKm: 25,
+  commutersCount: 1,
   cookingFuel: 'lpg',
   heatingFuel: 'none',
   hasAirPurifier: false,
