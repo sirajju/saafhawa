@@ -97,14 +97,14 @@ export default function HomePage() {
     fetchPlan(newProfile);
   };
 
-  const currentPlaceName = plan?.location.name || profile?.place || '110001';
+  const currentPlaceName = plan ? (plan.location.name || profile?.place || '') : '';
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', flexDirection: 'column' }}>
       <Navbar
         currentPlace={currentPlaceName}
-        onEditProfile={profile ? () => setIsEditingProfile(true) : undefined}
-        onRefresh={profile ? () => fetchPlan(profile) : undefined}
+        onEditProfile={plan ? () => setIsEditingProfile(true) : undefined}
+        onRefresh={plan && profile ? () => fetchPlan(profile) : undefined}
         isLoading={isLoading}
       />
 

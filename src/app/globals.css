@@ -298,6 +298,34 @@ header.app-header {
   box-shadow: var(--shadow);
 }
 
+.seg label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.seg label:hover {
+  color: var(--ink);
+}
+
+.seg label.active,
+.seg label:has(input:checked) {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+
 /* Cards & Layout */
 .page {
   display: grid;
@@ -746,7 +774,8 @@ header.app-header {
 /* Onboarding */
 .onb {
   max-width: 600px;
-  margin: 40px auto 120px;
+  margin: 40px auto 140px;
+  padding-bottom: 96px;
 }
 
 .steps {

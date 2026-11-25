@@ -36,13 +36,10 @@ export async function POST(request: NextRequest) {
     const parseResult = ChatRequestSchema.safeParse(rawBody);
 
     if (!parseResult.success) {
-      const fieldErrors = parseResult.error.flatten().fieldErrors;
-      const firstError = Object.values(fieldErrors).flat()[0] || 'Invalid request message';
-
       return NextResponse.json(
         {
           error: 'Validation Error',
-          message: firstError,
+          message: 'Please provide a valid question under 500 characters.',
         },
         { status: 400 }
       );

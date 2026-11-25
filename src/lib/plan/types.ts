@@ -68,6 +68,9 @@ export interface PlannedAction {
   category: ActionCategory;
   suggestedTimeOfDay: string;
   reason: string;
+  basisExplanation?: string;
+  costRupees?: number;
+  costLabel?: string;
   exposureReduction: ExposureReduction;
   emissionReduction: EmissionReduction;
   methodologyNotes?: string;

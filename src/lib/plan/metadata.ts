@@ -1,116 +1,166 @@
 import { PlanRequest } from './types';
 
 export interface ActionPriorityMetadata {
-  suggestedTimeOfDay: string;
-  generateReason: (profile: PlanRequest) => string;
+  getSuggestedTimeOfDay: (profile: PlanRequest, cleanestWindowText?: string) => string;
+  generateReason: (profile: PlanRequest, cleanestWindowText?: string) => string;
 }
 
 export const FALLBACK_METADATA_MAP: Record<string, ActionPriorityMetadata> = {
   wear_n95_mask_outside: {
-    suggestedTimeOfDay: 'Morning & Commute Hours',
-    generateReason: (p) =>
-      p.hasAsthmaOrRespiratoryCondition
-        ? 'Protects vulnerable lungs and airways from fine particulate inhalation during daily outdoor transit.'
-        : 'Significantly cuts down particulate inhalation for family members whenever stepping outdoors.',
+    getSuggestedTimeOfDay: (p) =>
+      p.commutersCount > 0 ? 'Morning & Evening Commute' : 'Any outdoor walks or errands',
+    generateReason: (p) => {
+      if (p.hasAsthmaOrRespiratoryCondition) {
+        return 'Protects vulnerable lungs and airways from fine particulate inhalation during outdoor transit.';
+      }
+      if (p.childrenCount > 0) {
+        return 'Significantly cuts down particulate inhalation for your children and family members outdoors.';
+      }
+      if (p.elderlyCount > 0) {
+        return 'Protects senior cardiovascular and airway health whenever stepping outside.';
+      }
+      return 'Protects your lungs from fine respirable PM2.5 particulates whenever stepping outdoors.';
+    },
   },
+
+  senior_indoor_morning_walk: {
+    getSuggestedTimeOfDay: (_p, w) => (w ? `Cleanest window (${w})` : 'Midday (1 PM – 4 PM)'),
+    generateReason: () =>
+      'Protects senior heart and lung reserves by replacing early morning cold-air walks with indoor movement or timing them to the cleanest daytime window.',
+  },
+
+  seniors_avoid_strenuous_outdoor: {
+    getSuggestedTimeOfDay: () => 'Throughout the day',
+    generateReason: () =>
+      'Keeps physical exertion low during peak smog alerts to protect elderly family members from acute cardiovascular stress.',
+  },
+
   keep_children_indoors_morning_smog: {
-    suggestedTimeOfDay: 'Early Morning',
-    generateReason: () =>
-      'Keeps kids safely inside while ground-level temperature inversion concentrates severe smog outdoors.',
+    getSuggestedTimeOfDay: () => 'Early Morning',
+    generateReason: (p) =>
+      `Keeps your ${p.childrenCount === 1 ? 'child' : `${p.childrenCount} children`} safely inside while ground-level temperature inversion concentrates severe smog outdoors.`,
   },
+
   run_hepa_air_purifier_bedroom: {
-    suggestedTimeOfDay: 'Night / Bedtime',
-    generateReason: () =>
-      'Creates a clean air sanctuary in sleeping rooms so your family breathes safe air through the night.',
+    getSuggestedTimeOfDay: () => 'Night / Bedtime',
+    generateReason: (p) =>
+      p.adultsCount === 1 && p.childrenCount === 0 && p.elderlyCount === 0
+        ? 'Creates a clean air sanctuary in your bedroom so you breathe safe air through the night.'
+        : 'Creates a clean air sanctuary in sleeping rooms so your family breathes safe air through the night.',
   },
+
   diy_corsi_rosenthal_box: {
-    suggestedTimeOfDay: 'All Day',
-    generateReason: () =>
-      'A budget-friendly DIY high-volume air filter to keep shared living areas clean without costly purifiers.',
+    getSuggestedTimeOfDay: () => 'All Day',
+    generateReason: (p) =>
+      `A budget-friendly DIY high-volume air filter to keep your ${p.homeAreaSqFt} sq ft living area clean without costly purifiers.`,
   },
+
   use_exhaust_fan_cooking: {
-    suggestedTimeOfDay: 'During Meal Preparation',
+    getSuggestedTimeOfDay: () => 'During Meal Preparation',
     generateReason: () =>
       'Vents intense frying and tadka aerosol spikes immediately so they do not settle inside your living rooms.',
   },
+
   seal_windows_during_peak_inversion: {
-    suggestedTimeOfDay: 'Night to Early Morning',
+    getSuggestedTimeOfDay: () => 'Night to Early Morning',
     generateReason: () =>
       'Stops heavy toxic smog from leaking into your home during peak cold morning and nighttime inversion.',
   },
+
   eliminate_incense_and_mosquito_coils: {
-    suggestedTimeOfDay: 'All Day',
+    getSuggestedTimeOfDay: () => 'All Day',
     generateReason: () =>
       'Prevents heavy particulate accumulation inside your home caused by smoldering incense and mosquito coils.',
   },
+
   wet_mop_instead_of_dry_sweeping: {
-    suggestedTimeOfDay: 'Morning Routine',
+    getSuggestedTimeOfDay: () => 'Morning Routine',
     generateReason: () =>
       'Prevents domestic settled dust and fine particles from being kicked back into your breathing zone.',
   },
+
   post_commute_hygiene: {
-    suggestedTimeOfDay: 'Evening / Post-Commute',
+    getSuggestedTimeOfDay: () => 'Evening / Post-Commute',
     generateReason: () =>
       'Rinsing away trapped particles from face and upper airways prevents lingering respiratory irritation.',
   },
+
   swap_car_for_metro: {
-    suggestedTimeOfDay: 'Morning & Evening Commute',
-    generateReason: () =>
-      'Shifts your daily commute to clean electric transit, avoiding congested road pollution and cutting emissions.',
+    getSuggestedTimeOfDay: () => 'Morning & Evening Commute',
+    generateReason: (p) =>
+      `Shifts your ${p.dailyCommuteDistanceKm} km car commute to clean electric transit, avoiding congested road pollution and cutting emissions.`,
   },
+
   swap_two_wheeler_for_metro_or_bus: {
-    suggestedTimeOfDay: 'Commute Hours',
-    generateReason: () =>
-      'Protects two-wheeler riders from inhaling dense direct vehicle exhaust plumes in slow-moving traffic.',
+    getSuggestedTimeOfDay: () => 'Commute Hours',
+    generateReason: (p) =>
+      `Protects you from inhaling dense direct vehicle exhaust plumes during your ${p.dailyCommuteDistanceKm} km two-wheeler commute.`,
   },
+
   work_from_home_on_smog_days: {
-    suggestedTimeOfDay: 'Full Day',
-    generateReason: () =>
-      'Eliminates roadway exposure completely while removing a vehicle trip from city roads today.',
+    getSuggestedTimeOfDay: () => 'Full Day',
+    generateReason: (p) =>
+      `Eliminates your ${p.dailyCommuteDistanceKm} km round-trip commute travel entirely today while removing a vehicle trip from city roads.`,
   },
+
   carpool_to_work: {
-    suggestedTimeOfDay: 'Morning & Evening Commute',
-    generateReason: () =>
-      'Sharing rides with coworkers removes another car from traffic and reduces total commute fuel.',
+    getSuggestedTimeOfDay: () => 'Morning & Evening Commute',
+    generateReason: (p) =>
+      `Sharing your ${p.dailyCommuteDistanceKm} km commute with coworkers removes another car from traffic and reduces total commute fuel.`,
   },
+
   stop_open_waste_burning: {
-    suggestedTimeOfDay: 'All Day',
+    getSuggestedTimeOfDay: () => 'All Day',
     generateReason: () =>
-      'Stopping backyard leaf and waste burning protects your neighborhood from choking localized smoke plumes.',
+      'Stopping backyard leaf and waste burning protects your immediate neighborhood from choking localized smoke plumes.',
   },
+
   swap_biomass_cookstove_to_induction: {
-    suggestedTimeOfDay: 'Meal Times',
-    generateReason: () =>
-      'Replaces indoor chulha smoke with clean electric cooking, safeguarding women and children in the home.',
+    getSuggestedTimeOfDay: () => 'Meal Times',
+    generateReason: (p) => {
+      if (p.childrenCount === 0 && p.elderlyCount > 0) {
+        return 'Replaces indoor chulha smoke with clean electric cooking, safeguarding senior respiratory health in your home.';
+      }
+      if (p.adultsCount === 1 && p.childrenCount === 0 && p.elderlyCount === 0) {
+        return 'Replaces indoor chulha smoke with clean electric cooking, eliminating toxic particulate buildup in your living space.';
+      }
+      return 'Replaces indoor chulha smoke with clean electric cooking, safeguarding your household from toxic indoor emissions.';
+    },
   },
+
   swap_biomass_or_kerosene_heating_to_electric: {
-    suggestedTimeOfDay: 'Night / Evening',
+    getSuggestedTimeOfDay: () => 'Night / Evening',
     generateReason: () =>
       'Swapping unvented solid fuel heating for clean electric heat prevents toxic indoor carbon monoxide and smoke buildup.',
   },
+
   ventilate_at_cleanest_afternoon_hour: {
-    suggestedTimeOfDay: 'Midday (1 PM - 3 PM)',
-    generateReason: () =>
-      'Flushes indoor stale air and carbon dioxide only when afternoon sunlight breaks up surface pollution.',
+    getSuggestedTimeOfDay: (_p, w) => (w ? `Cleanest window (${w})` : 'Midday (1 PM – 4 PM)'),
+    generateReason: (_p, w) =>
+      `Flushes indoor stale air and carbon dioxide strictly during the cleanest forecast window (${w || 'midday'}) when outdoor pollution dips.`,
   },
+
   weatherstrip_doors_and_windows: {
-    suggestedTimeOfDay: 'Daytime Setup',
+    getSuggestedTimeOfDay: () => 'Daytime Setup',
     generateReason: () =>
       'Simple door draft stoppers and window seals block outdoor smog infiltration throughout the day.',
   },
+
   combine_or_cancel_outdoor_errands: {
-    suggestedTimeOfDay: 'Afternoon / Flexible',
+    getSuggestedTimeOfDay: (_p, w) => (w ? `Cleanest window (${w})` : 'Afternoon / Flexible'),
     generateReason: () =>
       'Consolidating errands limits prolonged exposure on smoggy streets and saves unnecessary vehicle trips.',
   },
+
   avoid_non_hepa_vacuuming: {
-    suggestedTimeOfDay: 'Cleaning Hours',
+    getSuggestedTimeOfDay: () => 'Cleaning Hours',
     generateReason: () =>
       'Avoids standard vacuum exhaust blowback by using damp cloth dusting during winter months.',
   },
+
   shift_outdoor_exercise_to_cleanest_hour: {
-    suggestedTimeOfDay: 'Afternoon Window',
-    generateReason: () =>
-      'Avoids deep inhalation of cold morning inversion air by shifting workouts to the cleanest part of the day.',
+    getSuggestedTimeOfDay: (_p, w) => (w ? `Cleanest window (${w})` : 'Midday (1 PM – 4 PM)'),
+    generateReason: (_p, w) =>
+      `Avoids deep inhalation of cold morning inversion air by shifting workouts to the cleanest forecast window (${w || 'midday'}).`,
   },
 };

@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessage, ChatMessageList } from './ChatMessageList';
+import { ChatRequest } from '@/lib/chat/types';
 import { HouseholdProfile } from '@/lib/impact/types';
 import { SendIcon } from './ui/Icons';
 import { getShortPlaceName } from '@/lib/design-system';
@@ -67,19 +68,24 @@ export function ChatPanel({
     setIsLoading(true);
 
     try {
+      const payload: ChatRequest = {
+        message: text,
+        conversationHistory: messages
+          .slice(-8)
+          .map((m) => ({ role: m.role, content: m.content })),
+        place: place || '110001',
+        householdProfile: householdProfile as ChatRequest['householdProfile'],
+      };
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
-          place,
-          householdProfile,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || `Chat request failed (${response.status})`);
+        throw new Error(errorData?.message || 'Unable to connect to the clean air assistant.');
       }
 
       const data = await response.json();
@@ -92,11 +98,11 @@ export function ChatPanel({
         },
       ]);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Chat error.';
+      const msg = err instanceof Error ? err.message : 'Unable to retrieve advice.';
       setErrorMessage(msg);
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: `Unable to retrieve advice: ${msg}. Please try asking again.` },
+        { role: 'assistant', content: `${msg} Please try asking again.` },
       ]);
     } finally {
       setIsLoading(false);

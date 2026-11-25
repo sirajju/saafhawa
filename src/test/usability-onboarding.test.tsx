@@ -67,4 +67,27 @@ describe('Usability Overhaul - Three-Step Onboarding & Habit Defaults', () => {
     const workoutsNoRadio = screen.getByRole('radio', { name: /No outdoor workouts/i });
     expect(workoutsNoRadio.getAttribute('aria-checked')).toBe('true');
   });
+
+  it('shows clear error and focuses place input when location permission is denied', async () => {
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn((_success, error) =>
+        error({ code: 1, message: 'User denied Geolocation' })
+      ),
+    };
+    // @ts-expect-error Mocking navigator.geolocation
+    navigator.geolocation = mockGeolocation;
+
+    const user = userEvent.setup();
+    render(<OnboardingForm onSubmit={() => {}} />);
+
+    const locationBtn = screen.getByRole('button', { name: /Use browser location/i });
+    await user.click(locationBtn);
+
+    expect(
+      screen.getByText(/Location permission denied\. Please enter your locality or PIN code\./i)
+    ).toBeDefined();
+
+    const placeInput = screen.getByLabelText(/Where do you live/i) as HTMLInputElement;
+    expect(document.activeElement).toBe(placeInput);
+  });
 });

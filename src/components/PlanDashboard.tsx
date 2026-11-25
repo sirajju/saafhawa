@@ -82,7 +82,10 @@ export function PlanDashboard({
         />
 
         {/* 2. Impact Card: 3 clean numbers separated by hairlines */}
-        <TotalSavingsBanner summary={plan.summary} />
+        <TotalSavingsBanner
+          summary={plan.summary}
+          generationMethod={plan.generationMethod}
+        />
 
         {/* 3. Your Plan for Today Card: Timeline by period */}
         <DailyTimeline

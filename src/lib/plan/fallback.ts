@@ -11,21 +11,36 @@ import { resolvePlanConsistency } from './consistency';
  */
 export function getRuleBasedFallbackActions(
   profile: PlanRequest,
-  airQuality: AirQualityReport
+  airQuality: AirQualityReport,
+  cleanestWindowText?: string
 ): GeminiSelectedAction[] {
   const airQualityContext = {
     currentPm25: airQuality.current.pm25?.value ?? null,
     hourlyForecast: airQuality.hourlyForecast,
   };
 
+  const isZeroCost = profile.budget === 'zero_cost';
+
   const applicableActions = ACTION_CATALOGUE.map((action) => {
     const impact = calculateActionImpact(action, profile, airQualityContext);
     return { action, impact };
-  }).filter((item) => item.impact.applicable);
+  }).filter((item) => {
+    if (!item.impact.applicable) return false;
+    // Strict zero-cost budget rule: drop anything requiring purchasing equipment
+    if (isZeroCost && (item.action.costRupees ?? 0) > 0) return false;
+    return true;
+  });
 
   const scored = applicableActions.map((item) => {
     let score = 10;
     const id = item.action.id;
+
+    // Senior-specific priorities
+    if (profile.elderlyCount > 0) {
+      if (id === 'senior_indoor_morning_walk') score += 55;
+      if (id === 'seniors_avoid_strenuous_outdoor') score += 45;
+      if (id === 'wear_n95_mask_outside') score += 20;
+    }
 
     if (profile.hasAsthmaOrRespiratoryCondition) {
       if (id === 'wear_n95_mask_outside') score += 50;
@@ -62,12 +77,17 @@ export function getRuleBasedFallbackActions(
       score += 30;
     }
 
-    if (profile.cookingFuel === 'biomass' && id === 'swap_biomass_cookstove_to_induction') {
+    if (!isZeroCost && profile.cookingFuel === 'biomass' && id === 'swap_biomass_cookstove_to_induction') {
       score += 50;
     }
 
     if (profile.hasGardenOrOpenWasteBurning && id === 'stop_open_waste_burning') {
       score += 45;
+    }
+
+    // Always prioritize free actions over paid ones
+    if ((item.action.costRupees ?? 0) === 0) {
+      score += 15;
     }
 
     score += Math.min(20, (item.impact.exposureReduction.pm25InhaledDoseAvoidedUg || 0) / 50);
@@ -88,22 +108,21 @@ export function getRuleBasedFallbackActions(
   }
 
   for (const item of scored) {
-    if (selected.length >= 7) break;
+    if (selected.length >= 8) break;
     if (!selected.some((s) => s.action.id === item.action.id)) {
       selected.push(item);
     }
   }
 
   const mappedActions = selected.map((item) => {
-    const meta = FALLBACK_METADATA_MAP[item.action.id] || {
-      suggestedTimeOfDay: 'Throughout the day',
-      generateReason: () => item.action.description,
-    };
+    const meta = FALLBACK_METADATA_MAP[item.action.id];
+    const timeOfDay = meta ? meta.getSuggestedTimeOfDay(profile, cleanestWindowText) : 'Throughout the day';
+    const reason = meta ? meta.generateReason(profile, cleanestWindowText) : item.action.description;
 
     return {
       actionId: item.action.id,
-      suggestedTimeOfDay: meta.suggestedTimeOfDay,
-      reason: meta.generateReason(profile),
+      suggestedTimeOfDay: timeOfDay,
+      reason,
     };
   });
 

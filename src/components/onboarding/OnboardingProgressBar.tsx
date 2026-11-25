@@ -35,7 +35,7 @@ export function OnboardingProgressBar({
   const current = ONBOARDING_STEPS[currentStep - 1];
 
   return (
-    <div>
+    <div style={{ marginBottom: '28px' }}>
       <div
         className="steps"
         role="progressbar"

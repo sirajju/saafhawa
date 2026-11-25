@@ -9,6 +9,8 @@ import { buildPlanPrompt } from './prompt-builder';
 import { getRuleBasedFallbackActions } from './fallback';
 import { defaultGeminiGenerator } from './gemini-client';
 import { resolvePlanConsistency } from './consistency';
+import { generateBasisExplanation } from './basis-generator';
+import { buildForecastAdvice } from '../air-quality/forecast-advice';
 import {
   GeminiPlanOutputSchema,
   GeminiSelectedAction,
@@ -62,6 +64,17 @@ export async function generateHouseholdPlan(
     ACTION_CATALOGUE.map((a) => [a.id, a])
   );
 
+  const forecastAdvice = buildForecastAdvice(
+    airQuality.current.aqi ?? 300,
+    airQuality.hourlyForecast,
+    profile,
+    airQuality.location.timeZone
+  );
+  const cleanestWindowSpan =
+    forecastAdvice.cleanestWindowStart && forecastAdvice.cleanestWindowEnd
+      ? `${forecastAdvice.cleanestWindowStart} – ${forecastAdvice.cleanestWindowEnd}`
+      : 'midday';
+
   let selectedActions: GeminiSelectedAction[] = [];
   let generationMethod: 'gemini' | 'rule_based_fallback' = 'gemini';
 
@@ -70,7 +83,8 @@ export async function generateHouseholdPlan(
       const { systemInstruction, userPrompt } = buildPlanPrompt(
         profile,
         airQuality,
-        ACTION_CATALOGUE
+        ACTION_CATALOGUE,
+        cleanestWindowSpan
       );
       const generator = options.geminiGenerator ?? defaultGeminiGenerator;
       const rawJson = await generator(systemInstruction, userPrompt, model, apiKey);
@@ -100,7 +114,7 @@ export async function generateHouseholdPlan(
   }
 
   if (generationMethod === 'rule_based_fallback' || selectedActions.length === 0) {
-    selectedActions = getRuleBasedFallbackActions(profile, airQuality);
+    selectedActions = getRuleBasedFallbackActions(profile, airQuality, cleanestWindowSpan);
     generationMethod = 'rule_based_fallback';
   }
 
@@ -117,18 +131,42 @@ export async function generateHouseholdPlan(
     const impact = calculateActionImpact(actionDef, profile, airQualityContext);
     actionImpacts.push(impact);
 
+    const basisExplanation = generateBasisExplanation(
+      actionDef.id,
+      profile,
+      airQuality.current.aqi,
+      cleanestWindowSpan
+    );
+
+    let timeOfDay = selected.suggestedTimeOfDay;
+    if (actionDef.id === 'wear_n95_mask_outside' && profile.commutersCount === 0) {
+      timeOfDay = 'Any outdoor walks or errands';
+    } else if (
+      (actionDef.id === 'ventilate_at_cleanest_afternoon_hour' ||
+        actionDef.id === 'shift_outdoor_exercise_to_cleanest_hour' ||
+        actionDef.id === 'senior_indoor_morning_walk') &&
+      (!timeOfDay || timeOfDay.toLowerCase().includes('midday'))
+    ) {
+      timeOfDay = `Cleanest window (${cleanestWindowSpan})`;
+    }
+
     return {
       actionId: actionDef.id,
       title: actionDef.title,
       description: actionDef.description,
       category: actionDef.category,
-      suggestedTimeOfDay: selected.suggestedTimeOfDay,
+      suggestedTimeOfDay: timeOfDay,
       reason: selected.reason,
+      basisExplanation,
+      costRupees: actionDef.costRupees ?? 0,
+      costLabel: actionDef.costLabel ?? 'Free (₹0)',
       exposureReduction: impact.exposureReduction,
       emissionReduction: impact.emissionReduction,
       methodologyNotes: impact.methodologyNotes,
     };
   });
+
+  plannedActions.sort((a, b) => ((a.costRupees ?? 0) > 0 ? 1 : 0) - ((b.costRupees ?? 0) > 0 ? 1 : 0));
 
   const deduped = calculateDeduplicatedTotals(actionImpacts, profile, airQualityContext.currentPm25);
 

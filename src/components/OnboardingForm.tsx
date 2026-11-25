@@ -56,11 +56,12 @@ export function OnboardingForm({
       },
       (error) => {
         setIsLocating(false);
-        if (error.code === error.PERMISSION_DENIED) {
-          setGeoStatus('Location permission denied. Please type your location above.');
+        if (error.code === 1 || error.code === error.PERMISSION_DENIED) {
+          setGeoStatus('Location permission denied. Please enter your locality or PIN code.');
         } else {
-          setGeoStatus('Unable to determine location. Please type your location above.');
+          setGeoStatus('Unable to determine location. Please enter your locality or PIN code.');
         }
+        document.getElementById('place-input')?.focus();
       },
       { timeout: 10000, enableHighAccuracy: false }
     );

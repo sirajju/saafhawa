@@ -24,8 +24,31 @@ export function DailyTimelineItem({
   return (
     <article className={`item ${isDone ? 'is-done' : ''}`}>
       <div>
-        <h3>{action.title}</h3>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+          <h3>{action.title}</h3>
+          {action.costLabel && (
+            <span
+              className="caption"
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: action.costRupees ? 'var(--brand)' : 'var(--ink-3)',
+                background: action.costRupees ? 'var(--brand-soft)' : 'var(--surface-2)',
+                padding: '2px 8px',
+                borderRadius: '99px',
+              }}
+            >
+              {action.costLabel}
+            </span>
+          )}
+        </div>
         <p>{action.reason || action.description}</p>
+
+        {action.basisExplanation && (
+          <div className="caption" style={{ marginTop: 8, color: 'var(--ink-3)', fontSize: 13 }}>
+            Based on: {action.basisExplanation}
+          </div>
+        )}
 
         <div className="facts">
           {typeof doseAvoided === 'number' && doseAvoided > 0 && (

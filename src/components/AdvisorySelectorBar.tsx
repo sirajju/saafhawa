@@ -28,7 +28,7 @@ export function AdvisorySelectorBar({
             onChange={() => onAudienceChange('housing_society')}
             className="sr-only"
           />
-          <HomeIcon className="h-4 w-4" />
+          <HomeIcon className="icon" style={{ width: 15, height: 15 }} />
           <span>Housing Society</span>
         </label>
 
@@ -41,7 +41,7 @@ export function AdvisorySelectorBar({
             onChange={() => onAudienceChange('school_group')}
             className="sr-only"
           />
-          <ShieldIcon className="h-4 w-4" />
+          <ShieldIcon className="icon" style={{ width: 15, height: 15 }} />
           <span>School / Parents</span>
         </label>
       </fieldset>

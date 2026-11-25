@@ -31,6 +31,9 @@ export function evaluateIndoorFiltrationAction(
   }
 
   if (action.id === 'diy_corsi_rosenthal_box') {
+    if (profile.budget === 'zero_cost') {
+      return { applicable: false, reasonIfNotApplicable: 'Zero-budget preference; prioritizing free natural ventilation and damp dusting over air cleaner construction', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
+    }
     if (currentPm25 === null) {
       return { applicable: true, concentrationReduction: null, doseAvoidedUg: null, percentageDrop: null, isUnknown: true, pm25SavedGrams: 0, co2SavedGrams: 0, methodologyNotes: 'Impact unknown: local ambient PM2.5 measurement is missing.' };
     }

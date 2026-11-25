@@ -32,6 +32,9 @@ export function evaluateCombustionSwapsImpact(
     if (profile.cookingFuel !== 'biomass') {
       return { applicable: false, reasonIfNotApplicable: 'Household already uses clean cooking fuel (LPG / Induction / Piped Gas)', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
     }
+    if (profile.budget === 'zero_cost') {
+      return { applicable: false, reasonIfNotApplicable: 'Zero-budget preference; prioritizing free kitchen exhaust and ventilation over induction cooktop purchase', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
+    }
     const directCo2 = BIOMASS_AND_OPEN_BURNING_FACTORS.TRADITIONAL_CHULHA_DAILY_CO2_EMISSIONS_GRAMS;
     const gridCo2 = INDIAN_POWER_GRID_FACTORS.INDUCTION_COOKING_DAILY_KWH * INDIAN_POWER_GRID_FACTORS.GRID_CO2_G_PER_KWH;
     const netCo2Saved = Math.max(0, directCo2 - gridCo2);
@@ -52,6 +55,9 @@ export function evaluateCombustionSwapsImpact(
   if (action.id === 'swap_biomass_or_kerosene_heating_to_electric') {
     if (profile.heatingFuel !== 'biomass' && profile.heatingFuel !== 'kerosene') {
       return { applicable: false, reasonIfNotApplicable: 'Household does not use solid fuel or kerosene space heating', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
+    }
+    if (profile.budget === 'zero_cost') {
+      return { applicable: false, reasonIfNotApplicable: 'Zero-budget preference; prioritizing free window sealing and warm clothing over electric radiator purchase', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
     }
     const directCo2 = BIOMASS_AND_OPEN_BURNING_FACTORS.UNVENTED_SPACE_HEATING_DAILY_CO2_GRAMS;
     const gridCo2 = INDIAN_POWER_GRID_FACTORS.ELECTRIC_SPACE_HEATING_DAILY_KWH * INDIAN_POWER_GRID_FACTORS.GRID_CO2_G_PER_KWH;

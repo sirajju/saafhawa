@@ -62,8 +62,8 @@ export function ForecastChartSvg({
   const labelStep = isSmallScreen ? 6 : 3;
 
   const top = 10;
-  const base = 140;
-  const totalHeight = 182;
+  const base = 138;
+  const totalHeight = 200;
   const count = Math.max(1, points.length);
   const bw = width / count;
   const barWidth = Math.max(4, bw - (isSmallScreen ? 3 : 5));
@@ -82,6 +82,16 @@ export function ForecastChartSvg({
         role="img"
         aria-label={srSummary}
       >
+        {/* Best window highlight rect rendered first so gridline text is never hidden */}
+        <rect
+          x={bestX}
+          y={top}
+          width={bestW}
+          height={base - top}
+          rx="6"
+          fill="var(--brand-soft)"
+        />
+
         {/* Subtle gridlines at 100, 200, 300 */}
         {[100, 200, 300].map((v) => {
           const y = base - (v / maxAqi) * (base - top);
@@ -96,7 +106,7 @@ export function ForecastChartSvg({
                 strokeDasharray="2 4"
               />
               <text
-                x={width}
+                x={width - 4}
                 y={y - 4}
                 textAnchor="end"
                 fontSize="12"
@@ -108,16 +118,6 @@ export function ForecastChartSvg({
             </g>
           );
         })}
-
-        {/* Best window highlight rect */}
-        <rect
-          x={bestX}
-          y={top}
-          width={bestW}
-          height={base - top}
-          rx="6"
-          fill="var(--brand-soft)"
-        />
 
         {/* Bars */}
         {points.map((p, i) => {
@@ -159,7 +159,7 @@ export function ForecastChartSvg({
         {/* "Now" marker label below hour 0 */}
         <text
           x={bw / 2}
-          y={base + 34}
+          y={base + 36}
           textAnchor="middle"
           fontSize="12"
           fontWeight="600"

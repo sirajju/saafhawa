@@ -145,6 +145,7 @@ export function resolvePlanConsistency(
 
     const impact = calculateActionImpact(actionDef, profile, airQualityContext);
     if (!impact.applicable) continue;
+    if (profile.budget === 'zero_cost' && (actionDef.costRupees ?? 0) > 0) continue;
 
     const score = scoreCandidateAction(actionDef, profile, impact);
     candidateActions.push({ def: actionDef, score });
@@ -161,14 +162,11 @@ export function resolvePlanConsistency(
       result.push(item);
     } else if (item.actionId === actionIdToDrop || isCommuteSwapAction(item.actionId)) {
       if (!replacementInserted && bestReplacement) {
-        const meta = FALLBACK_METADATA_MAP[bestReplacement.id] || {
-          suggestedTimeOfDay: 'Throughout the day',
-          generateReason: () => bestReplacement.description,
-        };
+        const meta = FALLBACK_METADATA_MAP[bestReplacement.id];
         result.push({
           actionId: bestReplacement.id,
-          suggestedTimeOfDay: meta.suggestedTimeOfDay,
-          reason: meta.generateReason(profile),
+          suggestedTimeOfDay: meta ? meta.getSuggestedTimeOfDay(profile) : 'Throughout the day',
+          reason: meta ? meta.generateReason(profile) : bestReplacement.description,
         });
         currentActionIds.add(bestReplacement.id);
         replacementInserted = true;
@@ -181,14 +179,11 @@ export function resolvePlanConsistency(
 
   // If replacement wasn't inserted in-place (e.g. edge case), append it
   if (!replacementInserted && bestReplacement && !result.some((r) => r.actionId === bestReplacement.id)) {
-    const meta = FALLBACK_METADATA_MAP[bestReplacement.id] || {
-      suggestedTimeOfDay: 'Throughout the day',
-      generateReason: () => bestReplacement.description,
-    };
+    const meta = FALLBACK_METADATA_MAP[bestReplacement.id];
     result.push({
       actionId: bestReplacement.id,
-      suggestedTimeOfDay: meta.suggestedTimeOfDay,
-      reason: meta.generateReason(profile),
+      suggestedTimeOfDay: meta ? meta.getSuggestedTimeOfDay(profile) : 'Throughout the day',
+      reason: meta ? meta.generateReason(profile) : bestReplacement.description,
     });
   }
 

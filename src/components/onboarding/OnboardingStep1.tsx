@@ -57,7 +57,7 @@ export function OnboardingStep1({
             aria-label="Use browser location to set your coordinates"
             className="btn"
           >
-            <LocateIcon className={isLocating ? 'animate-spin' : ''} />
+            <LocateIcon className={`icon ${isLocating ? 'animate-spin' : ''}`} />
             <span className="hide-sm">{isLocating ? 'Locating...' : 'Use my location'}</span>
           </button>
         </div>

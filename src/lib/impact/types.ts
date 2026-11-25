@@ -33,6 +33,10 @@ export const HouseholdProfileSchema = z.object({
   hasCarpoolOption: z.boolean().default(true),
   canWorkFromHome: z.boolean().default(true),
 
+  // Vulnerability & budget
+  hasAsthmaOrRespiratoryCondition: z.boolean().default(false).optional(),
+  budget: z.enum(['zero_cost', 'low', 'moderate', 'flexible']).default('low').optional(),
+
   // Outdoor habits
   dailyOutdoorHoursPerPerson: z.number().min(0).max(24, 'Outdoor hours cannot exceed 24').default(1.5),
   doesOutdoorExercise: z.boolean().default(false),

@@ -63,20 +63,33 @@ export function PlanCard({
           </span>
         </div>
 
-        <h3
-          className={`mt-2.5 text-lg font-bold tracking-tight ${
-            isCompleted
-              ? 'text-teal-950 line-through decoration-teal-600 dark:text-teal-100'
-              : 'text-slate-900 dark:text-slate-50'
-          }`}
-        >
-          {action.title}
-        </h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3
+            className={`mt-2.5 text-lg font-bold tracking-tight ${
+              isCompleted
+                ? 'text-teal-950 line-through decoration-teal-600 dark:text-teal-100'
+                : 'text-slate-900 dark:text-slate-50'
+            }`}
+          >
+            {action.title}
+          </h3>
+          {action.costLabel && (
+            <span className="mt-2.5 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              {action.costLabel}
+            </span>
+          )}
+        </div>
 
         <p className="mt-1.5 text-base leading-relaxed text-slate-600 dark:text-slate-400">
           <strong className="font-semibold text-slate-800 dark:text-slate-200">Why this suits your family: </strong>
           {action.reason}
         </p>
+
+        {action.basisExplanation && (
+          <p className="mt-1 text-xs italic text-slate-500 dark:text-slate-400">
+            Based on: {action.basisExplanation}
+          </p>
+        )}
 
         <div className="mt-3.5 flex flex-wrap items-center gap-3">
           {action.exposureReduction.isUnknown || dose === null ? (

@@ -100,6 +100,8 @@ describe('Security - Mandatory Security Headers', () => {
     expect(SECURITY_HEADERS['X-Content-Type-Options']).toBe('nosniff');
     expect(SECURITY_HEADERS['Referrer-Policy']).toBe('origin-when-cross-origin');
     expect(SECURITY_HEADERS['Permissions-Policy']).toContain('camera=()');
+    expect(SECURITY_HEADERS['Permissions-Policy']).toContain('microphone=()');
+    expect(SECURITY_HEADERS['Permissions-Policy']).toContain('geolocation=(self)');
   });
 });
 
