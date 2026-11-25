@@ -49,7 +49,8 @@ export async function generateHouseholdPlan(
 ): Promise<PlanResponse> {
   const profile: PlanRequest = PlanRequestSchema.parse(rawInput);
   const fetchAirQuality = options.airQualityFetcher ?? getAirQualityByLocation;
-  const airQuality = await fetchAirQuality(profile.place);
+  const lookupKey = profile.coordinates || profile.place;
+  const airQuality = await fetchAirQuality(lookupKey);
 
   const model = resolveGeminiModel(options.model);
   const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || undefined;
@@ -57,7 +58,7 @@ export async function generateHouseholdPlan(
   const catalogueMap = new Map<string, ActionDefinition>(ACTION_CATALOGUE.map((a) => [a.id, a]));
 
   const forecastAdvice = buildForecastAdvice(
-    airQuality.current.aqi ?? 300,
+    airQuality.current.aqi,
     airQuality.hourlyForecast,
     profile,
     airQuality.location.timeZone

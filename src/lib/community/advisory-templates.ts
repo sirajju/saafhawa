@@ -10,9 +10,11 @@ export function generateTemplateAdvisory(
   language: 'en' | 'hi'
 ): { headline: string; advisoryText: string } {
   const loc = report.location.name;
-  const aqi = report.current.aqi ?? 250;
-  const cat = report.current.category || 'Severe';
-  const pm25 = report.current.pm25 ? `${report.current.pm25.value} µg/m³` : 'Extremely High';
+  const aqiNum = report.current.aqi;
+  const aqiText = typeof aqiNum === 'number' ? `${aqiNum}` : 'Data unavailable';
+  const cat = report.current.category ? `(${report.current.category})` : '';
+  const aqiDisplay = `${aqiText} ${cat}`.trim();
+  const pm25 = report.current.pm25 ? `${report.current.pm25.value} µg/m³` : 'Unavailable';
   const source = report.current.dataSource || 'Open-Meteo (CAMS model)';
   const measuredTime = formatMeasurementTime(report.current.dateTime, report.location.timeZone);
 
@@ -28,7 +30,7 @@ export function generateTemplateAdvisory(
 📅 दिनांक: ${new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 क्षेत्र: ${loc}
 📊 *डेटा स्रोत:* ${source} (मापा गया समय: ${measuredTime})
-${aqiLabelHi} ${aqi} (${cat} श्रेणी)
+${aqiLabelHi} ${aqiDisplay}
 🌫️ *PM2.5 स्तर:* ${pm25}
 
 सभी अभिभावकों, शिक्षकों और स्कूल प्रबंधन के लिए महत्वपूर्ण दिशा-निर्देश:
@@ -49,7 +51,7 @@ _साफ़ हवा (SaafHawa) द्वारा जनहित में 
 📅 दिनांक: ${new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 क्षेत्र: ${loc}
 📊 *डेटा स्रोत:* ${source} (मापा गया समय: ${measuredTime})
-${aqiLabelHi} ${aqi} (${cat})
+${aqiLabelHi} ${aqiDisplay}
 🌫️ *PM2.5 प्रदूषण:* ${pm25}
 
 सोसायटी के सभी निवासियों और सुरक्षा गार्ड्स के लिए महत्वपूर्ण सुझाव:
@@ -74,7 +76,7 @@ _साफ़ हवा (SaafHawa) द्वारा जनहित में 
 📅 Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 Area: ${loc}
 📊 *Data Source:* ${source} (Measured: ${measuredTime})
-${aqiLabelEn} ${aqi} (${cat})
+${aqiLabelEn} ${aqiDisplay}
 🌫️ *PM2.5 Level:* ${pm25}
 
 Key health precautions for students, parents, and teachers today:
@@ -95,7 +97,7 @@ _Shared via SaafHawa Community Defense — Please forward to class & parent What
 📅 Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 Location: ${loc}
 📊 *Data Source:* ${source} (Measured: ${measuredTime})
-${aqiLabelEn} ${aqi} (${cat})
+${aqiLabelEn} ${aqiDisplay}
 🌫️ *PM2.5 Concentration:* ${pm25}
 
 Urgent cooperative actions for all residents & facility management today:

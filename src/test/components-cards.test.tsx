@@ -41,7 +41,8 @@ describe('Accessibility - AirQualityCard (Screen Reader Text & Sample Badge)', (
     // Category in words
     expect(screen.getAllByText(/Very Poor/i).length).toBeGreaterThanOrEqual(1);
     // Plain advice sentence
-    expect(screen.getByText(/Today's Family Guidance/i)).toBeDefined();
+    expect(screen.getByText(/For your family today/i)).toBeDefined();
+    expect(screen.queryByText(/Today's Family Guidance/i)).toBeNull();
     expect(screen.getByText(/Cleanest window today/i)).toBeDefined();
   });
 

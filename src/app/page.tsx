@@ -95,6 +95,9 @@ export default function HomePage() {
   };
 
   const currentPlaceName = plan && currentView === 'dash' ? (plan.location.name || profile?.place || '') : '';
+  const lookupPlace =
+    profile?.coordinates ||
+    (plan ? `${plan.location.latitude}, ${plan.location.longitude}` : profile?.place || '');
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', flexDirection: 'column' }}>
@@ -130,6 +133,7 @@ export default function HomePage() {
             plan={plan}
             profile={profile}
             currentPlaceName={currentPlaceName}
+            lookupPlace={lookupPlace}
             onOpenAdvisoryModal={() => setIsAdvisoryModalOpen(true)}
             onRetry={profile ? () => fetchPlan(profile) : undefined}
           />
@@ -151,7 +155,7 @@ export default function HomePage() {
       <CommunityAdvisoryModal
         isOpen={isAdvisoryModalOpen}
         onClose={() => setIsAdvisoryModalOpen(false)}
-        place={currentPlaceName}
+        place={lookupPlace || currentPlaceName}
       />
     </div>
   );

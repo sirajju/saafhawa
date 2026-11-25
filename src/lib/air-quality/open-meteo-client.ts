@@ -8,6 +8,7 @@ import {
 } from './open-meteo-types';
 import { ClientRequestOptions, normalizeIndianCity, resolveIndianPincodeCandidates } from './pincode-resolver';
 import { safeFetch } from './safe-fetch';
+import { reverseGeocodeCoordinates } from './reverse-geocoder';
 
 export * from './open-meteo-types';
 
@@ -23,14 +24,15 @@ export async function geocodeOpenMeteoPlace(
 ): Promise<OpenMeteoLocationResult> {
   const query = rawQuery.trim();
 
-  // 1. Coordinates check (e.g. "28.6139, 77.2090" from browser geolocation)
-  const coordMatch = query.match(/^([+-]?\d+(?:\.\d+)?)\s*,\s*([+-]?\d+(?:\.\d+)?)$/);
+  // 1. Coordinates check (e.g. "28.6139, 77.2090" or "Coordinates (11.2551°, 75.8287°)")
+  const coordMatch = query.match(/^(?:Coordinates\s*\()?\s*([+-]?\d+(?:\.\d+)?)\s*°?\s*,\s*([+-]?\d+(?:\.\d+)?)\s*°?\s*\)?$/i);
   if (coordMatch) {
     const lat = parseFloat(coordMatch[1]);
     const lon = parseFloat(coordMatch[2]);
     if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      const rev = await reverseGeocodeCoordinates(lat, lon, options);
       return {
-        formattedAddress: `Coordinates (${lat.toFixed(4)}°, ${lon.toFixed(4)}°)`,
+        formattedAddress: rev?.formattedAddress || `Coordinates (${lat.toFixed(4)}°, ${lon.toFixed(4)}°)`,
         latitude: lat,
         longitude: lon,
         timeZone: 'Asia/Kolkata',

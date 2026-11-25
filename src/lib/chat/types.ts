@@ -3,7 +3,11 @@ import { PlanRequestSchema } from '../plan/types';
 
 export const ChatMessageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system']),
-  content: z.string().trim().min(1).max(500),
+  content: z
+    .string()
+    .trim()
+    .min(1)
+    .transform((str) => (str.length > 1000 ? str.slice(0, 1000) : str)),
 });
 
 export type ChatMessage = z.infer<typeof ChatMessageSchema>;
@@ -14,11 +18,11 @@ export const ChatRequestSchema = z.preprocess(
       const obj = input as Record<string, unknown>;
       if (!obj.message && Array.isArray(obj.messages) && obj.messages.length > 0) {
         const last = obj.messages[obj.messages.length - 1] as { content?: string };
-        const history = obj.messages.slice(0, -1);
+        const rawHistory = obj.messages.slice(0, -1);
         return {
           ...obj,
           message: typeof last?.content === 'string' ? last.content : '',
-          conversationHistory: obj.conversationHistory ?? history,
+          conversationHistory: obj.conversationHistory ?? rawHistory,
         };
       }
     }
@@ -29,7 +33,7 @@ export const ChatRequestSchema = z.preprocess(
       .string()
       .trim()
       .min(1, 'Please enter a question')
-      .max(500, 'Message cannot exceed 500 characters'),
+      .max(500, 'Please provide a valid question under 500 characters.'),
     place: z
       .string()
       .trim()
@@ -37,7 +41,7 @@ export const ChatRequestSchema = z.preprocess(
       .max(120, 'Place cannot exceed 120 characters')
       .default('110001'),
     householdProfile: PlanRequestSchema.optional(),
-    conversationHistory: z.array(ChatMessageSchema).max(8).optional().default([]),
+    conversationHistory: z.array(ChatMessageSchema).max(12).optional().default([]),
   })
 );
 

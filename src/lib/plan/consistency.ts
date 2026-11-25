@@ -5,18 +5,23 @@ import { GeminiSelectedAction, PlanRequest } from './types';
 import { FALLBACK_METADATA_MAP } from './metadata';
 
 export const WORK_FROM_HOME_ACTION_ID = 'work_from_home_on_smog_days';
-export const COMMUTE_SWAP_ACTION_IDS = new Set([
-  'swap_car_for_metro',
-  'swap_two_wheeler_for_metro_or_bus',
-  'carpool_to_work',
-]);
+export const COMMUTE_SWAP_ACTION_IDS = new Set(['swap_car_for_metro', 'swap_two_wheeler_for_metro_or_bus', 'carpool_to_work']);
 
-export function isCommuteSwapAction(actionId: string): boolean {
-  return COMMUTE_SWAP_ACTION_IDS.has(actionId);
-}
+export const isCommuteSwapAction = (id: string): boolean => COMMUTE_SWAP_ACTION_IDS.has(id);
+export const isWorkFromHomeAction = (id: string): boolean => id === WORK_FROM_HOME_ACTION_ID;
 
-export function isWorkFromHomeAction(actionId: string): boolean {
-  return actionId === WORK_FROM_HOME_ACTION_ID;
+function isCleanAirContext(ctx?: AirQualityContext): boolean {
+  if (!ctx) return false;
+  if (typeof ctx.currentPm25 === 'number' && ctx.currentPm25 > 35) return false;
+  if (ctx.hourlyForecast?.length) {
+    const maxPm25 = Math.max(
+      ...ctx.hourlyForecast
+        .map((p) => p.pm25?.value)
+        .filter((v): v is number => typeof v === 'number')
+    );
+    if (maxPm25 > 35) return false;
+  }
+  return true;
 }
 
 /**
@@ -138,10 +143,21 @@ export function resolvePlanConsistency(
   // Find candidate actions from a different group (group !== 'sustainable_swaps')
   // that are applicable and not currently in the plan
   const candidateActions: Array<{ def: ActionDefinition; score: number }> = [];
+  const cleanAir = isCleanAirContext(airQualityContext);
 
   for (const actionDef of ACTION_CATALOGUE) {
     if (actionDef.category === 'sustainable_swaps') continue;
     if (currentActionIds.has(actionDef.id)) continue;
+    if (
+      cleanAir &&
+      (actionDef.id === 'wear_n95_mask_outside' ||
+        actionDef.id === 'seal_windows_during_peak_inversion' ||
+        actionDef.id === 'keep_children_indoors_morning_smog' ||
+        actionDef.id === 'seniors_avoid_strenuous_outdoor' ||
+        actionDef.id === 'senior_indoor_morning_walk')
+    ) {
+      continue;
+    }
 
     const impact = calculateActionImpact(actionDef, profile, airQualityContext);
     if (!impact.applicable) continue;

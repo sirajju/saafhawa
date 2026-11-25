@@ -3,10 +3,10 @@ import { PlanRequest } from './types';
 export function generateBasisExplanation(
   actionId: string,
   profile: PlanRequest,
-  currentAqi: number | null = 300,
+  currentAqi: number | null = null,
   cleanestWindowText = 'afternoon'
 ): string {
-  const aqiStr = `AQI ${currentAqi ?? 300}`;
+  const aqiStr = typeof currentAqi === 'number' ? `AQI ${currentAqi}` : 'Air quality advisory';
   const isSolo = profile.adultsCount === 1 && profile.childrenCount === 0 && profile.elderlyCount === 0;
 
   const vulnerability = profile.hasAsthmaOrRespiratoryCondition

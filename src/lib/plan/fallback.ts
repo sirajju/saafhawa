@@ -19,6 +19,16 @@ export function getRuleBasedFallbackActions(
     hourlyForecast: airQuality.hourlyForecast,
   };
 
+  const aqiNum = airQuality.current.aqi;
+  const maxForecast = airQuality.hourlyForecast?.length
+    ? Math.max(
+        ...airQuality.hourlyForecast
+          .filter((p): p is typeof p & { aqi: number } => typeof p.aqi === 'number')
+          .map((p) => p.aqi)
+      )
+    : (aqiNum ?? 150);
+  const isCleanAir = aqiNum !== null && aqiNum !== undefined && aqiNum <= 100 && maxForecast <= 100;
+
   const isZeroCost = profile.budget === 'zero_cost';
 
   const applicableActions = ACTION_CATALOGUE.map((action) => {
@@ -26,6 +36,18 @@ export function getRuleBasedFallbackActions(
     return { action, impact };
   }).filter((item) => {
     if (!item.impact.applicable) return false;
+    // When air is clean/satisfactory, do not push masks, sealed windows or outdoor restrictions
+    if (isCleanAir) {
+      if (
+        item.action.id === 'wear_n95_mask_outside' ||
+        item.action.id === 'seal_windows_during_peak_inversion' ||
+        item.action.id === 'keep_children_indoors_morning_smog' ||
+        item.action.id === 'seniors_avoid_strenuous_outdoor' ||
+        item.action.id === 'senior_indoor_morning_walk'
+      ) {
+        return false;
+      }
+    }
     // Strict zero-cost budget rule: drop anything requiring purchasing equipment
     if (isZeroCost && (item.action.costRupees ?? 0) > 0) return false;
     return true;

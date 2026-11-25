@@ -13,6 +13,7 @@ interface PlanDashboardProps {
   plan: PlanResponse;
   profile: PlanRequest | null;
   currentPlaceName: string;
+  lookupPlace?: string;
   onOpenAdvisoryModal?: () => void;
   onRetry?: () => void;
 }
@@ -26,11 +27,17 @@ export function PlanDashboard({
   plan,
   profile,
   currentPlaceName,
+  lookupPlace,
   onOpenAdvisoryModal,
   onRetry,
 }: PlanDashboardProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
+  const lookupQuery =
+    lookupPlace ||
+    profile?.coordinates ||
+    profile?.place ||
+    (plan ? `${plan.location.latitude}, ${plan.location.longitude}` : currentPlaceName);
 
   const [completedActionIds, setCompletedActionIds] = useState<string[]>(() => {
     if (typeof window === 'undefined') return [];
@@ -105,7 +112,8 @@ export function PlanDashboard({
       <aside className="rail" aria-label="Assistant and Community Share">
         <ChatPanel
           householdProfile={profile || undefined}
-          place={currentPlaceName}
+          place={lookupQuery}
+          displayPlace={currentPlaceName}
           isSampleData={plan.isSampleData}
           dataSource={plan.currentAirQuality?.dataSource}
           measuredTime={plan.currentAirQuality?.dateTime}
@@ -163,7 +171,8 @@ export function PlanDashboard({
         >
           <ChatPanel
             householdProfile={profile || undefined}
-            place={currentPlaceName}
+            place={lookupQuery}
+            displayPlace={currentPlaceName}
             isSampleData={plan.isSampleData}
             dataSource={plan.currentAirQuality?.dataSource}
             measuredTime={plan.currentAirQuality?.dateTime}

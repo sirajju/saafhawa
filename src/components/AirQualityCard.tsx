@@ -112,21 +112,22 @@ export function AirQualityCard({
         </div>
 
         <div className="advice">
-          <div className="eyebrow">
-            For your family today
-            <span className="sr-only"> Today&apos;s Family Guidance:</span>
-          </div>
+          <div className="eyebrow">For your family today</div>
           <p className="advice-text">{advice.plainAdvice}</p>
-          <div className="chips">
-            <span className="chip">
-              Best window · {advice.cleanestWindowStart || '1 PM'} to {advice.cleanestWindowEnd || '4 PM'}
-            </span>
-            {worstPoint && (
-              <span className="chip neutral">
-                Worst · {worstTimeStr} (AQI {worstPoint.aqi})
-              </span>
-            )}
-          </div>
+          {(advice.cleanestWindowStart && advice.cleanestWindowEnd) || worstPoint ? (
+            <div className="chips">
+              {advice.cleanestWindowStart && advice.cleanestWindowEnd && (
+                <span className="chip">
+                  Best window · {advice.cleanestWindowStart} to {advice.cleanestWindowEnd}
+                </span>
+              )}
+              {worstPoint && (
+                <span className="chip neutral">
+                  Worst · {worstTimeStr} (AQI {worstPoint.aqi})
+                </span>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
 

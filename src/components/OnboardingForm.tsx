@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PlanRequest } from '@/lib/plan/types';
 import { DEFAULT_PROFILE } from './onboarding/default-profile';
+import { reverseGeocodeCoordinates } from '@/lib/air-quality/reverse-geocoder';
 import { OnboardingStep1 } from './onboarding/OnboardingStep1';
 import { OnboardingStep2 } from './onboarding/OnboardingStep2';
 import { OnboardingStep3 } from './onboarding/OnboardingStep3';
@@ -57,12 +58,23 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setIsLocating(false);
         const { latitude, longitude } = position.coords;
         const coordsStr = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
         setAreaError(null);
-        setFormData((prev) => ({ ...prev, place: coordsStr }));
-        setAreaNote(`Found your location near ${coordsStr}.`);
+        setFormData((prev) => ({ ...prev, place: coordsStr, coordinates: coordsStr }));
+        setAreaNote('Looking up your locality…');
+
+        void reverseGeocodeCoordinates(latitude, longitude)
+          .then((rev) => {
+            if (rev?.formattedAddress) {
+              setFormData((prev) => ({ ...prev, place: rev.formattedAddress, coordinates: coordsStr }));
+              setAreaNote(`Found your location near ${rev.formattedAddress}.`);
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            setIsLocating(false);
+          });
       },
       () => {
         setIsLocating(false);

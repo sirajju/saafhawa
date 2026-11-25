@@ -24,7 +24,7 @@ interface WindowCandidate {
  * Builds actionable family advice from future hours in waking periods (6 AM to 10 PM local time).
  */
 export function buildForecastAdvice(
-  currentAqi: number,
+  currentAqi: number | null | undefined,
   hourlyForecast: ForecastAdvicePoint[] = [],
   household?: ForecastAdviceHousehold | null,
   timeZone = 'Asia/Kolkata',
@@ -47,6 +47,34 @@ export function buildForecastAdvice(
   candidates.sort((a, b) => a.avgAqi - b.avgAqi);
   const best = candidates[0];
 
+  const aqiNum = typeof currentAqi === 'number' && !isNaN(currentAqi) ? currentAqi : null;
+  const maxForecastAqi = validPoints.length > 0 ? Math.max(...validPoints.map((p) => p.aqi)) : (aqiNum ?? 150);
+  const isCurrentlyClean = aqiNum !== null && aqiNum <= 100;
+  const staysClean = isCurrentlyClean && maxForecastAqi <= 100;
+
+  if (staysClean && aqiNum !== null) {
+    const hasAsthma = Boolean(household?.hasAsthmaOrRespiratoryCondition);
+    let plainAdvice = '';
+    if (aqiNum <= 50) {
+      plainAdvice = 'Air quality is clean and fine for normal outdoor activities.';
+    } else if (hasAsthma) {
+      plainAdvice = 'Air quality is satisfactory and fine for normal activity, though sensitive family members with asthma should take it easy during heavy exertion.';
+    } else {
+      plainAdvice = 'Air quality is satisfactory and fine for normal outdoor activities.';
+    }
+
+    return {
+      plainAdvice,
+      cleanestWindowText: '',
+      cleanestWindowStart: '',
+      cleanestWindowEnd: '',
+      cleanestWindowStartIndex: -1,
+      cleanestWindowLength: 0,
+      isTomorrow: false,
+      minAqi: Math.round(best.avgAqi),
+    };
+  }
+
   const startTimeStr = formatHourInPlaceLocalTime(best.startPoint.dateTime, timeZone);
   const endIso = new Date(new Date(best.endPoint.dateTime).getTime() + 3600 * 1000).toISOString();
   const endTimeStr = formatHourInPlaceLocalTime(endIso, timeZone);
@@ -54,7 +82,9 @@ export function buildForecastAdvice(
   const windowTimeSpan = `${startTimeStr} to ${endTimeStr}`;
   const cleanestWindowText = best.isTomorrow ? `tomorrow ${windowTimeSpan}` : `today ${windowTimeSpan}`;
 
-  const advicePrefix = getAdvicePrefix(currentAqi, startTimeStr, best.isTomorrow, nowDetails.hour, household);
+  const advicePrefix = isCurrentlyClean
+    ? 'Air quality is currently favorable, but deteriorates later.'
+    : getAdvicePrefix(aqiNum ?? 200, startTimeStr, best.isTomorrow, nowDetails.hour, household);
   const adviceCleanestSuffix = best.isTomorrow
     ? `Cleanest window: tomorrow ${windowTimeSpan}.`
     : `Cleanest window today: ${windowTimeSpan}.`;

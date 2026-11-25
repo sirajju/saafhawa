@@ -10,6 +10,7 @@ import { getShortPlaceName } from '@/lib/design-system';
 
 export interface ChatPanelProps {
   place: string;
+  displayPlace?: string;
   householdProfile?: HouseholdProfile;
   isSampleData?: boolean;
   dataSource?: string;
@@ -27,6 +28,7 @@ const SAMPLE_PROMPTS = [
 
 export function ChatPanel({
   place,
+  displayPlace,
   householdProfile,
   isSampleData = false,
   dataSource,
@@ -35,7 +37,7 @@ export function ChatPanel({
   onClose,
   className = '',
 }: ChatPanelProps) {
-  const shortPlace = getShortPlaceName(place);
+  const shortPlace = getShortPlaceName(displayPlace || place);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
@@ -71,8 +73,8 @@ export function ChatPanel({
       const payload: ChatRequest = {
         message: text,
         conversationHistory: messages
-          .slice(-8)
-          .map((m) => ({ role: m.role, content: m.content })),
+          .slice(-6)
+          .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) })),
         place: place || '110001',
         householdProfile: householdProfile as ChatRequest['householdProfile'],
       };

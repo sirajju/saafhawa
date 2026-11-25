@@ -111,7 +111,8 @@ describe('Mobile Guidance Visibility and Safe Bottom Padding', () => {
 
     // Heading for guidance section is present
     expect(screen.getByText(/Today's Air Quality & Family Guidance/i)).toBeTruthy();
-    expect(screen.getByText(/Today's Family Guidance:/i)).toBeTruthy();
+    expect(screen.getByText(/For your family today/i)).toBeTruthy();
+    expect(screen.queryByText(/Today's Family Guidance:/i)).toBeNull();
 
     // Guidance text is rendered
     expect(screen.getAllByText(/Cleanest window/i).length).toBeGreaterThanOrEqual(1);

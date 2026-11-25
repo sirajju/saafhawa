@@ -12,6 +12,7 @@ export const PlanRequestSchema = z.object({
     .trim()
     .min(2, 'Place name or pincode must be at least 2 characters')
     .max(120, 'Place name or pincode cannot exceed 120 characters'),
+  coordinates: z.string().trim().optional(),
   adultsCount: z.number().int().min(1, 'At least 1 adult is required').max(30, 'Cannot exceed 30 adults').default(2),
   childrenCount: z.number().int().min(0).max(30, 'Cannot exceed 30 children').default(0),
   elderlyCount: z.number().int().min(0).max(30, 'Cannot exceed 30 seniors').default(0),
