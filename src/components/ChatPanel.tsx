@@ -137,6 +137,7 @@ export function ChatPanel({
             handleSendMessage();
           }}
           className="composer-form"
+          style={{ display: 'flex', width: '100%', gap: '8px', alignItems: 'center' }}
         >
           <input
             ref={inputRef}
@@ -147,13 +148,14 @@ export function ChatPanel({
             disabled={isLoading}
             aria-label="Ask clean air assistant"
             maxLength={300}
+            style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}
           />
           <button
             type="submit"
             disabled={isLoading || !inputText.trim()}
             aria-label="Send question"
             className="btn btn-primary"
-            style={{ width: '44px', height: '44px', padding: 0 }}
+            style={{ width: '44px', height: '44px', padding: 0, flex: 'none' }}
           >
             <SendIcon className="icon" />
           </button>

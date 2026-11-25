@@ -117,8 +117,8 @@ export function OnboardingForm({
   const progressPercent = currentStep === 1 ? 33 : currentStep === 2 ? 66 : 100;
 
   return (
-    <main id="onb" className="onb">
-      <div className="card">
+    <main id="onb" className="wrap">
+      <div className="onb">
         <OnboardingProgressBar
           currentStep={currentStep}
           isEditing={isEditing}

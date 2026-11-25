@@ -81,6 +81,7 @@ test.describe('Theme Switching & Typography System', () => {
             style.opacity === '0' ||
             el.classList.contains('sr-only') ||
             el.closest('.sr-only') ||
+            el.closest('svg') ||
             ['SCRIPT', 'STYLE', 'SVG', 'PATH', 'NOSCRIPT'].includes(el.tagName)
           ) {
             continue;

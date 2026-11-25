@@ -18,11 +18,13 @@ export function formatHourInPlaceLocalTime(
     // Round odd minutes to the nearest hour (e.g. 10:04 AM -> 10 AM, 10:45 AM -> 11 AM)
     const roundedMs = Math.round(rawDate.getTime() / (3600 * 1000)) * (3600 * 1000);
     const roundedDate = new Date(roundedMs);
-    return roundedDate.toLocaleTimeString('en-US', {
+    const formatted = roundedDate.toLocaleTimeString('en-US', {
       hour: 'numeric',
       hour12: true,
       timeZone: tz,
     });
+    // Use non-breaking space between number and meridiem (e.g. 10\u00A0AM, 1\u00A0PM)
+    return formatted.replace(/\s+/g, '\u00A0');
   };
 
   try {

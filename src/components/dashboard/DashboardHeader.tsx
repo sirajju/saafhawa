@@ -29,6 +29,7 @@ export function DashboardHeader({
           <h1
             ref={headingRef}
             tabIndex={-1}
+            style={{ outline: 'none' }}
             className="focus:outline-none"
           >
             Today in {shortPlace}

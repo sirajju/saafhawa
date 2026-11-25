@@ -59,11 +59,15 @@ export function buildForecastAdvice(
     ? `Cleanest window: tomorrow ${windowTimeSpan}.`
     : `Cleanest window today: ${windowTimeSpan}.`;
 
+  const forecastStartIndex = hourlyForecast.findIndex((p) => p.dateTime === best.startPoint.dateTime);
+
   return {
     plainAdvice: `${advicePrefix} ${adviceCleanestSuffix}`,
     cleanestWindowText,
     cleanestWindowStart: best.isTomorrow ? `tomorrow ${startTimeStr}` : startTimeStr,
     cleanestWindowEnd: endTimeStr,
+    cleanestWindowStartIndex: forecastStartIndex >= 0 ? forecastStartIndex : best.startIndex,
+    cleanestWindowLength: best.length,
     isTomorrow: best.isTomorrow,
     minAqi: Math.round(best.avgAqi),
   };
@@ -156,10 +160,12 @@ function buildFallbackAdvice(household?: ForecastAdviceHousehold | null): Foreca
   else if (hasSeniors) prefix = 'Keep seniors indoors during peak morning hours.';
 
   return {
-    plainAdvice: `${prefix} Cleanest window today: 1 PM to 4 PM.`,
-    cleanestWindowText: 'today 1 PM to 4 PM',
-    cleanestWindowStart: '1 PM',
-    cleanestWindowEnd: '4 PM',
+    plainAdvice: `${prefix} Cleanest window today: 1\u00A0PM to 4\u00A0PM.`,
+    cleanestWindowText: 'today 1\u00A0PM to 4\u00A0PM',
+    cleanestWindowStart: '1\u00A0PM',
+    cleanestWindowEnd: '4\u00A0PM',
+    cleanestWindowStartIndex: 0,
+    cleanestWindowLength: 3,
     isTomorrow: false,
     minAqi: null,
   };

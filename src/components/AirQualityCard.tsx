@@ -136,6 +136,8 @@ export function AirQualityCard({
         timeZone={location.timeZone}
         cleanestWindowStart={advice.cleanestWindowStart}
         cleanestWindowEnd={advice.cleanestWindowEnd}
+        cleanestWindowStartIndex={advice.cleanestWindowStartIndex}
+        cleanestWindowLength={advice.cleanestWindowLength}
       />
 
       <div className="meta">

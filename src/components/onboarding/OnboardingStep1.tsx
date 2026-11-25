@@ -58,7 +58,7 @@ export function OnboardingStep1({
             className="btn"
           >
             <LocateIcon className={isLocating ? 'animate-spin' : ''} />
-            <span>{isLocating ? 'Locating...' : 'Use my location'}</span>
+            <span className="hide-sm">{isLocating ? 'Locating...' : 'Use my location'}</span>
           </button>
         </div>
 

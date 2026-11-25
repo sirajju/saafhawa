@@ -18,6 +18,8 @@ interface ForecastChartProps {
   timeZone?: string;
   cleanestWindowStart?: string;
   cleanestWindowEnd?: string;
+  cleanestWindowStartIndex?: number;
+  cleanestWindowLength?: number;
   currentAqi?: number | null;
 }
 
@@ -26,6 +28,8 @@ export function ForecastChart({
   timeZone = 'Asia/Kolkata',
   cleanestWindowStart,
   cleanestWindowEnd,
+  cleanestWindowStartIndex,
+  cleanestWindowLength,
   currentAqi,
 }: ForecastChartProps) {
   if (!hourlyForecast || hourlyForecast.length === 0) return null;
@@ -59,9 +63,44 @@ export function ForecastChart({
     }
   });
 
+  // Synchronize cleanest window with the advice start/end
+  let finalCleanestIndex = cleanestIndex;
+  let finalCleanestLength = 3;
+
+  if (
+    typeof cleanestWindowStartIndex === 'number' &&
+    cleanestWindowStartIndex >= 0 &&
+    cleanestWindowStartIndex < points.length
+  ) {
+    finalCleanestIndex = cleanestWindowStartIndex;
+    finalCleanestLength =
+      typeof cleanestWindowLength === 'number' && cleanestWindowLength > 0
+        ? cleanestWindowLength
+        : 3;
+  } else if (cleanestWindowStart) {
+    const normStart = cleanestWindowStart.replace(/^tomorrow\s+/i, '').replace(/\u00A0/g, ' ').trim();
+    const foundStart = points.findIndex((p) => {
+      const ptStr = formatHourInPlaceLocalTime(p.dateTime, timeZone).replace(/\u00A0/g, ' ').trim();
+      return ptStr === normStart;
+    });
+    if (foundStart !== -1) {
+      finalCleanestIndex = foundStart;
+      if (cleanestWindowEnd) {
+        const normEnd = cleanestWindowEnd.replace(/^tomorrow\s+/i, '').replace(/\u00A0/g, ' ').trim();
+        const foundEnd = points.findIndex((p) => {
+          const ptStr = formatHourInPlaceLocalTime(p.dateTime, timeZone).replace(/\u00A0/g, ' ').trim();
+          return ptStr === normEnd;
+        });
+        if (foundEnd > foundStart) {
+          finalCleanestLength = foundEnd - foundStart;
+        }
+      }
+    }
+  }
+
   const peakPoint = points[peakIndex];
   const peakTimeStr = peakPoint ? formatHourInPlaceLocalTime(peakPoint.dateTime, timeZone) : '';
-  const cleanestPoint = points[cleanestIndex];
+  const cleanestPoint = points[finalCleanestIndex];
   const cleanestTimeStr = cleanestPoint ? formatHourInPlaceLocalTime(cleanestPoint.dateTime, timeZone) : '';
 
   const srSummary = `24-hour forecast chart: Current hour is marked as Now with AQI ${
@@ -81,7 +120,8 @@ export function ForecastChart({
         points={points}
         timeZone={timeZone}
         maxAqi={maxAqi}
-        cleanestIndex={cleanestIndex}
+        cleanestIndex={finalCleanestIndex}
+        cleanestWindowLength={finalCleanestLength}
         srSummary={srSummary}
       />
 

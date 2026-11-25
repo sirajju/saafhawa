@@ -16,6 +16,8 @@ export interface ForecastAdviceResult {
   cleanestWindowText: string;
   cleanestWindowStart: string;
   cleanestWindowEnd: string;
+  cleanestWindowStartIndex?: number;
+  cleanestWindowLength?: number;
   isTomorrow: boolean;
   minAqi: number | null;
 }

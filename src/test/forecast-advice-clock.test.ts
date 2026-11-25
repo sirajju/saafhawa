@@ -41,9 +41,12 @@ describe('Forecast Advice - Future Waking Hours & Fixed Clock Tests', () => {
     );
 
     expect(result.isTomorrow).toBe(false);
-    expect(result.cleanestWindowText).toContain('1 PM to 4 PM');
-    expect(result.plainAdvice).toContain('Keep members with respiratory sensitivity indoors until 1 PM.');
-    expect(result.plainAdvice).toContain('Cleanest window today: 1 PM to 4 PM.');
+    expect(result.cleanestWindowText).toMatch(/1[\s\u00A0]PM to 4[\s\u00A0]PM/);
+    expect(result.plainAdvice).toMatch(/Keep members with respiratory sensitivity indoors until 1[\s\u00A0]PM\./);
+    expect(result.plainAdvice).toMatch(/Cleanest window today: 1[\s\u00A0]PM to 4[\s\u00A0]PM\./);
+    // Explicitly verify non-breaking space between number and meridiem
+    expect(result.plainAdvice).toContain('1\u00A0PM');
+    expect(result.plainAdvice).toContain('4\u00A0PM');
   });
 
   it('starts at current hour and does NOT refer to past morning hours when clock is at 1:00 PM (Afternoon)', () => {
@@ -60,7 +63,7 @@ describe('Forecast Advice - Future Waking Hours & Fixed Clock Tests', () => {
     expect(result.isTomorrow).toBe(false);
     // Must NOT say 4 AM or past morning hours!
     expect(result.plainAdvice).not.toContain('4 AM');
-    expect(result.cleanestWindowText).toContain('1 PM to 4 PM');
+    expect(result.cleanestWindowText).toMatch(/1[\s\u00A0]PM to 4[\s\u00A0]PM/);
     expect(result.plainAdvice).toContain('Cleanest window today:');
   });
 
