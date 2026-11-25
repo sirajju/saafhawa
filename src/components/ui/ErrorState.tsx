@@ -13,32 +13,49 @@ export function ErrorState({
   onChangeLocation,
 }: ErrorStateProps) {
   return (
-    <div className="mx-auto mt-8 max-w-2xl px-4 sm:px-6">
+    <div className="wrap" style={{ maxWidth: 680, padding: '32px 16px' }}>
       <div
         role="alert"
-        className="rounded-2xl border border-rose-200/90 bg-rose-50/70 p-6 sm:p-8 shadow-xs dark:border-rose-900/60 dark:bg-rose-950/40"
+        className="card"
+        style={{
+          border: '1px solid var(--aqi-severe)',
+          background: 'var(--surface)',
+          padding: 24,
+        }}
       >
-        <div className="flex items-start gap-3.5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200">
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 44,
+              height: 44,
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--aqi-severe-soft)',
+              color: 'var(--aqi-severe)',
+              flexShrink: 0,
+            }}
+          >
             <AlertTriangleIcon className="h-5 w-5" />
           </div>
-          <div className="flex-1">
-            <h2 className="text-base font-bold text-rose-950 sm:text-lg dark:text-rose-100">
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: 17, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
               Unable to Load Air Quality or Plan
             </h2>
-            <p className="mt-1 text-sm leading-relaxed text-rose-800 dark:text-rose-300">
+            <p style={{ marginTop: 8, fontSize: 15, lineHeight: 1.5, color: 'var(--ink-2)' }}>
               {message || 'We could not reach the air quality sensors or generate your family’s plan right now.'}
             </p>
-            <p className="mt-1 text-xs text-rose-700/80 dark:text-rose-400/80">
+            <p className="caption" style={{ marginTop: 6, color: 'var(--ink-3)' }}>
               Your profile is safely stored. Please check your internet connection or try again.
             </p>
 
-            <div className="mt-5 flex flex-wrap items-center gap-3">
+            <div style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
               {onRetry && (
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 dark:bg-teal-700 dark:hover:bg-teal-600"
+                  className="btn btn-primary"
                 >
                   <RefreshIcon className="h-4 w-4" />
                   <span>Try Again</span>
@@ -48,7 +65,7 @@ export function ErrorState({
                 <button
                   type="button"
                   onClick={onChangeLocation}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-rose-300 bg-white px-4 py-2.5 text-sm font-semibold text-rose-900 shadow-2xs hover:bg-rose-100/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:border-rose-800 dark:bg-slate-900 dark:text-rose-200"
+                  className="btn"
                 >
                   <EditIcon className="h-4 w-4" />
                   <span>Change Location</span>

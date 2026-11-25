@@ -4,3 +4,4 @@ export * from './icons/NavIcons';
 export * from './icons/ActionIcons';
 export * from './icons/DomainIcons';
 export * from './icons/VehicleIcons';
+export * from './icons/ThemeIcons';

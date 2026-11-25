@@ -100,7 +100,7 @@ export default function HomePage() {
   const currentPlaceName = plan?.location.name || profile?.place || '110001';
 
   return (
-    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden min-w-0 flex-col bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100%', flexDirection: 'column' }}>
       <Navbar
         currentPlace={currentPlaceName}
         onEditProfile={profile ? () => setIsEditingProfile(true) : undefined}
@@ -108,7 +108,7 @@ export default function HomePage() {
         isLoading={isLoading}
       />
 
-      <main id="main-content" className="flex-1 w-full max-w-full overflow-x-hidden min-w-0 pb-32 sm:pb-16">
+      <main id="main-content" style={{ flex: 1, width: '100%' }}>
         <div
           role="status"
           aria-live="polite"

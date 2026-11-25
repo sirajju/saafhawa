@@ -12,7 +12,7 @@ interface DemographicsFieldsProps {
 
 export function DemographicsFields({ formData, onChange }: DemographicsFieldsProps) {
   return (
-    <div className="space-y-6">
+    <div className="stack">
       {/* Adults Count */}
       <ChoiceChipGroup<number>
         label="Adults in home (18–64 yrs)"
@@ -63,8 +63,8 @@ export function DemographicsFields({ formData, onChange }: DemographicsFieldsPro
         value={formData.hasAsthmaOrRespiratoryCondition}
         onChange={(val) => onChange('hasAsthmaOrRespiratoryCondition', val)}
         options={[
-          { value: false, label: 'No', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
-          { value: true, label: 'Yes (High Sensitivity)', icon: <AlertTriangleIcon className="h-4 w-4 text-amber-600" /> },
+          { value: false, label: 'No', icon: <ShieldIcon className="h-4 w-4" /> },
+          { value: true, label: 'Yes (High Sensitivity)', icon: <AlertTriangleIcon className="h-4 w-4" /> },
         ]}
       />
 

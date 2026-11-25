@@ -21,16 +21,6 @@ interface ForecastChartProps {
   currentAqi?: number | null;
 }
 
-function getAqiBarColor(aqi: number | null): string {
-  if (aqi === null) return '#94a3b8';
-  if (aqi <= 50) return '#10b981';
-  if (aqi <= 100) return '#22c55e';
-  if (aqi <= 200) return '#eab308';
-  if (aqi <= 300) return '#f97316';
-  if (aqi <= 400) return '#ef4444';
-  return '#7f1d1d';
-}
-
 export function ForecastChart({
   hourlyForecast,
   timeZone = 'Asia/Kolkata',
@@ -47,6 +37,7 @@ export function ForecastChart({
     }
     return p;
   });
+
   const aqiValues = points.map((p) => (typeof p.aqi === 'number' ? p.aqi : 0));
   const maxAqi = Math.max(400, ...aqiValues);
   const minAqi = Math.min(...aqiValues.filter((v) => v > 0));
@@ -73,11 +64,6 @@ export function ForecastChart({
   const cleanestPoint = points[cleanestIndex];
   const cleanestTimeStr = cleanestPoint ? formatHourInPlaceLocalTime(cleanestPoint.dateTime, timeZone) : '';
 
-  const chartHeight = 130;
-  const chartWidth = 720;
-  const barSpacing = chartWidth / points.length;
-  const barWidth = Math.max(6, barSpacing - 6);
-
   const srSummary = `24-hour forecast chart: Current hour is marked as Now with AQI ${
     points[0]?.aqi ?? 'unavailable'
   }. Cleanest air window is ${cleanestWindowStart || cleanestTimeStr} to ${
@@ -85,62 +71,25 @@ export function ForecastChart({
   } with AQI around ${minAqi}. Peak smog is at ${peakTimeStr} with AQI ${highestVal}.`;
 
   return (
-    <div
-      className="mt-6 w-full max-w-full overflow-hidden rounded-xl border border-slate-200/90 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/60"
-      role="region"
-      aria-label="24-hour air quality forecast chart"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-            24-Hour Forecast Trend
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-            Cleanest Window: {cleanestWindowStart || '1 PM'} – {cleanestWindowEnd || '4 PM'}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3 text-[11px] text-slate-600 dark:text-slate-400">
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-            <span className="font-semibold text-slate-700 dark:text-slate-300">Cleanest</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-slate-900 ring-2 ring-emerald-400 dark:bg-white" aria-hidden="true" />
-            <span className="font-semibold text-slate-700 dark:text-slate-300">Now</span>
-          </span>
-        </div>
-      </div>
-
-      <div className="sr-only" tabIndex={0}>
-        {srSummary}
+    <div className="forecast" role="region" aria-label="24-hour air quality forecast chart">
+      <div className="forecast-head">
+        <h3>Next 24 hours</h3>
+        <span className="caption">PM2.5-based AQI by hour</span>
       </div>
 
       <ForecastChartSvg
         points={points}
         timeZone={timeZone}
-        chartWidth={chartWidth}
-        chartHeight={chartHeight}
-        barSpacing={barSpacing}
-        barWidth={barWidth}
         maxAqi={maxAqi}
         cleanestIndex={cleanestIndex}
-        getAqiBarColor={getAqiBarColor}
+        srSummary={srSummary}
       />
 
-      <div className="mt-2 flex flex-wrap items-center justify-between border-t border-slate-200/80 pt-2 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-400">
-        <div>
-          <span className="font-semibold text-slate-800 dark:text-slate-200">Current: </span>
-          <span>AQI {points[0]?.aqi ?? '—'}</span>
-        </div>
-        <div>
-          <span className="font-semibold text-emerald-700 dark:text-emerald-400">Best Window: </span>
-          <span>{cleanestWindowStart || '1 PM'} – {cleanestWindowEnd || '4 PM'} (AQI ~{minAqi})</span>
-        </div>
-        <div>
-          <span className="font-semibold text-rose-700 dark:text-rose-400">Smog Peak: </span>
-          <span>{peakTimeStr} (AQI {highestVal})</span>
-        </div>
+      <div className="sr-only" tabIndex={0}>
+        <span>{srSummary}</span>
+        <span>Current: AQI {points[0]?.aqi ?? '—'}. </span>
+        <span>Cleanest air window is {cleanestWindowStart || cleanestTimeStr} to {cleanestWindowEnd || 'afternoon'} with AQI around {minAqi}. </span>
+        <span>Smog Peak: {peakTimeStr} (AQI {highestVal}). </span>
       </div>
     </div>
   );

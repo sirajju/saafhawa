@@ -15,17 +15,11 @@ export function AdvisorySelectorBar({
   onLanguageChange,
 }: AdvisorySelectorBarProps) {
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-      {/* Audience Segment Radios */}
-      <fieldset className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+    <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      {/* Audience Segment */}
+      <fieldset className="seg" style={{ margin: 0 }}>
         <legend className="sr-only">Target community audience</legend>
-        <label
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-teal-600 ${
-            audience === 'housing_society'
-              ? 'bg-teal-800 text-white shadow-xs dark:bg-teal-700'
-              : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
-          }`}
-        >
+        <label className={audience === 'housing_society' ? 'active' : ''}>
           <input
             type="radio"
             name="audience"
@@ -34,17 +28,11 @@ export function AdvisorySelectorBar({
             onChange={() => onAudienceChange('housing_society')}
             className="sr-only"
           />
-          <HomeIcon className="h-3.5 w-3.5" />
-          <span>Housing Society (RWA)</span>
+          <HomeIcon className="h-4 w-4" />
+          <span>Housing Society</span>
         </label>
 
-        <label
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-teal-600 ${
-            audience === 'school_group'
-              ? 'bg-teal-800 text-white shadow-xs dark:bg-teal-700'
-              : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
-          }`}
-        >
+        <label className={audience === 'school_group' ? 'active' : ''}>
           <input
             type="radio"
             name="audience"
@@ -53,21 +41,15 @@ export function AdvisorySelectorBar({
             onChange={() => onAudienceChange('school_group')}
             className="sr-only"
           />
-          <ShieldIcon className="h-3.5 w-3.5" />
+          <ShieldIcon className="h-4 w-4" />
           <span>School / Parents</span>
         </label>
       </fieldset>
 
-      {/* Language Radios */}
-      <fieldset className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+      {/* Language Segment */}
+      <fieldset className="seg" style={{ margin: 0 }}>
         <legend className="sr-only">Select language</legend>
-        <label
-          className={`rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-teal-600 ${
-            language === 'en'
-              ? 'bg-teal-800 text-white shadow-xs dark:bg-teal-700'
-              : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
-          }`}
-        >
+        <label className={language === 'en' ? 'active' : ''}>
           <input
             type="radio"
             name="language"
@@ -79,14 +61,7 @@ export function AdvisorySelectorBar({
           <span>English</span>
         </label>
 
-        <label
-          lang="hi"
-          className={`rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-teal-600 ${
-            language === 'hi'
-              ? 'bg-teal-800 text-white shadow-xs dark:bg-teal-700'
-              : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
-          }`}
-        >
+        <label lang="hi" className={language === 'hi' ? 'active' : ''}>
           <input
             type="radio"
             name="language"

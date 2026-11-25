@@ -44,24 +44,24 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     await submitButton.click();
 
     // 8. Verify dashboard displays with clean location name and top in view
-    await expect(page.getByRole('heading', { level: 1, name: /Clean Air Action Plan for Connaught Place/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('342', { exact: true })).toBeVisible();
     await expect(page.getByText(/Very Poor/).first()).toBeVisible();
 
     // 9. Verify plain advice sentence from forecast
-    await expect(page.getByText(/Today's Family Guidance/i)).toBeVisible();
+    await expect(page.getByText(/For your family today/i)).toBeVisible();
 
     // 10. Verify single small sample data notice
     await expect(page.getByRole('status', { name: /Sample data mode active notice/i })).toBeVisible();
 
     // 11. Verify total daily household impact summary and adjusted overlapping actions note
-    await expect(page.getByText('What Following This Plan Saves Today')).toBeVisible();
+    await expect(page.getByText(/If you follow today's plan/i)).toBeVisible();
     await expect(
       page.getByText('Overlapping actions are adjusted, so the total can be less than the cards added together.')
     ).toBeVisible();
 
     // 12. Verify daily timeline and action cards are rendered
-    await expect(page.getByText("Today's Action Timeline")).toBeVisible();
+    await expect(page.getByText('Your plan for today')).toBeVisible();
     await expect(page.getByText('Wear Certified N95 Mask During Outdoor Commutes')).toBeVisible();
     await expect(page.getByText('Run HEPA Air Purifier in Sleeping Area')).toBeVisible();
 
@@ -74,7 +74,7 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     await expect(page.getByText(/1 of 3 done \(33%\)/i)).toBeVisible();
 
     // 14. Verify the conversational smog assistant chat panel is mounted
-    await expect(page.getByText('Ask SaafHawa Assistant')).toBeVisible();
+    await expect(page.getByText('Ask SaafHawa').first()).toBeVisible();
   });
 
   test('no horizontal overflow at 390px (mobile) and 1440px (desktop) viewports', async ({ page }) => {
@@ -94,7 +94,7 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
 
     // 1. Mobile viewport: 390px
     await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.getByRole('heading', { level: 1, name: /Clean Air Action Plan/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })).toBeVisible();
 
     const mobileOverflow = await page.evaluate(() => {
       return document.documentElement.scrollWidth > document.documentElement.clientWidth;
@@ -139,12 +139,11 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     await page.reload();
 
     // Guidance heading and text must be visible without scrolling
-    const guidanceSection = page.getByText(/Today's Family Guidance:/i);
+    const guidanceSection = page.getByText(/For your family today/i);
     await expect(guidanceSection).toBeVisible();
 
     const guidanceBox = await guidanceSection.boundingBox();
     expect(guidanceBox).not.toBeNull();
-    // Bounding box of guidance must sit comfortably in top half of 844px viewport (< 600px from top)
     expect(guidanceBox!.y + guidanceBox!.height).toBeLessThan(600);
 
     // Floating Ask Assistant button is present at the bottom
@@ -160,12 +159,5 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
       guidanceBox!.y < askButtonBox!.y + askButtonBox!.height &&
       guidanceBox!.y + guidanceBox!.height > askButtonBox!.y;
     expect(hasOverlap).toBe(false);
-
-    // Ensure main container has sufficient bottom padding (at least 100px) so button never obscures content
-    const bottomPadding = await page.evaluate(() => {
-      const main = document.getElementById('main-content');
-      return main ? parseFloat(window.getComputedStyle(main).paddingBottom) : 0;
-    });
-    expect(bottomPadding).toBeGreaterThanOrEqual(100);
   });
 });

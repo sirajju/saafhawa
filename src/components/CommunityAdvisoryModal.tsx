@@ -5,7 +5,8 @@ import { AdvisoryResponse } from '@/lib/community/types';
 import { useFocusTrap } from '@/lib/use-focus-trap';
 import { AdvisorySelectorBar } from './AdvisorySelectorBar';
 import { AdvisoryModalBody } from './AdvisoryModalBody';
-import { ShareIcon, CloseIcon, CopyIcon, CheckIcon } from './ui/Icons';
+import { AdvisoryModalFooter } from './AdvisoryModalFooter';
+import { ShareIcon, CloseIcon } from './ui/Icons';
 
 interface CommunityAdvisoryModalProps {
   isOpen: boolean;
@@ -29,7 +30,6 @@ export function CommunityAdvisoryModal({
 
   useEffect(() => {
     if (!isOpen) return;
-
     let ignore = false;
 
     fetch('/api/community-advisory', {
@@ -52,31 +52,13 @@ export function CommunityAdvisoryModal({
       })
       .catch((err: unknown) => {
         if (!ignore) {
-          setErrorMessage(
-            err instanceof Error ? err.message : 'Unable to generate advisory. Please try again.'
-          );
+          setErrorMessage(err instanceof Error ? err.message : 'Unable to generate advisory.');
           setIsLoading(false);
         }
       });
 
-    return () => {
-      ignore = true;
-    };
+    return () => { ignore = true; };
   }, [isOpen, place, audience, language]);
-
-  const handleAudienceChange = (newAudience: 'housing_society' | 'school_group') => {
-    setAudience(newAudience);
-    setIsLoading(true);
-    setErrorMessage(null);
-    setCopied(false);
-  };
-
-  const handleLanguageChange = (newLang: 'en' | 'hi') => {
-    setLanguage(newLang);
-    setIsLoading(true);
-    setErrorMessage(null);
-    setCopied(false);
-  };
 
   const handleCopyText = async () => {
     if (!advisory?.advisoryText) return;
@@ -84,9 +66,7 @@ export function CommunityAdvisoryModal({
       await navigator.clipboard.writeText(advisory.advisoryText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-    } catch {
-      // Clipboard access denied
-    }
+    } catch { /* Clipboard access denied */ }
   };
 
   if (!isOpen) return null;
@@ -101,29 +81,60 @@ export function CommunityAdvisoryModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="advisory-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+      }}
     >
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}
         onClick={onClose}
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-        <div className="border-b border-slate-200 bg-slate-50/80 p-5 sm:p-6 dark:border-slate-800 dark:bg-slate-950/70">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-100 text-teal-800 dark:bg-teal-950/80 dark:text-teal-300">
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: '90vh',
+          width: '100%',
+          maxWidth: 680,
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--line)',
+          background: 'var(--surface)',
+          boxShadow: 'var(--shadow)',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ padding: 24, borderBottom: '1px solid var(--line)' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 44,
+                  height: 44,
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--brand-soft)',
+                  color: 'var(--brand)',
+                }}
+              >
                 <ShareIcon className="h-5 w-5" />
               </div>
               <div>
-                <h2
-                  id="advisory-modal-title"
-                  className="text-lg font-bold text-slate-900 sm:text-xl dark:text-slate-50"
-                >
-                  Share Smog Advisory with Your Community
+                <h2 id="advisory-modal-title" style={{ fontSize: 22, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
+                  Share Smog Advisory
                 </h2>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
+                <p className="caption" style={{ margin: '4px 0 0' }}>
                   Ready-to-copy WhatsApp advisory based on today&apos;s air quality in {place}.
                 </p>
               </div>
@@ -133,7 +144,8 @@ export function CommunityAdvisoryModal({
               type="button"
               onClick={onClose}
               aria-label="Close dialog"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="btn btn-ghost"
+              style={{ width: 36, height: 36, padding: 0 }}
             >
               <CloseIcon className="h-5 w-5" />
             </button>
@@ -142,8 +154,18 @@ export function CommunityAdvisoryModal({
           <AdvisorySelectorBar
             audience={audience}
             language={language}
-            onAudienceChange={handleAudienceChange}
-            onLanguageChange={handleLanguageChange}
+            onAudienceChange={(a) => {
+              setAudience(a);
+              setIsLoading(true);
+              setErrorMessage(null);
+              setCopied(false);
+            }}
+            onLanguageChange={(l) => {
+              setLanguage(l);
+              setIsLoading(true);
+              setErrorMessage(null);
+              setCopied(false);
+            }}
           />
         </div>
 
@@ -154,45 +176,13 @@ export function CommunityAdvisoryModal({
           language={language}
         />
 
-        <div className="border-t border-slate-200 bg-slate-50/80 p-4 sm:flex sm:items-center sm:justify-between sm:px-6 dark:border-slate-800 dark:bg-slate-950/70">
-          <span className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-            {copied ? (
-              <>
-                <CheckIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" />
-                <span className="font-semibold text-teal-800 dark:text-teal-300">Copied to clipboard!</span>
-              </>
-            ) : (
-              'Preview message above, then copy or share directly to WhatsApp'
-            )}
-          </span>
-
-          <div className="mt-3 flex gap-2.5 sm:mt-0">
-            <button
-              type="button"
-              disabled={isLoading || !advisory}
-              onClick={handleCopyText}
-              className={`inline-flex min-h-[44px] items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold shadow-2xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50 ${
-                copied
-                  ? 'border-teal-700 bg-teal-800 text-white'
-                  : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
-            >
-              {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
-              <span>{copied ? 'Copied!' : 'Copy WhatsApp Message'}</span>
-            </button>
-
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-disabled={isLoading || !advisory}
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-teal-800 px-5 py-2.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50 dark:bg-teal-700 dark:hover:bg-teal-600"
-            >
-              <ShareIcon className="h-4 w-4" />
-              <span>Share on WhatsApp</span>
-            </a>
-          </div>
-        </div>
+        <AdvisoryModalFooter
+          copied={copied}
+          isLoading={isLoading}
+          hasAdvisory={Boolean(advisory)}
+          whatsappUrl={whatsappUrl}
+          onCopy={handleCopyText}
+        />
       </div>
     </div>
   );

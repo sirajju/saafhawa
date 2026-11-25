@@ -3,7 +3,7 @@
 import React from 'react';
 import { PlanRequest } from '@/lib/plan/types';
 import { DemographicsFields } from './DemographicsFields';
-import { LocationIcon } from '../ui/Icons';
+import { LocateIcon } from '../ui/Icons';
 
 interface OnboardingStep1Props {
   formData: PlanRequest;
@@ -25,16 +25,16 @@ export function OnboardingStep1({
   onUseBrowserLocation,
 }: OnboardingStep1Props) {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <label htmlFor="place-input" className="block text-base font-bold text-slate-900 dark:text-slate-100">
-          Where do you live? <span className="text-rose-600">*</span>
+    <div className="stack">
+      <div className="q">
+        <label htmlFor="place-input">
+          Where do you live? <span style={{ color: 'var(--brand)' }}>*</span>
         </label>
-        <p id="place-hint" className="text-sm text-slate-600 dark:text-slate-400">
-          Enter your locality, neighborhood, landmark, or 6-digit pincode.
-        </p>
+        <div id="place-hint" className="caption">
+          Locality, neighbourhood, landmark or 6-digit PIN code.
+        </div>
 
-        <div className="mt-2 flex flex-col gap-2.5 sm:flex-row">
+        <div className="input-row">
           <input
             id="place-input"
             type="text"
@@ -48,7 +48,6 @@ export function OnboardingStep1({
               onChange('place', e.target.value);
             }}
             placeholder="e.g. Connaught Place, New Delhi or 110001"
-            className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 shadow-2xs transition placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
 
           <button
@@ -56,17 +55,17 @@ export function OnboardingStep1({
             onClick={onUseBrowserLocation}
             disabled={isLocating}
             aria-label="Use browser location to set your coordinates"
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="btn"
           >
-            <LocationIcon className={`h-4 w-4 text-teal-700 dark:text-teal-400 ${isLocating ? 'animate-spin' : ''}`} />
+            <LocateIcon className={isLocating ? 'animate-spin' : ''} />
             <span>{isLocating ? 'Locating...' : 'Use my location'}</span>
           </button>
         </div>
 
         {geoStatus && (
-          <p className="mt-2 text-xs font-medium text-teal-800 dark:text-teal-300">
+          <div className="caption" style={{ color: 'var(--brand)', marginTop: 8 }}>
             {geoStatus}
-          </p>
+          </div>
         )}
       </div>
 

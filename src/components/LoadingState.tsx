@@ -31,104 +31,77 @@ export function LoadingState({ isSampleData = false }: LoadingStateProps) {
   }, [loadingMessages.length]);
 
   return (
-    <div
-      aria-hidden="true"
-      className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 space-y-8"
-    >
+    <div aria-hidden="true" className="wrap" style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Reassuring Loading Status Card */}
-      <div className="rounded-2xl border border-teal-200/80 bg-teal-50/70 p-5 dark:border-teal-900/60 dark:bg-teal-950/40">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-800 text-white shadow-xs dark:bg-teal-700 animate-pulse motion-reduce:animate-none">
+      <div className="card" style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand)', padding: 24 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 44,
+                height: 44,
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--brand)',
+                color: 'var(--brand-ink)',
+              }}
+            >
               <BrandIcon className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-teal-950 dark:text-teal-100">
+              <h2 style={{ fontSize: 17, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
                 Crafting Your Winter Smog Action Plan
               </h2>
-              <p className="text-sm font-medium text-teal-800 dark:text-teal-300">
+              <p className="caption" style={{ color: 'var(--ink-2)', margin: '4px 0 0' }}>
                 {loadingMessages[stepIndex]}
               </p>
             </div>
           </div>
 
           {isSampleData && (
-            <div
-              role="status"
-              aria-label="Sample data mode active"
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-700 dark:bg-amber-950/80 dark:text-amber-200"
-            >
-              <AlertTriangleIcon className="h-3.5 w-3.5" />
+            <div className="pill" style={{ color: 'var(--aqi-poor)', background: 'var(--aqi-poor-soft)', border: '1px solid var(--aqi-poor)' }}>
+              <AlertTriangleIcon className="h-4 w-4" />
               <span>Sample Data Mode</span>
             </div>
           )}
         </div>
 
         {/* Pulse Bar */}
-        <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-teal-200/60 dark:bg-teal-900/60">
+        <div style={{ marginTop: 16, height: 6, width: '100%', borderRadius: 999, background: 'var(--surface-2)', overflow: 'hidden' }}>
           <div
-            className="h-full bg-teal-700 transition-all duration-500 ease-out motion-reduce:transition-none dark:bg-teal-400"
-            style={{ width: `${Math.min(100, Math.round(((stepIndex + 1) / loadingMessages.length) * 100))}%` }}
+            style={{
+              height: '100%',
+              background: 'var(--brand)',
+              borderRadius: 999,
+              transition: 'width 0.5s ease-out',
+              width: `${Math.min(100, Math.round(((stepIndex + 1) / loadingMessages.length) * 100))}%`,
+            }}
           />
         </div>
       </div>
 
       {/* SKELETON: Matches Real Layout */}
-      <div className="animate-pulse space-y-8 motion-reduce:animate-none">
+      <div className="stack" style={{ opacity: 0.6 }}>
         {/* Header Skeleton */}
-        <div className="space-y-3 border-b border-slate-200 pb-5 dark:border-slate-800">
-          <div className="h-7 w-2/3 max-w-md rounded-lg bg-slate-200 dark:bg-slate-800" />
-          <div className="h-4 w-1/2 max-w-sm rounded bg-slate-200 dark:bg-slate-800" />
-          <div className="h-10 w-full max-w-sm rounded-xl bg-slate-200 dark:bg-slate-800" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 16, borderBottom: '1px solid var(--line)' }}>
+          <div style={{ height: 28, width: 240, borderRadius: 6, background: 'var(--surface-2)' }} />
+          <div style={{ height: 18, width: 360, borderRadius: 6, background: 'var(--surface-2)' }} />
         </div>
 
         {/* Top AQI Card Skeleton */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 space-y-5">
-          <div className="flex justify-between items-center">
-            <div className="h-4 w-36 rounded bg-slate-200 dark:bg-slate-800" />
-            <div className="h-8 w-28 rounded-xl bg-slate-200 dark:bg-slate-800" />
+        <div className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ height: 72, width: 140, borderRadius: 8, background: 'var(--surface-2)' }} />
+            <div style={{ height: 32, width: 120, borderRadius: 999, background: 'var(--surface-2)' }} />
           </div>
-
-          <div className="flex items-baseline gap-4">
-            <div className="h-16 w-28 rounded-xl bg-slate-200 dark:bg-slate-800" />
-            <div className="space-y-2">
-              <div className="h-5 w-40 rounded bg-slate-200 dark:bg-slate-800" />
-              <div className="h-3 w-28 rounded bg-slate-200 dark:bg-slate-800" />
-            </div>
-          </div>
-
-          <div className="h-14 w-full rounded-xl bg-slate-200 dark:bg-slate-800" />
-
-          {/* 24-hr Chart Skeleton */}
-          <div className="h-36 w-full rounded-xl bg-slate-100 dark:bg-slate-800/60 p-4 flex items-end gap-2">
-            {Array.from({ length: 24 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex-1 rounded-t bg-slate-200 dark:bg-slate-700"
-                style={{ height: `${30 + (i % 7) * 10}%` }}
-              />
-            ))}
-          </div>
+          <div style={{ height: 24, width: '80%', borderRadius: 6, background: 'var(--surface-2)' }} />
+          <div style={{ height: 140, width: '100%', borderRadius: 8, background: 'var(--surface-2)' }} />
         </div>
 
-        {/* Total Savings Banner Skeleton */}
-        <div className="rounded-2xl border border-slate-200 bg-slate-100 p-6 dark:border-slate-800 dark:bg-slate-900/60 space-y-4">
-          <div className="h-5 w-48 rounded bg-slate-200 dark:bg-slate-800" />
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
-            <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
-            <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
-          </div>
-        </div>
-
-        {/* Daily Timeline Slots Skeleton */}
-        <div className="space-y-6">
-          <div className="h-6 w-48 rounded bg-slate-200 dark:bg-slate-800" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="h-44 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900" />
-            <div className="h-44 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900" />
-          </div>
-        </div>
+        {/* Impact Skeleton */}
+        <div className="card" style={{ padding: 24, height: 120, background: 'var(--surface-2)' }} />
       </div>
     </div>
   );

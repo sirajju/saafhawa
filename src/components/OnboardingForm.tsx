@@ -117,25 +117,34 @@ export function OnboardingForm({
   const progressPercent = currentStep === 1 ? 33 : currentStep === 2 ? 66 : 100;
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6">
-      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+    <main id="onb" className="onb">
+      <div className="card">
         <OnboardingProgressBar
           currentStep={currentStep}
           isEditing={isEditing}
           progressPercent={progressPercent}
         />
 
-        <form onSubmit={handleSubmit} aria-label="Household Profile Form" className="p-6 sm:p-7" noValidate>
+        <form onSubmit={handleSubmit} aria-label="Household Profile Form" noValidate>
           {errorMessage && (
             <div
               id="form-error-alert"
               role="alert"
-              className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-900 dark:border-rose-900 dark:bg-rose-950/80 dark:text-rose-200"
+              style={{
+                marginBottom: 24,
+                padding: '12px 16px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--aqi-severe)',
+                background: 'var(--aqi-severe-soft)',
+                color: 'var(--ink)',
+                fontSize: 14,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
             >
-              <div className="flex items-center gap-2">
-                <AlertTriangleIcon className="h-4 w-4 text-rose-700 shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
+              <AlertTriangleIcon className="h-4 w-4 shrink-0" style={{ color: 'var(--aqi-severe)' }} />
+              <span>{errorMessage}</span>
             </div>
           )}
 
@@ -152,15 +161,11 @@ export function OnboardingForm({
           )}
 
           {currentStep === 2 && (
-            <div className="space-y-6">
-              <CommuteFields formData={formData} onChange={handleChange} />
-            </div>
+            <CommuteFields formData={formData} onChange={handleChange} />
           )}
 
           {currentStep === 3 && (
-            <div className="space-y-6">
-              <IndoorEnvironmentFields formData={formData} onChange={handleChange} />
-            </div>
+            <IndoorEnvironmentFields formData={formData} onChange={handleChange} />
           )}
 
           <OnboardingNavFooter
@@ -172,6 +177,6 @@ export function OnboardingForm({
           />
         </form>
       </div>
-    </div>
+    </main>
   );
 }

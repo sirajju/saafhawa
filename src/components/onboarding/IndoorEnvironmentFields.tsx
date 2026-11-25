@@ -12,7 +12,7 @@ interface IndoorEnvironmentFieldsProps {
 
 export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmentFieldsProps) {
   return (
-    <div className="space-y-6">
+    <div className="stack">
       {/* Home Area */}
       <ChoiceChipGroup<number>
         label="Home floor area"
@@ -34,9 +34,9 @@ export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmen
         value={formData.cookingFuel}
         onChange={(val) => onChange('cookingFuel', val)}
         options={[
-          { value: 'lpg', label: 'LPG Cylinder', icon: <FlameIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'lpg', label: 'LPG Cylinder', icon: <FlameIcon className="h-4 w-4" /> },
           { value: 'piped_gas', label: 'Piped Natural Gas (PNG)' },
-          { value: 'induction', label: 'Induction / Electric', icon: <ZapIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'induction', label: 'Induction / Electric', icon: <ZapIcon className="h-4 w-4" /> },
           { value: 'biomass', label: 'Traditional Wood / Biomass' },
         ]}
       />
@@ -49,7 +49,7 @@ export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmen
         onChange={(val) => onChange('heatingFuel', val)}
         options={[
           { value: 'none', label: 'None / Not needed' },
-          { value: 'electric', label: 'Electric Room Heater', icon: <ZapIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'electric', label: 'Electric Room Heater', icon: <ZapIcon className="h-4 w-4" /> },
           { value: 'kerosene', label: 'Kerosene Heater' },
           { value: 'biomass', label: 'Wood / Fireplace' },
         ]}
@@ -76,7 +76,7 @@ export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmen
         onChange={(val) => onChange('hasAirPurifier', val)}
         options={[
           { value: false, label: 'No Purifier' },
-          { value: true, label: 'Yes, Air Purifier Installed', icon: <FilterIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: true, label: 'Yes, Air Purifier Installed', icon: <FilterIcon className="h-4 w-4" /> },
         ]}
       />
 
@@ -88,52 +88,45 @@ export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmen
         onChange={(val) => onChange('hasKitchenChimneyOrExhaust', val)}
         options={[
           { value: false, label: 'No Exhaust / Chimney' },
-          { value: true, label: 'Yes, Chimney / Exhaust Installed', icon: <WindIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: true, label: 'Yes, Chimney / Exhaust Installed', icon: <WindIcon className="h-4 w-4" /> },
         ]}
       />
 
-      {/* Daily Habits & Combustions (NOT PRE-TICKED: User must explicitly choose) */}
-      <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-950/40">
-        <div className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
-          Daily Household Habits (Choose if applicable)
-        </div>
+      {/* Incense / Coils */}
+      <ChoiceChipGroup<boolean>
+        label="Uses incense (agarbatti), dhoop, or mosquito coils daily?"
+        description="Burning incense emits ultra-fine PM2.5 and benzene directly into enclosed living spaces."
+        value={formData.usesIncenseOrMosquitoCoils}
+        onChange={(val) => onChange('usesIncenseOrMosquitoCoils', val)}
+        options={[
+          { value: false, label: 'No (Never / Rarely)', icon: <ShieldIcon className="h-4 w-4" /> },
+          { value: true, label: 'Yes (Daily / Frequent)', icon: <FlameIcon className="h-4 w-4" /> },
+        ]}
+      />
 
-        {/* Incense / Coils (Default FALSE / NOT PRE-TICKED) */}
-        <ChoiceChipGroup<boolean>
-          label="Uses incense (agarbatti), dhoop, or mosquito coils daily?"
-          description="Burning incense emits ultra-fine PM2.5 and benzene directly into enclosed living spaces."
-          value={formData.usesIncenseOrMosquitoCoils}
-          onChange={(val) => onChange('usesIncenseOrMosquitoCoils', val)}
-          options={[
-            { value: false, label: 'No (Never / Rarely)', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
-            { value: true, label: 'Yes (Daily / Frequent)', icon: <FlameIcon className="h-4 w-4 text-amber-600" /> },
-          ]}
-        />
+      {/* Garden Waste Burning */}
+      <ChoiceChipGroup<boolean>
+        label="Open waste or garden leaf burning nearby?"
+        description="Local smoldering leaf or plastic waste piles nearby that cause localized smoke plumes."
+        value={formData.hasGardenOrOpenWasteBurning}
+        onChange={(val) => onChange('hasGardenOrOpenWasteBurning', val)}
+        options={[
+          { value: false, label: 'No nearby burning', icon: <ShieldIcon className="h-4 w-4" /> },
+          { value: true, label: 'Yes, neighborhood burning occurs', icon: <AlertTriangleIcon className="h-4 w-4" /> },
+        ]}
+      />
 
-        {/* Garden Waste Burning (Default FALSE / NOT PRE-TICKED) */}
-        <ChoiceChipGroup<boolean>
-          label="Open waste or garden leaf burning nearby?"
-          description="Local smoldering leaf or plastic waste piles nearby that cause localized smoke plumes."
-          value={formData.hasGardenOrOpenWasteBurning}
-          onChange={(val) => onChange('hasGardenOrOpenWasteBurning', val)}
-          options={[
-            { value: false, label: 'No nearby burning', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
-            { value: true, label: 'Yes, neighborhood burning occurs', icon: <AlertTriangleIcon className="h-4 w-4 text-amber-600" /> },
-          ]}
-        />
-
-        {/* Outdoor Exercise (Default FALSE / NOT PRE-TICKED) */}
-        <ChoiceChipGroup<boolean>
-          label="Does outdoor exercise (morning jogging, cycling, brisk walking)?"
-          description="Deep ventilation during morning smog spikes multiplies inhaled particulate dose 4×."
-          value={formData.doesOutdoorExercise}
-          onChange={(val) => onChange('doesOutdoorExercise', val)}
-          options={[
-            { value: false, label: 'No outdoor workouts', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
-            { value: true, label: 'Yes, exercises outdoors' },
-          ]}
-        />
-      </div>
+      {/* Outdoor Exercise */}
+      <ChoiceChipGroup<boolean>
+        label="Does outdoor exercise (morning jogging, cycling, brisk walking)?"
+        description="Deep ventilation during morning smog spikes multiplies inhaled particulate dose 4×."
+        value={formData.doesOutdoorExercise}
+        onChange={(val) => onChange('doesOutdoorExercise', val)}
+        options={[
+          { value: false, label: 'No outdoor workouts', icon: <ShieldIcon className="h-4 w-4" /> },
+          { value: true, label: 'Yes, exercises outdoors' },
+        ]}
+      />
 
       {/* Action Budget Preference */}
       <ChoiceChipGroup<PlanRequest['budget']>
@@ -143,7 +136,7 @@ export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmen
         onChange={(val) => onChange('budget', val)}
         options={[
           { value: 'zero_cost', label: 'Zero-Cost Only' },
-          { value: 'low', label: 'Low Cost (DIY & Masks)', icon: <ShieldIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'low', label: 'Low Cost (DIY & Masks)', icon: <ShieldIcon className="h-4 w-4" /> },
           { value: 'moderate', label: 'Moderate' },
           { value: 'flexible', label: 'Flexible' },
         ]}

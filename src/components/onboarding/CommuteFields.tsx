@@ -12,7 +12,7 @@ interface CommuteFieldsProps {
 
 export function CommuteFields({ formData, onChange }: CommuteFieldsProps) {
   return (
-    <div className="space-y-6">
+    <div className="stack">
       {/* Primary Commute Mode */}
       <ChoiceChipGroup<PlanRequest['primaryCommuteMode']>
         label="Primary Commute Mode"
@@ -20,11 +20,11 @@ export function CommuteFields({ formData, onChange }: CommuteFieldsProps) {
         value={formData.primaryCommuteMode}
         onChange={(val) => onChange('primaryCommuteMode', val)}
         options={[
-          { value: 'petrol_car', label: 'Car (Petrol / Diesel)', icon: <CarIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
-          { value: 'two_wheeler', label: 'Two-Wheeler (Bike / Scooter)', icon: <BikeIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
-          { value: 'public_transit', label: 'Metro / Public Bus', icon: <BusIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
-          { value: 'walking_cycling', label: 'Walk / Bicycle', icon: <WalkIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
-          { value: 'none', label: 'Work From Home / None', icon: <HomeIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'petrol_car', label: 'Car (Petrol / Diesel)', icon: <CarIcon className="h-4 w-4" /> },
+          { value: 'two_wheeler', label: 'Two-Wheeler (Bike / Scooter)', icon: <BikeIcon className="h-4 w-4" /> },
+          { value: 'public_transit', label: 'Metro / Public Bus', icon: <BusIcon className="h-4 w-4" /> },
+          { value: 'walking_cycling', label: 'Walk / Bicycle', icon: <WalkIcon className="h-4 w-4" /> },
+          { value: 'none', label: 'Work From Home / None', icon: <HomeIcon className="h-4 w-4" /> },
         ]}
       />
 
@@ -63,7 +63,7 @@ export function CommuteFields({ formData, onChange }: CommuteFieldsProps) {
         value={formData.canWorkFromHome}
         onChange={(val) => onChange('canWorkFromHome', val)}
         options={[
-          { value: true, label: 'Yes (WFH Option)', icon: <HomeIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: true, label: 'Yes (WFH Option)', icon: <HomeIcon className="h-4 w-4" /> },
           { value: false, label: 'No (In-person required)' },
         ]}
       />
@@ -75,8 +75,8 @@ export function CommuteFields({ formData, onChange }: CommuteFieldsProps) {
         value={formData.hasCarpoolOption}
         onChange={(val) => onChange('hasCarpoolOption', val)}
         options={[
-          { value: true, label: 'Yes (Carpool viable)', icon: <CarIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
-          { value: false, label: 'No (Solo transit)', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
+          { value: true, label: 'Yes (Carpool viable)', icon: <CarIcon className="h-4 w-4" /> },
+          { value: false, label: 'No (Solo transit)', icon: <ShieldIcon className="h-4 w-4" /> },
         ]}
       />
     </div>

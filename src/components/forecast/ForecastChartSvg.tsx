@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
+import { getAqiCategoryCssVar } from '@/lib/design-system';
 
 export interface ChartPoint {
   dateTime: string;
@@ -11,114 +12,140 @@ export interface ChartPoint {
 interface ForecastChartSvgProps {
   points: ChartPoint[];
   timeZone: string;
-  chartWidth: number;
-  chartHeight: number;
-  barSpacing: number;
-  barWidth: number;
-  maxAqi: number;
-  cleanestIndex: number;
-  getAqiBarColor: (aqi: number | null) => string;
+  chartWidth?: number;
+  maxAqi?: number;
+  cleanestIndex?: number;
+  cleanestWindowLength?: number;
+  srSummary: string;
 }
 
 export function ForecastChartSvg({
   points,
   timeZone,
-  chartWidth,
-  chartHeight,
-  barSpacing,
-  barWidth,
-  maxAqi,
-  cleanestIndex,
-  getAqiBarColor,
+  chartWidth = 720,
+  maxAqi = 400,
+  cleanestIndex = 0,
+  cleanestWindowLength = 3,
+  srSummary,
 }: ForecastChartSvgProps) {
+  const top = 10;
+  const base = 140;
+  const totalHeight = 182;
+  const count = Math.max(1, points.length);
+  const bw = chartWidth / count;
+  const barWidth = Math.max(6, bw - 6);
+
+  // Best window rect coordinates
+  const bestX = cleanestIndex * bw;
+  const bestW = Math.min(chartWidth - bestX, cleanestWindowLength * bw);
+  const bestMidX = bestX + bestW / 2;
+
   return (
-    <div className="relative w-full max-w-full overflow-hidden pt-2">
+    <div className="relative w-full overflow-hidden">
       <svg
-        viewBox={`0 0 ${chartWidth} ${chartHeight + 35}`}
-        className="h-36 w-full max-w-full touch-pan-y overflow-visible"
+        viewBox={`0 0 ${chartWidth} ${totalHeight}`}
+        className="w-full touch-pan-y overflow-visible"
         preserveAspectRatio="none"
-        aria-hidden="true"
+        role="img"
+        aria-label={srSummary}
       >
-        {/* Subtle grid lines */}
-        {[0.25, 0.5, 0.75].map((factor) => (
-          <line
-            key={factor}
-            x1="0"
-            y1={chartHeight * factor}
-            x2={chartWidth}
-            y2={chartHeight * factor}
-            stroke="currentColor"
-            strokeDasharray="3 3"
-            className="text-slate-200 dark:text-slate-800"
-          />
-        ))}
+        {/* Subtle gridlines at 100, 200, 300 */}
+        {[100, 200, 300].map((v) => {
+          const y = base - (v / maxAqi) * (base - top);
+          return (
+            <g key={v}>
+              <line
+                x1="0"
+                x2={chartWidth}
+                y1={y}
+                y2={y}
+                stroke="var(--line)"
+                strokeDasharray="2 4"
+              />
+              <text
+                x={chartWidth}
+                y={y - 4}
+                textAnchor="end"
+                fontSize="13"
+                fill="var(--ink-3)"
+                className="num"
+              >
+                {v}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Best window highlight rect */}
+        <rect
+          x={bestX}
+          y={top}
+          width={bestW}
+          height={base - top}
+          rx="6"
+          fill="var(--brand-soft)"
+        />
 
         {/* Bars */}
-        {points.map((point, index) => {
-          const aqi = point.aqi ?? 0;
-          const barHeight = Math.max(12, Math.min(chartHeight, (aqi / maxAqi) * chartHeight));
-          const x = index * barSpacing + (barSpacing - barWidth) / 2;
-          const y = chartHeight - barHeight;
-          const isNow = index === 0;
-          const isCleanest = index === cleanestIndex;
-          const barFill = getAqiBarColor(point.aqi);
+        {points.map((p, i) => {
+          const val = typeof p.aqi === 'number' ? Math.max(0, p.aqi) : 0;
+          const h = Math.max(8, (val / maxAqi) * (base - top));
+          const x = i * bw + (bw - barWidth) / 2;
+          const y = base - h;
+          const isNow = i === 0;
+          const barColor = getAqiCategoryCssVar(p.aqi);
+          const hourLabel = formatHourInPlaceLocalTime(p.dateTime, timeZone);
 
           return (
-            <g key={index}>
-              {isCleanest && (
-                <rect
-                  x={x - 4}
-                  y={0}
-                  width={barWidth + 8}
-                  height={chartHeight}
-                  fill="rgba(16, 185, 129, 0.12)"
-                  rx="4"
-                />
-              )}
-
+            <g key={p.dateTime || i}>
               <rect
                 x={x}
                 y={y}
                 width={barWidth}
-                height={barHeight}
+                height={h}
                 rx="3"
-                fill={barFill}
-                className="transition-all hover:opacity-80"
+                fill={barColor}
+                opacity={isNow ? 1 : 0.78}
               />
-
-              {isNow && (
-                <g>
-                  <circle cx={x + barWidth / 2} cy={y - 6} r="4" fill="#0f172a" stroke="#10b981" strokeWidth="2" />
-                  <text
-                    x={x + barWidth / 2}
-                    y={y - 13}
-                    textAnchor="middle"
-                    fontSize="9"
-                    fontWeight="bold"
-                    fill="#0f172a"
-                    className="fill-slate-900 dark:fill-slate-100"
-                  >
-                    Now
-                  </text>
-                </g>
-              )}
-
-              {(index % 4 === 0 || index === points.length - 1) && (
+              {/* Show time label every 3 hours */}
+              {i % 3 === 0 && (
                 <text
-                  x={x + barWidth / 2}
-                  y={chartHeight + 18}
+                  x={i * bw + bw / 2}
+                  y={base + 18}
                   textAnchor="middle"
-                  fontSize="10"
-                  fontWeight="600"
-                  fill="#64748b"
-                  className="fill-slate-500 dark:fill-slate-400"
+                  fontSize="13"
+                  fill="var(--ink-3)"
                 >
-                  {formatHourInPlaceLocalTime(point.dateTime, timeZone)}
+                  {hourLabel}
                 </text>
               )}
             </g>
           );
         })}
+
+        {/* "Now" marker label below hour 0 */}
+        <text
+          x={bw / 2}
+          y={base + 34}
+          textAnchor="middle"
+          fontSize="13"
+          fontWeight="600"
+          fill="var(--ink)"
+        >
+          Now
+        </text>
+
+        {/* "Best" marker label above cleanest window */}
+        <text
+          x={bestMidX}
+          y={top + 14}
+          textAnchor="middle"
+          fontSize="13"
+          fontWeight="600"
+          fill="var(--brand)"
+        >
+          Best
+        </text>
       </svg>
     </div>
   );

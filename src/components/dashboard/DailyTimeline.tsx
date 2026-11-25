@@ -2,48 +2,21 @@
 
 import React from 'react';
 import { PlannedAction } from '@/lib/plan/types';
-import { PlanCard } from '@/components/PlanCard';
-import { ClockIcon, SunriseIcon, SunIcon, SunsetIcon, MoonIcon } from '@/components/ui/Icons';
 import { getLocalTimeDetails } from '@/lib/air-quality/forecast-advice';
+import { DailyTimelineItem } from './DailyTimelineItem';
 
 export type TimeSlot = 'anytime' | 'morning' | 'afternoon' | 'evening' | 'night';
 
 export const TIME_SLOTS: Array<{
   id: TimeSlot;
   label: string;
-  hours: string;
-  icon: React.ComponentType<{ className?: string }>;
+  sub: string;
 }> = [
-  {
-    id: 'anytime',
-    label: 'Any time today',
-    hours: 'Flexible / All Day',
-    icon: ClockIcon,
-  },
-  {
-    id: 'morning',
-    label: 'Morning',
-    hours: '6 AM – 12 PM',
-    icon: SunriseIcon,
-  },
-  {
-    id: 'afternoon',
-    label: 'Afternoon',
-    hours: '12 PM – 5 PM',
-    icon: SunIcon,
-  },
-  {
-    id: 'evening',
-    label: 'Evening',
-    hours: '5 PM – 9 PM',
-    icon: SunsetIcon,
-  },
-  {
-    id: 'night',
-    label: 'Night',
-    hours: '9 PM – 6 AM',
-    icon: MoonIcon,
-  },
+  { id: 'anytime', label: 'Any time', sub: 'today' },
+  { id: 'morning', label: 'Morning', sub: '6 – 12 PM' },
+  { id: 'afternoon', label: 'Afternoon', sub: '12 – 5 PM' },
+  { id: 'evening', label: 'Evening', sub: '5 – 9 PM' },
+  { id: 'night', label: 'Night', sub: '9 PM – 6 AM' },
 ];
 
 export function getTimeSlotForAction(action: PlannedAction): TimeSlot {
@@ -61,7 +34,6 @@ export function getTimeSlotForAction(action: PlannedAction): TimeSlot {
   ) {
     return 'anytime';
   }
-
   if (s.includes('night') || s.includes('bedtime') || s.includes('sleep') || id.includes('bedroom')) {
     return 'night';
   }
@@ -114,7 +86,10 @@ export function DailyTimeline({
   const localDetails = getLocalTimeDetails(referenceNow.toISOString(), timeZone);
   const currentHour = localDetails.hour;
 
-  // Group actions
+  const totalCount = actions.length;
+  const doneCount = actions.filter((a) => completedActionIds.includes(a.actionId)).length;
+  const progressPercent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+
   const timelineGroups: Record<TimeSlot, PlannedAction[]> = {
     anytime: [],
     morning: [],
@@ -129,66 +104,56 @@ export function DailyTimeline({
   });
 
   return (
-    <div className="space-y-8" role="region" aria-label="Daily action plan timeline">
-      {TIME_SLOTS.map((slot) => {
-        const slotActions = timelineGroups[slot.id];
-        if (slotActions.length === 0) return null;
-
-        const SlotIcon = slot.icon;
-        const isPassed = isTimeSlotPassed(slot.id, currentHour);
-
-        return (
-          <section
-            key={slot.id}
-            aria-labelledby={`timeline-heading-${slot.id}`}
-            className={`rounded-2xl border p-5 sm:p-6 transition-colors ${
-              isPassed
-                ? 'border-slate-200/60 bg-slate-50/50 opacity-90 dark:border-slate-800/60 dark:bg-slate-900/40'
-                : 'border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900'
-            }`}
+    <section aria-labelledby="plan-h" role="region">
+      <div className="section-head">
+        <h2 id="plan-h">
+          Your plan for today
+          <span className="sr-only"> Today&apos;s Action Timeline</span>
+        </h2>
+        <div className="progress">
+          <span className="num">
+            {doneCount} of {totalCount} done ({progressPercent}%)
+          </span>
+          <span
+            className="progress-track"
+            role="progressbar"
+            aria-valuenow={doneCount}
+            aria-valuemin={0}
+            aria-valuemax={totalCount}
+            aria-label="Daily plan progress"
           >
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3.5 dark:border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                    isPassed
-                      ? 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                      : 'bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
-                  }`}
-                >
-                  <SlotIcon className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3
-                    id={`timeline-heading-${slot.id}`}
-                    className="text-base font-bold text-slate-900 dark:text-slate-50"
-                  >
-                    {slot.label}
-                  </h3>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{slot.hours}</span>
-                </div>
+            <i style={{ width: `${progressPercent}%` }} />
+          </span>
+        </div>
+      </div>
+
+      <div className="card" id="timeline">
+        {TIME_SLOTS.map((slot) => {
+          const slotActions = timelineGroups[slot.id];
+          if (slotActions.length === 0) return null;
+          const isPassed = isTimeSlotPassed(slot.id, currentHour);
+
+          return (
+            <div className={`period ${isPassed ? 'past' : ''}`} key={slot.id}>
+              <div className="period-label">
+                <b>{slot.label}</b>
+                <span className="caption">{isPassed ? 'Passed' : slot.sub}</span>
               </div>
 
-              {isPassed && (
-                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                  Passed earlier today
-                </span>
-              )}
+              <div>
+                {slotActions.map((action) => (
+                  <DailyTimelineItem
+                    key={action.actionId}
+                    action={action}
+                    isDone={completedActionIds.includes(action.actionId)}
+                    onToggle={() => onToggleActionDone(action.actionId)}
+                  />
+                ))}
+              </div>
             </div>
-
-            <div className="mt-4 space-y-4">
-              {slotActions.map((action) => (
-                <PlanCard
-                  key={action.actionId}
-                  action={action}
-                  isCompleted={completedActionIds.includes(action.actionId)}
-                  onToggleDone={() => onToggleActionDone(action.actionId)}
-                />
-              ))}
-            </div>
-          </section>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }

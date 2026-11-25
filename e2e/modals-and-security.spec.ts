@@ -27,9 +27,9 @@ test.describe('Modals, Chat & Security Headers', () => {
     const dialog = page.getByRole('dialog', { name: /SaafHawa Assistant/i });
     await expect(dialog).toBeVisible();
 
-    // Contains question chips and 1-line medical disclaimer
-    await expect(dialog.getByText('Common questions to ask:')).toBeVisible();
-    await expect(dialog.getByText(/consult a medical doctor/i)).toBeVisible();
+    // Contains suggestion buttons and medical disclaimer
+    await expect(dialog.locator('.suggest').first()).toBeVisible();
+    await expect(dialog.getByText(/consult a doctor/i)).toBeVisible();
 
     // Close button dismisses the mobile sheet
     const closeBtn = page.getByRole('button', { name: /Close assistant/i });
@@ -72,7 +72,7 @@ test.describe('Modals, Chat & Security Headers', () => {
     // Advisory modal appears with WhatsApp preview card
     const dialog = page.getByRole('dialog', { name: /Share Smog Advisory/i });
     await expect(dialog).toBeVisible();
-    await expect(page.getByText('WhatsApp Message Preview')).toBeVisible();
+    await expect(page.getByText('WHATSAPP MESSAGE PREVIEW')).toBeVisible();
     await expect(page.getByRole('button', { name: /Copy WhatsApp Message/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Share on WhatsApp/i })).toBeVisible();
 
