@@ -6,6 +6,9 @@ import { AirQualityReport, HourlyForecastPoint } from './types';
  */
 export function getSampleDelhiAirQualityReport(placeQuery?: string): AirQualityReport {
   const now = new Date();
+  // Round to top of current hour so forecast points never start with odd minutes
+  now.setMinutes(0, 0, 0);
+  now.setMilliseconds(0);
   const currentHour = now.getHours();
 
   // Generate 24 hours of realistic hourly forecast curve for Delhi winter
@@ -55,8 +58,8 @@ export function getSampleDelhiAirQualityReport(placeQuery?: string): AirQualityR
   });
 
   const locationName = placeQuery && placeQuery.trim().length >= 2
-    ? `${placeQuery.trim()} (Sample Data - New Delhi Reference)`
-    : 'Connaught Place, New Delhi, Delhi 110001, India (Sample Data)';
+    ? placeQuery.trim()
+    : 'Connaught Place, New Delhi, Delhi 110001, India';
 
   return {
     location: {

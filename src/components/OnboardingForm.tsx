@@ -2,9 +2,13 @@
 
 import React, { useState } from 'react';
 import { PlanRequest } from '@/lib/plan/types';
-import { DemographicsFields } from './onboarding/DemographicsFields';
 import { CommuteFields } from './onboarding/CommuteFields';
 import { IndoorEnvironmentFields } from './onboarding/IndoorEnvironmentFields';
+import { OnboardingProgressBar } from './onboarding/OnboardingProgressBar';
+import { OnboardingStep1 } from './onboarding/OnboardingStep1';
+import { OnboardingNavFooter } from './onboarding/OnboardingNavFooter';
+import { DEFAULT_PROFILE } from './onboarding/default-profile';
+import { AlertTriangleIcon } from './ui/Icons';
 
 interface OnboardingFormProps {
   initialProfile?: Partial<PlanRequest> | null;
@@ -12,31 +16,6 @@ interface OnboardingFormProps {
   onCancel?: () => void;
   isEditing?: boolean;
 }
-
-const DEFAULT_PROFILE: PlanRequest = {
-  place: '110001',
-  adultsCount: 2,
-  childrenCount: 0,
-  elderlyCount: 0,
-  commutersCount: 1,
-  hasAsthmaOrRespiratoryCondition: false,
-  primaryCommuteMode: 'petrol_car',
-  dailyCommuteDistanceKm: 20,
-  cookingFuel: 'lpg',
-  heatingFuel: 'none',
-  hasAirPurifier: false,
-  hasKitchenChimneyOrExhaust: true,
-  usesIncenseOrMosquitoCoils: true,
-  hasGardenOrOpenWasteBurning: false,
-  windowSealingQuality: 'average',
-  dailyOutdoorHoursPerPerson: 1.5,
-  doesOutdoorExercise: false,
-  exerciseHoursPerDay: 1,
-  homeAreaSqFt: 1000,
-  canWorkFromHome: true,
-  hasCarpoolOption: true,
-  budget: 'low',
-};
 
 export function OnboardingForm({
   initialProfile,
@@ -49,129 +28,148 @@ export function OnboardingForm({
     ...(initialProfile || {}),
   });
 
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [geoStatus, setGeoStatus] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState<boolean>(false);
 
-  const handleChange = (
-    field: keyof PlanRequest,
-    value: string | number | boolean
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleChange = (field: keyof PlanRequest, value: string | number | boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleUseBrowserLocation = () => {
+    if (!navigator.geolocation) {
+      setGeoStatus('Browser location is not supported by your browser.');
+      return;
+    }
+    setIsLocating(true);
+    setGeoStatus('Detecting your location...');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsLocating(false);
+        const { latitude, longitude } = position.coords;
+        const coordsStr = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        handleChange('place', coordsStr);
+        setGeoStatus(`Location detected: ${coordsStr}`);
+        setErrorMessage(null);
+      },
+      (error) => {
+        setIsLocating(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setGeoStatus('Location permission denied. Please type your location above.');
+        } else {
+          setGeoStatus('Unable to determine location. Please type your location above.');
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: false }
+    );
+  };
+
+  const validateStep1 = (): boolean => {
+    const placeTrimmed = formData.place.trim();
+    if (placeTrimmed.length < 2) {
+      setErrorMessage('Please enter a valid place name, city, or pincode (at least 2 characters).');
+      return false;
+    }
+    if (placeTrimmed.length > 120) {
+      setErrorMessage('Place name cannot exceed 120 characters.');
+      return false;
+    }
+    if (formData.adultsCount < 1) {
+      setErrorMessage('Household must include at least 1 adult occupant.');
+      return false;
+    }
+    setErrorMessage(null);
+    return true;
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (currentStep === 1) {
+      if (!validateStep1()) return;
+      setCurrentStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (currentStep === 2) {
+      setCurrentStep(3);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleBack = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    if (currentStep > 1) {
+      setCurrentStep((prev) => (prev - 1) as 1 | 2 | 3);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(null);
-
-    const placeTrimmed = formData.place.trim();
-    if (placeTrimmed.length < 2) {
-      setErrorMessage('Please enter a valid place name, city, or pincode (at least 2 characters).');
+    if (!validateStep1()) {
+      setCurrentStep(1);
       return;
     }
-    if (placeTrimmed.length > 120) {
-      setErrorMessage('Place name cannot exceed 120 characters.');
-      return;
-    }
-
-    if (formData.adultsCount < 1) {
-      setErrorMessage('Household must include at least 1 adult occupant.');
-      return;
-    }
-
-    onSubmit({
-      ...formData,
-      place: placeTrimmed,
-    });
+    onSubmit({ ...formData, place: formData.place.trim() });
   };
+
+  const progressPercent = currentStep === 1 ? 33 : currentStep === 2 ? 66 : 100;
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6">
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
-        <div className="border-b border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900/60">
-          <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-2xl text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-              🏡
-            </span>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">
-                {isEditing ? 'Update Household Profile' : 'Tell Us About Your Household'}
-              </h1>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                We personalize daily low-emission routines and indoor clean-air hacks to where and how you live.
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <OnboardingProgressBar
+          currentStep={currentStep}
+          isEditing={isEditing}
+          progressPercent={progressPercent}
+        />
 
-        <form onSubmit={handleSubmit} aria-label="Household Profile Form" className="p-6 sm:p-8" noValidate>
+        <form onSubmit={handleSubmit} aria-label="Household Profile Form" className="p-6 sm:p-7" noValidate>
           {errorMessage && (
             <div
               id="form-error-alert"
               role="alert"
-              className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-900 dark:border-rose-900 dark:bg-rose-950/80 dark:text-rose-200"
+              className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-900 dark:border-rose-900 dark:bg-rose-950/80 dark:text-rose-200"
             >
               <div className="flex items-center gap-2">
-                <span aria-hidden="true">⚠️</span>
+                <AlertTriangleIcon className="h-4 w-4 text-rose-700 shrink-0" />
                 <span>{errorMessage}</span>
               </div>
             </div>
           )}
 
-          <div className="space-y-6">
-            <div>
-              <label
-                htmlFor="place-input"
-                className="block text-sm font-semibold text-slate-900 dark:text-slate-100"
-              >
-                Where do you live? <span className="text-rose-600">*</span>
-              </label>
-              <p id="place-hint" className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
-                Enter your area name, landmark, city, or 6-digit Indian pincode.
-              </p>
-              <div className="relative mt-2">
-                <input
-                  id="place-input"
-                  type="text"
-                  required
-                  aria-required="true"
-                  aria-invalid={Boolean(errorMessage)}
-                  aria-describedby={errorMessage ? "form-error-alert place-hint" : "place-hint"}
-                  value={formData.place}
-                  onChange={(e) => {
-                    setErrorMessage(null);
-                    handleChange('place', e.target.value);
-                  }}
-                  placeholder="e.g. Connaught Place, New Delhi or 110001"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                />
-              </div>
+          {currentStep === 1 && (
+            <OnboardingStep1
+              formData={formData}
+              errorMessage={errorMessage}
+              geoStatus={geoStatus}
+              isLocating={isLocating}
+              onChange={handleChange}
+              onClearError={() => setErrorMessage(null)}
+              onUseBrowserLocation={handleUseBrowserLocation}
+            />
+          )}
+
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <CommuteFields formData={formData} onChange={handleChange} />
             </div>
+          )}
 
-            <DemographicsFields formData={formData} onChange={handleChange} />
-            <CommuteFields formData={formData} onChange={handleChange} />
-            <IndoorEnvironmentFields formData={formData} onChange={handleChange} />
-          </div>
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <IndoorEnvironmentFields formData={formData} onChange={handleChange} />
+            </div>
+          )}
 
-          <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            {onCancel && (
-              <button
-                type="button"
-                onClick={onCancel}
-                className="inline-flex min-h-[44px] min-w-[44px] w-full items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 sm:w-auto dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-              >
-                Cancel
-              </button>
-            )}
-            <button
-              type="submit"
-              className="inline-flex min-h-[44px] min-w-[44px] w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-7 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 sm:w-auto"
-            >
-              <span>{isEditing ? 'Save & Regenerate Plan' : 'Generate My Smog Action Plan'}</span>
-              <span aria-hidden="true">→</span>
-            </button>
-          </div>
+          <OnboardingNavFooter
+            currentStep={currentStep}
+            isEditing={isEditing}
+            onCancel={onCancel}
+            onBack={handleBack}
+            onNext={handleNext}
+          />
         </form>
       </div>
     </div>

@@ -1,5 +1,9 @@
+'use client';
+
 import React from 'react';
 import { PlanRequest } from '@/lib/plan/types';
+import { ChoiceChipGroup } from './ChoiceChipGroup';
+import { FlameIcon, ZapIcon, FilterIcon, WindIcon, ShieldIcon, AlertTriangleIcon } from '../ui/Icons';
 
 interface IndoorEnvironmentFieldsProps {
   formData: PlanRequest;
@@ -8,101 +12,142 @@ interface IndoorEnvironmentFieldsProps {
 
 export function IndoorEnvironmentFields({ formData, onChange }: IndoorEnvironmentFieldsProps) {
   return (
-    <fieldset className="rounded-xl border border-slate-200 p-4 sm:p-5 dark:border-slate-800">
-      <legend className="px-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-        Indoor Air & Cooking Setup
-      </legend>
-      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
-          <label
-            htmlFor="cooking-fuel"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-          >
-            Primary Cooking Fuel
-          </label>
-          <select
-            id="cooking-fuel"
-            value={formData.cookingFuel}
-            onChange={(e) => onChange('cookingFuel', e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          >
-            <option value="lpg">LPG Cylinder</option>
-            <option value="piped_gas">Piped Natural Gas (PNG)</option>
-            <option value="induction">Electric Induction Cooktop</option>
-            <option value="biomass">Traditional Biomass / Firewood / Chulha</option>
-          </select>
+    <div className="space-y-6">
+      {/* Home Area */}
+      <ChoiceChipGroup<number>
+        label="Home floor area"
+        description="Used to compute air changes per hour (ACH) and clean air delivery rates."
+        value={formData.homeAreaSqFt}
+        onChange={(val) => onChange('homeAreaSqFt', val)}
+        options={[
+          { value: 500, label: 'Small (< 600 sq ft)' },
+          { value: 1000, label: 'Medium (600–1200 sq ft)' },
+          { value: 1600, label: 'Large (1200–2000 sq ft)' },
+          { value: 2500, label: 'Villa (2000+ sq ft)' },
+        ]}
+      />
+
+      {/* Cooking Fuel */}
+      <ChoiceChipGroup<PlanRequest['cookingFuel']>
+        label="Primary Cooking Fuel"
+        description="Direct combustion sources create substantial indoor fine PM2.5 spikes."
+        value={formData.cookingFuel}
+        onChange={(val) => onChange('cookingFuel', val)}
+        options={[
+          { value: 'lpg', label: 'LPG Cylinder', icon: <FlameIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'piped_gas', label: 'Piped Natural Gas (PNG)' },
+          { value: 'induction', label: 'Induction / Electric', icon: <ZapIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'biomass', label: 'Traditional Wood / Biomass' },
+        ]}
+      />
+
+      {/* Winter Heating */}
+      <ChoiceChipGroup<PlanRequest['heatingFuel']>
+        label="Winter Heating Source"
+        description="Heating fuels used during chilly winter mornings and nights."
+        value={formData.heatingFuel}
+        onChange={(val) => onChange('heatingFuel', val)}
+        options={[
+          { value: 'none', label: 'None / Not needed' },
+          { value: 'electric', label: 'Electric Room Heater', icon: <ZapIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'kerosene', label: 'Kerosene Heater' },
+          { value: 'biomass', label: 'Wood / Fireplace' },
+        ]}
+      />
+
+      {/* Window Sealing */}
+      <ChoiceChipGroup<PlanRequest['windowSealingQuality']>
+        label="Window Sealing & Draftiness"
+        description="Drafty doors and unsealed window cracks allow outdoor particulate infiltration."
+        value={formData.windowSealingQuality}
+        onChange={(val) => onChange('windowSealingQuality', val)}
+        options={[
+          { value: 'poor', label: 'Poor (Drafty cracks)' },
+          { value: 'average', label: 'Average' },
+          { value: 'good', label: 'Good (Tightly sealed)' },
+        ]}
+      />
+
+      {/* Air Purifier Equipment */}
+      <ChoiceChipGroup<boolean>
+        label="Do you have an Air Purifier at home?"
+        description="HEPA or equivalent mechanical particulate filter in sleeping or living area."
+        value={formData.hasAirPurifier}
+        onChange={(val) => onChange('hasAirPurifier', val)}
+        options={[
+          { value: false, label: 'No Purifier' },
+          { value: true, label: 'Yes, Air Purifier Installed', icon: <FilterIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+        ]}
+      />
+
+      {/* Kitchen Chimney / Exhaust */}
+      <ChoiceChipGroup<boolean>
+        label="Kitchen Exhaust Fan or Chimney?"
+        description="Mechanical exhaust that pulls cooking smoke and oil aerosols outdoors."
+        value={formData.hasKitchenChimneyOrExhaust}
+        onChange={(val) => onChange('hasKitchenChimneyOrExhaust', val)}
+        options={[
+          { value: false, label: 'No Exhaust / Chimney' },
+          { value: true, label: 'Yes, Chimney / Exhaust Installed', icon: <WindIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+        ]}
+      />
+
+      {/* Daily Habits & Combustions (NOT PRE-TICKED: User must explicitly choose) */}
+      <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-950/40">
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+          Daily Household Habits (Choose if applicable)
         </div>
 
-        <div>
-          <label
-            htmlFor="home-area"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-          >
-            Home Area (sq ft)
-          </label>
-          <input
-            id="home-area"
-            type="number"
-            min="50"
-            max="25000"
-            value={formData.homeAreaSqFt}
-            onChange={(e) => onChange('homeAreaSqFt', Math.max(50, parseInt(e.target.value) || 50))}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          />
-        </div>
+        {/* Incense / Coils (Default FALSE / NOT PRE-TICKED) */}
+        <ChoiceChipGroup<boolean>
+          label="Uses incense (agarbatti), dhoop, or mosquito coils daily?"
+          description="Burning incense emits ultra-fine PM2.5 and benzene directly into enclosed living spaces."
+          value={formData.usesIncenseOrMosquitoCoils}
+          onChange={(val) => onChange('usesIncenseOrMosquitoCoils', val)}
+          options={[
+            { value: false, label: 'No (Never / Rarely)', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
+            { value: true, label: 'Yes (Daily / Frequent)', icon: <FlameIcon className="h-4 w-4 text-amber-600" /> },
+          ]}
+        />
 
-        <div>
-          <label
-            htmlFor="budget-preference"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-          >
-            Action Budget Preference
-          </label>
-          <select
-            id="budget-preference"
-            value={formData.budget}
-            onChange={(e) => onChange('budget', e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          >
-            <option value="zero_cost">Zero Cost Only</option>
-            <option value="low">Low Budget (N95, DIY box fan)</option>
-            <option value="moderate">Moderate (Air purifiers / induction)</option>
-            <option value="flexible">Flexible / Any budget</option>
-          </select>
-        </div>
+        {/* Garden Waste Burning (Default FALSE / NOT PRE-TICKED) */}
+        <ChoiceChipGroup<boolean>
+          label="Open waste or garden leaf burning nearby?"
+          description="Local smoldering leaf or plastic waste piles nearby that cause localized smoke plumes."
+          value={formData.hasGardenOrOpenWasteBurning}
+          onChange={(val) => onChange('hasGardenOrOpenWasteBurning', val)}
+          options={[
+            { value: false, label: 'No nearby burning', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
+            { value: true, label: 'Yes, neighborhood burning occurs', icon: <AlertTriangleIcon className="h-4 w-4 text-amber-600" /> },
+          ]}
+        />
+
+        {/* Outdoor Exercise (Default FALSE / NOT PRE-TICKED) */}
+        <ChoiceChipGroup<boolean>
+          label="Does outdoor exercise (morning jogging, cycling, brisk walking)?"
+          description="Deep ventilation during morning smog spikes multiplies inhaled particulate dose 4×."
+          value={formData.doesOutdoorExercise}
+          onChange={(val) => onChange('doesOutdoorExercise', val)}
+          options={[
+            { value: false, label: 'No outdoor workouts', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
+            { value: true, label: 'Yes, exercises outdoors' },
+          ]}
+        />
       </div>
 
-      <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 dark:border-slate-800">
-        <label className="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.hasAirPurifier}
-            onChange={(e) => onChange('hasAirPurifier', e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-          />
-          <span>Household already owns a HEPA air purifier</span>
-        </label>
-
-        <label className="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.hasKitchenChimneyOrExhaust}
-            onChange={(e) => onChange('hasKitchenChimneyOrExhaust', e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-          />
-          <span>Kitchen has exhaust fan or chimney installed</span>
-        </label>
-
-        <label className="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.usesIncenseOrMosquitoCoils}
-            onChange={(e) => onChange('usesIncenseOrMosquitoCoils', e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-          />
-          <span>Regularly burns incense sticks (agarbatti), dhoop, or mosquito coils</span>
-        </label>
-      </div>
-    </fieldset>
+      {/* Action Budget Preference */}
+      <ChoiceChipGroup<PlanRequest['budget']>
+        label="Action Budget Preference"
+        description="Select the investment level you prefer for recommended clean air interventions."
+        value={formData.budget}
+        onChange={(val) => onChange('budget', val)}
+        options={[
+          { value: 'zero_cost', label: 'Zero-Cost Only' },
+          { value: 'low', label: 'Low Cost (DIY & Masks)', icon: <ShieldIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'moderate', label: 'Moderate' },
+          { value: 'flexible', label: 'Flexible' },
+        ]}
+      />
+    </div>
   );
 }

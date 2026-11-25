@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SaafHawa | Winter Smog & Clean Air Action Assistant",
+  title: "SaafHawa — Clean Air Assistant",
   description:
-    "Empowering families and communities through severe winter smog with personalized low-emission daily routines, indoor air quality hacks, and measurable impact tracking.",
+    "Calm, evidence-based winter smog defense and low-emission daily routines for families and communities.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

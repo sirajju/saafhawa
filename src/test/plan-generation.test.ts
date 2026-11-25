@@ -6,51 +6,11 @@ import {
 import { POST } from '@/app/api/plan/route';
 import { planRateLimiter } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
-import { MOCK_AIR_QUALITY, MOCK_PROFILE } from './plan-fixtures';
+import { MOCK_AIR_QUALITY, MOCK_PROFILE, MOCK_GEMINI_OUTPUT } from './plan-fixtures';
 
 describe('Plan Module - Gemini Generation & Fallback', () => {
   it('processes Gemini structured output, drops unknown IDs, and attaches calculator impact figures', async () => {
-    const mockGeminiJson = JSON.stringify({
-      selectedActions: [
-        {
-          actionId: 'wear_n95_mask_outside',
-          suggestedTimeOfDay: 'Morning Commute',
-          reason: 'Protects the family and asthma patient from dense outdoor particulate smog.',
-        },
-        {
-          actionId: 'keep_children_indoors_morning_smog',
-          suggestedTimeOfDay: 'Morning',
-          reason: 'Protects your child from hazardous early morning temperature inversion peaks.',
-        },
-        {
-          actionId: 'diy_corsi_rosenthal_box',
-          suggestedTimeOfDay: 'All Day',
-          reason: 'An affordable DIY cleaner providing high air filtration without buying expensive purifiers.',
-        },
-        {
-          actionId: 'eliminate_incense_and_mosquito_coils',
-          suggestedTimeOfDay: 'All Day',
-          reason: 'Avoids heavy indoor particulate accumulation in a home with asthma sufferers.',
-        },
-        {
-          actionId: 'swap_car_for_metro',
-          suggestedTimeOfDay: 'Commute Hours',
-          reason: 'Replaces daily road traffic with clean electric transit to reduce tailpipe emissions.',
-        },
-        {
-          actionId: 'unknown_hallucinated_action_123',
-          suggestedTimeOfDay: 'Afternoon',
-          reason: 'This should be ignored.',
-        },
-        {
-          actionId: 'use_exhaust_fan_cooking',
-          suggestedTimeOfDay: 'Meal Preparation',
-          reason: 'Vents intense cooking and tadka aerosols directly outside.',
-        },
-      ],
-    });
-
-    const mockGenerator = vi.fn().mockResolvedValue(mockGeminiJson);
+    const mockGenerator = vi.fn().mockResolvedValue(MOCK_GEMINI_OUTPUT);
     const mockAirQualityFetcher = vi.fn().mockResolvedValue(MOCK_AIR_QUALITY);
 
     const plan = await generateHouseholdPlan(MOCK_PROFILE, {
@@ -119,16 +79,38 @@ describe('Plan Module - POST /api/plan Route Handler', () => {
     planRateLimiter.reset();
   });
 
-  it('generates complete rule-based plan with sample data when no keys are configured', async () => {
+  it('generates complete rule-based plan when Gemini key is not configured', async () => {
     const originalMapsKey = process.env.GOOGLE_MAPS_API_KEY;
     const originalGeminiKey = process.env.GEMINI_API_KEY;
     delete process.env.GOOGLE_MAPS_API_KEY;
     delete process.env.GEMINI_API_KEY;
 
-    const plan = await generateHouseholdPlan(MOCK_PROFILE);
+    const plan = await generateHouseholdPlan(MOCK_PROFILE, {
+      airQualityFetcher: async () => ({
+        location: {
+          name: '110001',
+          formattedAddress: 'Connaught Place, New Delhi',
+          latitude: 28.6139,
+          longitude: 77.209,
+          timeZone: 'Asia/Kolkata',
+        },
+        current: {
+          dateTime: new Date().toISOString(),
+          aqi: 342,
+          category: 'Very Poor',
+          dominantPollutant: 'pm25',
+          indexCode: 'ind_cpcb',
+          indexDisplayName: 'India National AQI (CPCB)',
+          pm25: { value: 185.5, units: 'ug/m3' },
+          pm10: { value: 320, units: 'ug/m3' },
+          dataSource: 'Open-Meteo (CAMS model)',
+        },
+        hourlyForecast: [],
+        isSampleData: false,
+      }),
+    });
 
     expect(plan.generationMethod).toBe('rule_based_fallback');
-    expect(plan.isSampleData).toBe(true);
     expect(plan.actions.length).toBeGreaterThanOrEqual(6);
     expect(plan.summary.totalPm25InhaledDoseAvoidedUg).toBeGreaterThan(0);
 

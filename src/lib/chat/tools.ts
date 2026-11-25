@@ -1,5 +1,6 @@
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
+import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
 import { ACTION_CATALOGUE } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { HouseholdProfile, HouseholdProfileSchema } from '../impact/types';
@@ -11,27 +12,24 @@ export function formatHourInPlaceLocalTime(
   dateTimeIso: string,
   timeZone = 'Asia/Kolkata'
 ): string {
+  const formatWithTz = (tz: string) => {
+    const rawDate = new Date(dateTimeIso);
+    if (isNaN(rawDate.getTime())) return dateTimeIso;
+    // Round odd minutes to the nearest hour (e.g. 10:04 AM -> 10 AM, 10:45 AM -> 11 AM)
+    const roundedMs = Math.round(rawDate.getTime() / (3600 * 1000)) * (3600 * 1000);
+    const roundedDate = new Date(roundedMs);
+    return roundedDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      hour12: true,
+      timeZone: tz,
+    });
+  };
+
   try {
-    const d = new Date(dateTimeIso);
-    return d
-      .toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        timeZone,
-      })
-      .replace(':00', '');
+    return formatWithTz(timeZone);
   } catch {
     try {
-      const d = new Date(dateTimeIso);
-      return d
-        .toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-          timeZone: 'Asia/Kolkata',
-        })
-        .replace(':00', '');
+      return formatWithTz('Asia/Kolkata');
     } catch {
       return dateTimeIso;
     }
@@ -40,6 +38,8 @@ export function formatHourInPlaceLocalTime(
 
 export interface AirQualityToolResult {
   locationName: string;
+  dataSource?: string;
+  measuredAtLocalTime?: string;
   isSampleData?: boolean;
   currentAqi: number | null;
   category: string | null;
@@ -72,6 +72,8 @@ export async function executeGetAirQualityTool(
 
   return {
     locationName: report.location.name,
+    dataSource: report.current.dataSource || 'Open-Meteo (CAMS model)',
+    measuredAtLocalTime: formatMeasurementTime(report.current.dateTime, timeZone),
     isSampleData: Boolean(report.isSampleData || report.current.isSampleData),
     currentAqi: report.current.aqi,
     category: report.current.category,

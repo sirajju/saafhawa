@@ -1,5 +1,9 @@
+'use client';
+
 import React from 'react';
 import { PlanRequest } from '@/lib/plan/types';
+import { ChoiceChipGroup } from './ChoiceChipGroup';
+import { ShieldIcon, AlertTriangleIcon } from '../ui/Icons';
 
 interface DemographicsFieldsProps {
   formData: PlanRequest;
@@ -8,84 +12,75 @@ interface DemographicsFieldsProps {
 
 export function DemographicsFields({ formData, onChange }: DemographicsFieldsProps) {
   return (
-    <fieldset className="rounded-xl border border-slate-200 p-4 sm:p-5 dark:border-slate-800">
-      <legend className="px-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-        Who lives in your home?
-      </legend>
-      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
-          <label
-            htmlFor="adults-count"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-          >
-            Adults (18-64 yrs)
-          </label>
-          <input
-            id="adults-count"
-            type="number"
-            min="1"
-            max="15"
-            value={formData.adultsCount}
-            onChange={(e) => onChange('adultsCount', Math.max(1, parseInt(e.target.value) || 1))}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          />
-        </div>
+    <div className="space-y-6">
+      {/* Adults Count */}
+      <ChoiceChipGroup<number>
+        label="Adults in home (18–64 yrs)"
+        description="Adult occupants needing active daily commute and exposure guidance."
+        value={formData.adultsCount}
+        onChange={(val) => onChange('adultsCount', val)}
+        options={[
+          { value: 1, label: '1 Adult' },
+          { value: 2, label: '2 Adults' },
+          { value: 3, label: '3 Adults' },
+          { value: 4, label: '4 Adults' },
+          { value: 5, label: '5+ Adults' },
+        ]}
+      />
 
-        <div>
-          <label
-            htmlFor="children-count"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-          >
-            Children (0-17 yrs)
-          </label>
-          <input
-            id="children-count"
-            type="number"
-            min="0"
-            max="10"
-            value={formData.childrenCount}
-            onChange={(e) => onChange('childrenCount', Math.max(0, parseInt(e.target.value) || 0))}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          />
-        </div>
+      {/* Children Count */}
+      <ChoiceChipGroup<number>
+        label="Children in home (0–17 yrs)"
+        description="Developing lungs are exceptionally vulnerable to morning smog peaks."
+        value={formData.childrenCount}
+        onChange={(val) => onChange('childrenCount', val)}
+        options={[
+          { value: 0, label: '0' },
+          { value: 1, label: '1 Child' },
+          { value: 2, label: '2 Children' },
+          { value: 3, label: '3+ Children' },
+        ]}
+      />
 
-        <div>
-          <label
-            htmlFor="elderly-count"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-          >
-            Seniors (65+ yrs)
-          </label>
-          <input
-            id="elderly-count"
-            type="number"
-            min="0"
-            max="10"
-            value={formData.elderlyCount}
-            onChange={(e) => onChange('elderlyCount', Math.max(0, parseInt(e.target.value) || 0))}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          />
-        </div>
-      </div>
+      {/* Seniors Count */}
+      <ChoiceChipGroup<number>
+        label="Seniors (65+ yrs)"
+        description="High cardiovascular and respiratory susceptibility during winter temperature inversions."
+        value={formData.elderlyCount}
+        onChange={(val) => onChange('elderlyCount', val)}
+        options={[
+          { value: 0, label: '0' },
+          { value: 1, label: '1 Senior' },
+          { value: 2, label: '2 Seniors' },
+          { value: 3, label: '3+ Seniors' },
+        ]}
+      />
 
-      <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.hasAsthmaOrRespiratoryCondition}
-            onChange={(e) => onChange('hasAsthmaOrRespiratoryCondition', e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-          />
-          <div>
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              Someone in the home has Asthma, COPD, or a respiratory condition
-            </span>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              We will prioritize clinical-grade indoor filtration and high-filtration routines.
-            </p>
-          </div>
-        </label>
-      </div>
-    </fieldset>
+      {/* Asthma / Respiratory Sensitivity */}
+      <ChoiceChipGroup<boolean>
+        label="Asthma or Respiratory Sensitivity?"
+        description="Does anyone in the household suffer from asthma, chronic bronchitis, or severe dust allergies?"
+        value={formData.hasAsthmaOrRespiratoryCondition}
+        onChange={(val) => onChange('hasAsthmaOrRespiratoryCondition', val)}
+        options={[
+          { value: false, label: 'No', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
+          { value: true, label: 'Yes (High Sensitivity)', icon: <AlertTriangleIcon className="h-4 w-4 text-amber-600" /> },
+        ]}
+      />
+
+      {/* Outdoor Exposure Time */}
+      <ChoiceChipGroup<number>
+        label="Daily outdoor hours per person"
+        description="Average daily time spent outside for school, shopping, or errands."
+        value={formData.dailyOutdoorHoursPerPerson}
+        onChange={(val) => onChange('dailyOutdoorHoursPerPerson', val)}
+        options={[
+          { value: 0.5, label: '< 1 hr' },
+          { value: 1.5, label: '1–2 hrs' },
+          { value: 3.5, label: '3–4 hrs' },
+          { value: 5, label: '5+ hrs' },
+        ]}
+      />
+    </div>
   );
 }

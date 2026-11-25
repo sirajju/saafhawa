@@ -4,10 +4,11 @@ This document details the security controls implemented in **SaafHawa**, linking
 
 ---
 
-### 1. Zero Browser Exposure of API Keys
-- All calls to Google Air Quality API, Google Geocoding API, and Google Gen AI (Gemini) are strictly executed on the server inside API route handlers.
+### 1. Zero Browser Exposure of API Keys & Keyless Default Operation
+- All calls to Google Air Quality API, Google Geocoding API, Open-Meteo Air Quality and Geocoding APIs, and Google Gen AI (Gemini) are strictly executed on the server inside API route handlers.
 - Environment variables (`GOOGLE_MAPS_API_KEY`, `GEMINI_API_KEY`, and optional fallback `AI_API_KEY`) do not use the `NEXT_PUBLIC_` prefix, preventing Next.js from bundling them into client-side JavaScript.
-- Implementation: [`src/lib/air-quality/service.ts`](src/lib/air-quality/service.ts), [`src/lib/plan/service.ts`](src/lib/plan/service.ts), [`src/lib/chat/service.ts`](src/lib/chat/service.ts).
+- **Keyless Default Operation:** When `GOOGLE_MAPS_API_KEY` is not provided, the application defaults to the free Open-Meteo Air Quality (Copernicus CAMS model) and Geocoding APIs requiring zero cloud credits or private keys. Attribution is strictly preserved per CC BY 4.0.
+- Implementation: [`src/lib/air-quality/open-meteo-client.ts`](src/lib/air-quality/open-meteo-client.ts), [`src/lib/air-quality/service.ts`](src/lib/air-quality/service.ts), [`src/lib/plan/service.ts`](src/lib/plan/service.ts), [`src/lib/chat/service.ts`](src/lib/chat/service.ts).
 
 ### 2. Request Body Size Limits (Anti-DoS)
 - All POST endpoints enforce a hard request body limit of 65,536 bytes (64 KB) via `readJsonBodyWithLimit`.

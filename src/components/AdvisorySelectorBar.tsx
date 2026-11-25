@@ -1,4 +1,5 @@
 import React from 'react';
+import { HomeIcon, ShieldIcon } from './ui/Icons';
 
 interface AdvisorySelectorBarProps {
   audience: 'housing_society' | 'school_group';
@@ -16,12 +17,12 @@ export function AdvisorySelectorBar({
   return (
     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
       {/* Audience Segment Radios */}
-      <fieldset className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-sm dark:border-slate-700 dark:bg-slate-950">
+      <fieldset className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-2xs dark:border-slate-800 dark:bg-slate-900">
         <legend className="sr-only">Target community audience</legend>
         <label
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-emerald-500 ${
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-teal-600 ${
             audience === 'housing_society'
-              ? 'bg-emerald-700 text-white shadow-sm'
+              ? 'bg-teal-800 text-white shadow-xs dark:bg-teal-700'
               : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
           }`}
         >
@@ -33,14 +34,14 @@ export function AdvisorySelectorBar({
             onChange={() => onAudienceChange('housing_society')}
             className="sr-only"
           />
-          <span aria-hidden="true">🏘️</span>
+          <HomeIcon className="h-3.5 w-3.5" />
           <span>Housing Society (RWA)</span>
         </label>
 
         <label
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-emerald-500 ${
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-teal-600 ${
             audience === 'school_group'
-              ? 'bg-emerald-700 text-white shadow-sm'
+              ? 'bg-teal-800 text-white shadow-xs dark:bg-teal-700'
               : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
           }`}
         >
@@ -52,18 +53,18 @@ export function AdvisorySelectorBar({
             onChange={() => onAudienceChange('school_group')}
             className="sr-only"
           />
-          <span aria-hidden="true">🏫</span>
+          <ShieldIcon className="h-3.5 w-3.5" />
           <span>School / Parents</span>
         </label>
       </fieldset>
 
       {/* Language Radios */}
-      <fieldset className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-sm dark:border-slate-700 dark:bg-slate-950">
+      <fieldset className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs shadow-2xs dark:border-slate-800 dark:bg-slate-900">
         <legend className="sr-only">Select language</legend>
         <label
-          className={`rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-emerald-500 ${
+          className={`rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-teal-600 ${
             language === 'en'
-              ? 'bg-emerald-700 text-white shadow-sm'
+              ? 'bg-teal-800 text-white shadow-xs dark:bg-teal-700'
               : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
           }`}
         >
@@ -80,9 +81,9 @@ export function AdvisorySelectorBar({
 
         <label
           lang="hi"
-          className={`rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-emerald-500 ${
+          className={`rounded-lg px-3 py-1.5 font-semibold cursor-pointer transition focus-within:ring-2 focus-within:ring-teal-600 ${
             language === 'hi'
-              ? 'bg-emerald-700 text-white shadow-sm'
+              ? 'bg-teal-800 text-white shadow-xs dark:bg-teal-700'
               : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
           }`}
         >

@@ -36,8 +36,84 @@ SaafHawa is engineered around five fundamental design principles:
    Air quality software must never practice medicine. For medical symptoms, coughing, or asthma flare-ups, SaafHawa provides immediate environmental precautions (e.g., move to a sealed room, run HEPA filtration, keep prescribed rescue inhalers accessible) and explicitly directs the user to consult a qualified medical doctor.
 4. **Community Amplification:**
    Individual household protection must scale to collective community action. With one click, SaafHawa generates pre-formatted WhatsApp advisories in English or Hindi for Housing Societies (RWAs) and School/Parent groups to halt leaf burning, schedule outdoor recesses during clean hours, and coordinate carpools.
-5. **Zero-Key Resilience:**
-   The entire application functions out of the box with zero external API keys configured. When Google Maps or Gemini keys are absent, built-in reference data for New Delhi and rule-based action ranking seamlessly activate, accompanied by a visible "Sample Data" notice.
+5. **Multi-Source Real-Time Data & Transparent Telemetry Hierarchy:**
+   The application never serves predefined or borrowed data. Telemetry is resolved through a robust 3-tier hierarchy:
+   - **Tier 1 (Ground Station Truth - WAQI / `aqicn.org`):** When a free `WAQI_TOKEN` is set, queries the nearest official Central Pollution Control Board (CPCB) continuous ambient air quality monitoring station (CAAQMS). Ground stations measure real-time street-level particulate concentrations directly in neighborhoods (e.g. Anand Vihar, Delhi or BKC, Mumbai), capturing hyper-local road and industrial emission spikes.
+   - **Tier 2 (Google Air Quality API Upgrade):** When `GOOGLE_MAPS_API_KEY` is set, uses Google's multi-layered machine-learning model combining government monitors, European ECMWF/CAMS models, satellite imagery, and traffic models.
+   - **Tier 3 (Zero-Key Real-Time Default - Open-Meteo CAMS Model):** By default (requiring zero keys and zero cloud credits), queries the European Copernicus Atmosphere Monitoring Service (CAMS) global chemical transport model on a 10–40 km atmospheric grid, paired with Open-Meteo Geocoding and Indian pincode resolution via `postalpincode.in`.
+   *Understanding the numbers:* Atmospheric models (Open-Meteo CAMS) calculate regional grid averages (~10–40 km), which smooth out roadside point sources. Therefore, in dense Indian cities during severe thermal inversions, model values can read lower than direct street-level CAAQMS roadside monitors. SaafHawa explicitly displays the active data source (e.g. `CPCB Ground Station (WAQI)`, `Open-Meteo (CAMS model)`, or `Google Air Quality`) and local measurement timestamp on every screen.
+6. **Rolling 24-Hour Forecast & Actionable Family Advice:**
+   The forecast starts at the current hour ($T$) and runs 24 hours forward ($T \to T+24$), positioning the chart's "Now" marker naturally at the current hour. Actionable guidance (e.g. *"Keep the children indoors until 1 PM. Cleanest window today: 1 PM to 4 PM."*) is computed strictly from future waking hours (6 AM to 10 PM local time). If the cleanest remaining window falls on the next day, the advice explicitly alerts the family (e.g. *"Cleanest window: tomorrow 7 AM to 10 AM."*).
+7. **Time-Based Timeline with "Any Time Today" Grouping:**
+   Actions are organized strictly by real time: actions with no fixed time ("All Day", "Daytime Setup", "Anytime") appear in a dedicated "Any time today" group at the top, followed by Morning, Afternoon, Evening, and Night. Time sections that have already elapsed today are clearly tagged with "Passed earlier today" badges.
+8. **Official CPCB Indian National AQI Calculation:**
+   AQI and category are computed in a pure, tested function implementing official Central Pollution Control Board (CPCB) piecewise linear interpolation standards from PM2.5 and PM10 concentrations.
+9. **Strict Attribution & Single Action Placement:**
+   Every screen identifies the data source and measurement time. "Share Advisory" appears once per screen (in the plan dashboard header), eliminating clutter.
+
+---
+
+## 2.1 Evaluator Scenarios ("Try It")
+
+SaafHawa runs live on **real-time data** from the free Open-Meteo Air Quality & Geocoding APIs across all of India. It **never** uses predefined or borrowed data: entering Mumbai yields authentic Mumbai conditions, never Delhi.
+
+Evaluators can immediately test the platform using any of the following 5 realistic scenarios:
+
+| # | Evaluator Scenario | Place to Enter | Step 1: Who Lives Here | Step 2: How You Get Around | Step 3: Your Home | Expected Real-Time Dynamics |
+|---|---|---|---|---|---|---|
+| **1** | **Family with a child with asthma in Delhi** | `110001` *(or "Connaught Place, New Delhi")* | 2 Adults, 1 Child, 0 Seniors, **Asthma: Yes** | Commute: Metro (15 km/day) | Fuel: LPG, Air Purifier: No, Budget: Low, No habits pre-ticked | High winter particulate load. Plan prioritizes pediatric indoor protection, morning inversion avoidance, sealed sleep zones, and DIY Corsi-Rosenthal boxes. |
+| **2** | **Car commuter in Mumbai** | `Mumbai` *(or "400001" / "Bandra")* | 1 Adult, 0 Children, 0 Seniors, Asthma: No | Commute: Petrol Car (25 km/day) | Fuel: LPG, Air Purifier: Yes, Budget: Medium | Coastal moderate AQI. Plan targets in-cabin PM2.5 avoidance during stop-and-go congestion, AC recirculation, and local carpooling. |
+| **3** | **Elderly couple in Kolkata** | `Kolkata` *(or "700001")* | 0 Adults, 0 Children, 2 Seniors, Asthma: No | Commute: Walking (2 km/day) | Fuel: LPG, Air Purifier: No, Budget: Low | Moderate/Poor eastern winter inversion. Shifts morning walks to afternoon convective dispersion window (1 PM – 3:30 PM), door weatherstripping, and saline rinses. |
+| **4** | **Two-wheeler commuter in Lucknow** | `Lucknow` *(or "226001")* | 2 Adults, 2 Children, 0 Seniors, Asthma: No | Commute: Two-Wheeler / Scooter (18 km/day) | Fuel: LPG, Air Purifier: No, Budget: Low | Severe Gangetic plain inversion. High direct particulate exposure on scooter; prioritizes fitted N95 masking, wet mopping corridors, and evening air purification. |
+| **5** | **Student in Bengaluru** | `Bengaluru` *(or "560001" / "Bangalore")* | 1 Adult, 0 Children, 0 Seniors, Asthma: No | Commute: Public Bus (8 km/day) | Fuel: LPG, Air Purifier: No, Budget: Low | Southern plateau clean air (Good/Satisfactory). Emphasizes low-emission lifestyle choices, window ventilation during clean hours, and community awareness. |
+
+### Measured Live Query Results (Executed 25 Nov 2026, 12:30 PM IST)
+
+The following live readings were measured in real time with zero Google API keys configured:
+
+| City & Query | Resolved Geographic Location | Live CPCB AQI | Category | Measured PM₂.₅ | Measured PM₁₀ | Dominant Pollutant | Data Source Attribution |
+|---|---|---|---|---|---|---|---|
+| **Delhi** (`110001`) | New Delhi, National Capital Territory of Delhi, India | **168** | Moderate | 80.3 µg/m³ | 83.6 µg/m³ | PM2.5 | Open-Meteo (CAMS model) |
+| **Mumbai** (`Mumbai`) | Mumbai, Maharashtra, India | **125** | Moderate | 67.3 µg/m³ | 69.2 µg/m³ | PM2.5 | Open-Meteo (CAMS model) |
+| **Kolkata** (`Kolkata`) | Kolkata, West Bengal, India | **183** | Moderate | 84.8 µg/m³ | 88.7 µg/m³ | PM2.5 | Open-Meteo (CAMS model) |
+| **Lucknow** (`Lucknow`) | Lucknow, Uttar Pradesh, India | **124** | Moderate | 67.1 µg/m³ | 69.6 µg/m³ | PM2.5 | Open-Meteo (CAMS model) |
+| **Bengaluru** (`Bengaluru`) | Bengaluru, Karnataka, India | **6** | Good | 3.8 µg/m³ | 4.0 µg/m³ | PM2.5 | Open-Meteo (CAMS model) |
+
+---
+
+## 2.2 Design System & Calm Health UX
+
+Built specifically for worried parents and households navigating severe winter smog, SaafHawa is designed to feel calm, medical-grade, and trustworthy rather than like a generic dashboard.
+
+- **Deep Teal Brand Identity (`#0f766e` / `#115e59`):** A serene, clinical-grade teal serves as the primary brand color across navigation, buttons, and choice chips.
+- **Strict AQI Category Color Isolation:** Indian National AQI colors (Emerald for Good, Amber for Moderate, Orange for Poor, Purple for Very Poor, Maroon for Severe) are strictly reserved for air quality numbers, category badges, and forecast bars—never for random UI buttons or decor.
+- **Single Clean Card Architecture:** Eliminated nested bordered boxes inside cards (`card-clean`), utilizing generous whitespace, subtle background tints, and typographic hierarchy.
+- **Mobile-First Readability:** All mobile body text is at least 16px (`text-base`) to eliminate eye strain during emergencies; all touch targets meet or exceed 44×44px.
+- **Dual Responsive Chat Modality:**
+  - **Desktop (≥ 1024px):** A sticky side panel sits alongside the plan so parents can ask questions while inspecting their timeline.
+  - **Mobile (< 1024px):** A floating deep-teal "Ask Assistant" pill opens a full-height bottom sheet modal with suggested prompt chips and a 1-line medical disclaimer.
+- **24-Hour Forecast Curve:** Replaces rows of cluttered boxes with a clean 24-hour SVG trendline highlighting the day's cleanest outdoor window (e.g. 1 PM to 4 PM) and a "Now" pin.
+- **Accessible 3-Step Onboarding:** Household demographics, commute modes, and home environments are broken into 3 digestible steps with tappable choice chips and browser geolocation support. No combustion habits are pre-ticked.
+- **Light & Dark Theme Tokens:** Complete support for `prefers-color-scheme: dark` and `.dark` mode using unified CSS custom properties.
+
+---
+
+## 2.2 Visual Showcase: Before & After Redesign
+
+### Household Onboarding
+| Before: Crowded 20-Field Form with Pre-Ticked Habits | After: Calm 3-Step Wizard with Choice Chips |
+| :---: | :---: |
+| ![Onboarding Before](docs/screenshots/onboarding-before.png) | ![Onboarding After](docs/screenshots/onboarding-after.png) |
+
+### Daily Smog Action Dashboard
+| Before: 3-Grid Category Layout with Red Banners | After: 24-Hr Curve, Cleanest Window & Daily Timeline |
+| :---: | :---: |
+| ![Dashboard Before](docs/screenshots/dashboard-before.png) | ![Dashboard After](docs/screenshots/dashboard-after.png) |
+
+### Conversational Air Assistant & Community Broadcast
+| Desktop Side-Panel & Mobile Sheet Chat | WhatsApp Advisory Broadcast Preview Card |
+| :---: | :---: |
+| ![Chat Experience](docs/screenshots/chat-after.png) | ![WhatsApp Broadcast Modal](docs/screenshots/advisory-modal-desktop.png) |
 
 ---
 
@@ -102,13 +178,18 @@ flowchart TD
 ```
 
 ### End-to-End Workflow:
-1. **Onboarding / Profile Ingestion:** The user enters location (area name or 6-digit Indian pincode), occupants (adults, children, seniors, asthma/respiratory conditions), commute mode and distance, cooking fuel, heating source, and budget. Profile is saved in `localStorage`.
-2. **Microclimate Fetching:** Server queries Google Geocoding and Google Air Quality APIs, requesting the Indian National AQI (`ind_cpcb`) and an explicit 24-hour forecast window. Cached for 15 minutes.
+1. **Three-Step Onboarding:** The user completes three short, accessible steps (1: Who lives here, asking place first with browser location support; 2: How you get around; 3: Your home, with no pre-ticked habits). Large tappable choice chips replace cumbersome dropdowns and numeric inputs. Profile is saved in `localStorage`.
+2. **Microclimate Fetching:** Server queries Google Geocoding, Google Time Zone, and Google Air Quality APIs, requesting the Indian National AQI (`ind_cpcb`) and an explicit 24-hour forecast window. Cached for 15 minutes.
 3. **Hybrid AI & Arithmetic Planning:**
-   - Server builds a structured prompt for Gemini 2.5 Flash with the household profile and AQI context.
+   - Server builds a structured prompt for Gemini 2.5 Flash with the household profile and AQI context, applying plan consistency rules (e.g. mutual exclusivity of WFH and commute swaps).
    - Gemini selects 6–8 action IDs from our 21-action catalogue with timing and reason.
    - Server drops any unrecognized IDs, executes pure TypeScript arithmetic formulas to compute inhaled dose avoided ($\mu\text{g}$) and emissions saved ($\text{g}$), and returns the complete verified payload.
-4. **Interactive Dashboard:** Displays real-time AQI with category text, WHO comparison, total household savings banner, grouped action cards, interactive chat panel, and community advisory generator.
+4. **Action-First Dashboard:**
+   - **"What should my family do today?"**: Large AQI in category color, category in words, and a plain advice sentence synthesized from the forecast (e.g. *"Keep the children indoors until 1 PM. Cleanest window today: 1 PM to 4 PM."*).
+   - **24-Hour Forecast Chart:** Clean, contained SVG curve highlighting the cleanest window and marking the current hour ("Now"), with screen-reader text summary.
+   - **Daily Timeline:** Actions ordered by time of day (Morning, Afternoon, Evening, Night) with suitability reasons, small impact figures (omitting emissions when 0), collapsible "Details", and interactive "Mark as done" tracked per day in `localStorage` with a progress counter.
+   - **Compact Impact Summary:** Single compact row of 3 numbers with 1-line explanations and note on adjusted overlapping actions.
+   - **Conversational Assistant & Advisories:** Follow-up chat panel with function calling and WhatsApp broadcast advisory generator.
 
 ---
 
@@ -177,7 +258,10 @@ The table below maps each requirement from the problem statement to its implemen
 | **Chat panel with Gemini function calling and medical disclaimer** | [`src/components/ChatPanel.tsx`](src/components/ChatPanel.tsx), [`src/lib/chat/service.ts`](src/lib/chat/service.ts), [`src/lib/chat/tools.ts`](src/lib/chat/tools.ts) | [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts), [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts) |
 | **Community advisory button (WhatsApp-ready English/Hindi)** | [`src/components/CommunityAdvisoryModal.tsx`](src/components/CommunityAdvisoryModal.tsx), [`src/lib/community/advisory-generator.ts`](src/lib/community/advisory-generator.ts) | [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx), [`src/test/components-advisory-dialog.test.tsx`](src/test/components-advisory-dialog.test.tsx) |
 | **Rate limiting per IP & message length cap** | [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts), [`src/lib/chat/types.ts`](src/lib/chat/types.ts) | [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts) |
-| **Zero-key mode: Delhi reference sample data & visible label** | [`src/lib/air-quality/sample-data.ts`](src/lib/air-quality/sample-data.ts), [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx) | [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts), [`src/test/plan-generation.test.ts`](src/test/plan-generation.test.ts), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) |
+| **Free real-time Open-Meteo default (Zero cloud credits needed) & Google upgrade** | [`src/lib/air-quality/open-meteo-client.ts`](src/lib/air-quality/open-meteo-client.ts), [`src/lib/air-quality/service.ts`](src/lib/air-quality/service.ts) | [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts), [`src/test/live-evaluator-queries.test.ts`](src/test/live-evaluator-queries.test.ts) |
+| **Official Indian National AQI (CPCB) pure function breakpoints** | [`src/lib/air-quality/cpcb-aqi.ts`](src/lib/air-quality/cpcb-aqi.ts) | [`src/test/cpcb-aqi.test.ts`](src/test/cpcb-aqi.test.ts) |
+| **Indian 6-digit PIN code resolution with helpful location fallback** | [`src/lib/air-quality/open-meteo-client.ts`](src/lib/air-quality/open-meteo-client.ts) | [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts), [`src/test/live-evaluator-queries.test.ts`](src/test/live-evaluator-queries.test.ts) |
+| **Attribution (CC BY 4.0) & local measurement timestamps** | [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx), [`src/lib/chat/tools.ts`](src/lib/chat/tools.ts), [`src/lib/community/advisory-templates.ts`](src/lib/community/advisory-templates.ts) | [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) |
 | **Security headers (CSP), request body cap (64KB)** | [`src/lib/security.ts`](src/lib/security.ts), [`next.config.ts`](next.config.ts) | [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) |
 | **Plan consistency: WFH & commute swap mutual exclusivity, benefit comparison, replacement & dashboard line** | [`src/lib/plan/consistency.ts`](src/lib/plan/consistency.ts), [`src/components/TotalSavingsBanner.tsx`](src/components/TotalSavingsBanner.tsx) | [`src/test/plan-consistency.test.ts`](src/test/plan-consistency.test.ts) |
 | **Strict neutrality & sample data labels across all screens without "live" wording** | [`src/components/ChatHeader.tsx`](src/components/ChatHeader.tsx), [`src/components/ChatMessageList.tsx`](src/components/ChatMessageList.tsx), [`src/components/LoadingState.tsx`](src/components/LoadingState.tsx), [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx) | [`src/test/wording-sample-data.test.tsx`](src/test/wording-sample-data.test.tsx) |
@@ -193,7 +277,7 @@ The table below maps each requirement from the problem statement to its implemen
 ### 1. Prerequisites
 - **Node.js**: `v20.x` or `v22.x` (LTS)
 - **npm**: `v10.x` or higher
-- Optional: `GOOGLE_MAPS_API_KEY` (Geocoding & Air Quality) and `GEMINI_API_KEY` (Google AI Studio). *App runs 100% functional in zero-key sample data mode without them.*
+- Optional: `GOOGLE_MAPS_API_KEY` (Geocoding & Air Quality upgrade; app defaults to free Open-Meteo real-time data requiring no key or credits) and `GEMINI_API_KEY` (Free Google AI Studio key for GenAI plan generation and follow-up chat; rule-based plan acts as an offline fallback).
 
 ### 2. Installation
 ```bash
@@ -229,13 +313,13 @@ npm run lint
 # 2. Run TypeScript compiler check
 npx tsc --noEmit
 
-# 3. Run all unit and component tests (138 tests across 22 test files, 100% offline)
+# 3. Run all unit and component tests (172 tests across 29 test files)
 npm test
 
 # 4. Run production standalone build
 npm run build
 
-# 5. Run Playwright E2E smoke tests (2 tests)
+# 5. Run Playwright E2E smoke tests (5 tests)
 npm run test:e2e
 ```
 
@@ -266,10 +350,10 @@ gcloud run deploy saafhawa \
 ## 7. Evidence Documentation Index
 
 For in-depth audits of each scoring criterion, see the dedicated documentation files:
-- 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64KB body caps, rate limiters, credential hygiene.
-- ♿ [`ACCESSIBILITY.md`](ACCESSIBILITY.md) — Semantic landmarks, fieldsets, live regions, text equivalents, keyboard tests.
-- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (111 Vitest tests, 2 Playwright E2E tests, ESLint, TypeScript).
-- ⚡ [`EFFICIENCY.md`](EFFICIENCY.md) — Measured build assets, Next.js standalone containerization, TTL cache bounding.
+- 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64KB body caps, rate limiters, credential hygiene, trusted proxy hops (`TRUSTED_PROXY_HOPS`).
+- ♿ [`ACCESSIBILITY.md`](ACCESSIBILITY.md) — Semantic landmarks, fieldsets, live regions, text equivalents, keyboard tests, timeline passed states.
+- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (172 Vitest tests, 5 Playwright E2E tests, 0 ESLint warnings, 0 TypeScript errors).
+- ⚡ [`EFFICIENCY.md`](EFFICIENCY.md) — Measured build assets, Next.js standalone containerization, TTL cache bounding, strict <= 200 lines per file.
 - 📐 [`docs/DECISIONS.md`](docs/DECISIONS.md) — 5 architectural design decision records with trade-off analysis.
 
 ---

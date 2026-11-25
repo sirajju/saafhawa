@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
+import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
 import { capTextLength, withTimeout } from '../gemini-utils';
 import { logServerError } from '../logger';
 import { AdvisoryRequest, AdvisoryResponse } from './types';
@@ -65,6 +66,8 @@ Write a concise, impactful WhatsApp broadcast advisory in ${request.language ===
 
 LOCATION & AIR QUALITY:
 - Location: ${report.location.name}
+- Data Source: ${report.current.dataSource || 'Open-Meteo (CAMS model)'}
+- Measured At: ${formatMeasurementTime(report.current.dateTime, report.location.timeZone)}
 - Air Quality: AQI ${report.current.aqi ?? 'Severe'} (${report.current.category ?? 'Unhealthy'})
 - PM2.5 Level: ${report.current.pm25?.value ?? 'Elevated'} µg/m³
 - Dominant Pollutant: ${report.current.dominantPollutant ?? 'PM2.5'}
@@ -72,9 +75,10 @@ ${isSample ? '- DATA NOTE: This advisory is based on sample reference conditions
 
 REQUIREMENTS:
 1. Format for WhatsApp: use bold headers (*Title*), numbered points (1️⃣, 2️⃣), and clean bullet points with relevant emojis.
-2. Provide 4 to 5 highly practical, low-emission actions specific to ${request.audience === 'school_group' ? 'schools (cancel morning outdoor assemblies, N95 masking on buses, inhalers for asthma kids, indoor recess)' : 'housing societies (no leaf burning, wet mopping corridors instead of dry sweeping, no vehicle idling at gates, shift elderly walks to midday, carpooling)'}.
-3. Keep it brief (under 250 words) so it fits in a single mobile screen and is ready to copy-paste.
-4. Output ONLY the raw WhatsApp text with no conversational preamble or markdown code fences.`;
+2. Near the top, clearly state the data source (${report.current.dataSource || 'Open-Meteo (CAMS model)'}) and local measurement time (${formatMeasurementTime(report.current.dateTime, report.location.timeZone)}).
+3. Provide 4 to 5 highly practical, low-emission actions specific to ${request.audience === 'school_group' ? 'schools (cancel morning outdoor assemblies, N95 masking on buses, inhalers for asthma kids, indoor recess)' : 'housing societies (no leaf burning, wet mopping corridors instead of dry sweeping, no vehicle idling at gates, shift elderly walks to midday, carpooling)'}.
+4. Keep it brief (under 250 words) so it fits in a single mobile screen and is ready to copy-paste.
+5. Output ONLY the raw WhatsApp text with no conversational preamble or markdown code fences.`;
 
     const generatePromise = ai.models.generateContent({
       model,

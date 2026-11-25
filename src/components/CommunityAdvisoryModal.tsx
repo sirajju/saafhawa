@@ -5,6 +5,7 @@ import { AdvisoryResponse } from '@/lib/community/types';
 import { useFocusTrap } from '@/lib/use-focus-trap';
 import { AdvisorySelectorBar } from './AdvisorySelectorBar';
 import { AdvisoryModalBody } from './AdvisoryModalBody';
+import { ShareIcon, CloseIcon, CopyIcon, CheckIcon } from './ui/Icons';
 
 interface CommunityAdvisoryModalProps {
   isOpen: boolean;
@@ -112,9 +113,9 @@ export function CommunityAdvisoryModal({
         <div className="border-b border-slate-200 bg-slate-50/80 p-5 sm:p-6 dark:border-slate-800 dark:bg-slate-950/70">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-2xl dark:bg-emerald-950 dark:text-emerald-300">
-                📢
-              </span>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-100 text-teal-800 dark:bg-teal-950/80 dark:text-teal-300">
+                <ShareIcon className="h-5 w-5" />
+              </div>
               <div>
                 <h2
                   id="advisory-modal-title"
@@ -132,11 +133,9 @@ export function CommunityAdvisoryModal({
               type="button"
               onClick={onClose}
               aria-label="Close dialog"
-              className="rounded-lg p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
-              <span aria-hidden="true" className="text-lg">
-                ✕
-              </span>
+              <CloseIcon className="h-5 w-5" />
             </button>
           </div>
 
@@ -156,22 +155,30 @@ export function CommunityAdvisoryModal({
         />
 
         <div className="border-t border-slate-200 bg-slate-50/80 p-4 sm:flex sm:items-center sm:justify-between sm:px-6 dark:border-slate-800 dark:bg-slate-950/70">
-          <span className="text-xs text-slate-600 dark:text-slate-400">
-            {copied ? '✅ Copied to clipboard!' : 'One-click copy or share directly to WhatsApp'}
+          <span className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+            {copied ? (
+              <>
+                <CheckIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" />
+                <span className="font-semibold text-teal-800 dark:text-teal-300">Copied to clipboard!</span>
+              </>
+            ) : (
+              'Preview message above, then copy or share directly to WhatsApp'
+            )}
           </span>
 
-          <div className="mt-3 flex gap-2 sm:mt-0">
+          <div className="mt-3 flex gap-2.5 sm:mt-0">
             <button
               type="button"
               disabled={isLoading || !advisory}
               onClick={handleCopyText}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-xs font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 ${
+              className={`inline-flex min-h-[44px] items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold shadow-2xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50 ${
                 copied
-                  ? 'border-emerald-700 bg-emerald-700 text-white'
+                  ? 'border-teal-700 bg-teal-800 text-white'
                   : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
               }`}
             >
-              <span>{copied ? '✓ Copied!' : '📋 Copy Text'}</span>
+              {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+              <span>{copied ? 'Copied!' : 'Copy WhatsApp Message'}</span>
             </button>
 
             <a
@@ -179,9 +186,10 @@ export function CommunityAdvisoryModal({
               target="_blank"
               rel="noopener noreferrer"
               aria-disabled={isLoading || !advisory}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50"
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-teal-800 px-5 py-2.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50 dark:bg-teal-700 dark:hover:bg-teal-600"
             >
-              <span>Share on WhatsApp ↗</span>
+              <ShareIcon className="h-4 w-4" />
+              <span>Share on WhatsApp</span>
             </a>
           </div>
         </div>

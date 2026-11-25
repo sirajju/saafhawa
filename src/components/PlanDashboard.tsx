@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AirQualityCard } from '@/components/AirQualityCard';
 import { TotalSavingsBanner } from '@/components/TotalSavingsBanner';
-import { ActionCategorySection } from '@/components/ActionCategorySection';
 import { ChatPanel } from '@/components/ChatPanel';
-import { PlannedAction, PlanRequest, PlanResponse } from '@/lib/plan/types';
+import { PlanRequest, PlanResponse } from '@/lib/plan/types';
+import { ChatIcon } from './ui/Icons';
+import { DashboardHeader } from './dashboard/DashboardHeader';
+import { DailyTimeline } from './dashboard/DailyTimeline';
 
 interface PlanDashboardProps {
   plan: PlanResponse;
@@ -14,137 +16,134 @@ interface PlanDashboardProps {
   onOpenAdvisoryModal: () => void;
 }
 
+function getTodayStorageKey(): string {
+  const today = new Date().toISOString().slice(0, 10);
+  return `saafhawa_done_${today}`;
+}
+
 export function PlanDashboard({
   plan,
   profile,
   currentPlaceName,
   onOpenAdvisoryModal,
 }: PlanDashboardProps) {
-  const dailyRoutineActions: PlannedAction[] =
-    plan.actions.filter((a) => a.category === 'daily_routine') || [];
-  const indoorAirActions: PlannedAction[] =
-    plan.actions.filter((a) => a.category === 'indoor_air') || [];
-  const sustainableSwapActions: PlannedAction[] =
-    plan.actions.filter((a) => a.category === 'sustainable_swaps') || [];
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
+
+  const [completedActionIds, setCompletedActionIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const saved = localStorage.getItem(getTodayStorageKey());
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // Storage unavailable fallback
+    }
+    return [];
+  });
+
+  // Focus plan heading and ensure top of page stays in view on load
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    headingRef.current?.focus();
+  }, [plan]);
+
+  const handleToggleActionDone = (actionId: string) => {
+    setCompletedActionIds((prev) => {
+      const updated = prev.includes(actionId) ? prev.filter((id) => id !== actionId) : [...prev, actionId];
+      try {
+        localStorage.setItem(getTodayStorageKey(), JSON.stringify(updated));
+      } catch {
+        // Storage unavailable fallback
+      }
+      return updated;
+    });
+  };
+
+  const totalActions = plan.actions.length;
+  const doneCount = plan.actions.filter((a) => completedActionIds.includes(a.actionId)).length;
+  const progressPercent = totalActions > 0 ? Math.round((doneCount / totalActions) * 100) : 0;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 pt-6 sm:px-6 sm:pt-8">
-      <header className="border-b border-slate-200 pb-4 dark:border-slate-800">
-        <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-          Clean Air Action Plan for {plan.location.name}
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Tailored daily routine, indoor air interventions, and low-emission swaps for your household.
-        </p>
-      </header>
-
-      {plan.isSampleData && (
-        <div
-          role="status"
-          aria-label="Sample data mode active notice"
-          className="rounded-2xl border border-amber-300 bg-amber-50/90 p-4 shadow-sm dark:border-amber-800 dark:bg-amber-950/60"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl" aria-hidden="true">
-              ⚠️
-            </span>
-            <div>
-              <h2 className="text-sm font-bold text-amber-950 dark:text-amber-100">
-                Sample Data Mode Active
-              </h2>
-              <p className="text-xs text-amber-900/90 dark:text-amber-200/90">
-                Operating with built-in reference air quality for New Delhi and rule-based action planning because Google API keys are not configured. All features, arithmetic, and recommendations remain fully functional.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <AirQualityCard
-        location={plan.location}
-        current={plan.currentAirQuality}
-        hourlyForecast={plan.hourlyForecast || []}
-        isSampleData={plan.isSampleData}
+    <div className="mx-auto max-w-6xl w-full min-w-0 px-4 pt-4 sm:px-6 sm:pt-6">
+      <DashboardHeader
+        headingRef={headingRef}
+        plan={plan}
+        currentPlaceName={currentPlaceName}
+        doneCount={doneCount}
+        totalActions={totalActions}
+        progressPercent={progressPercent}
+        onOpenAdvisoryModal={onOpenAdvisoryModal}
       />
 
-      <TotalSavingsBanner
-        summary={plan.summary}
-        generationMethod={plan.generationMethod}
-      />
+      {/* Main Layout: Plan on Left, Side Panel Chat on Desktop */}
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Air Quality, Impact Summary & Daily Timeline */}
+        <div className="lg:col-span-7 xl:col-span-8 space-y-8">
+          <AirQualityCard
+            location={plan.location}
+            current={plan.currentAirQuality}
+            hourlyForecast={plan.hourlyForecast || []}
+            isSampleData={plan.isSampleData}
+            householdProfile={profile}
+          />
 
-      <section
-        aria-label="Community outreach"
-        className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 dark:border-emerald-900/60 dark:bg-emerald-950/30"
-      >
-        <div className="flex items-center gap-3 text-center sm:text-left">
-          <span className="text-2xl" aria-hidden="true">
-            📢
-          </span>
-          <div>
-            <h2 className="text-sm font-bold text-emerald-950 dark:text-emerald-100">
-              Empower Your Neighborhood or School Today
+          <TotalSavingsBanner summary={plan.summary} generationMethod={plan.generationMethod} />
+
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">
+              Today&apos;s Action Timeline
             </h2>
-            <p className="text-xs text-emerald-900 dark:text-emerald-300">
-              Generate an instant WhatsApp advisory formatted in English or Hindi for your RWA or parent group.
-            </p>
+            <DailyTimeline
+              actions={plan.actions}
+              completedActionIds={completedActionIds}
+              onToggleActionDone={handleToggleActionDone}
+              timeZone={plan.location.timeZone}
+            />
           </div>
         </div>
 
+        {/* Right Column: Desktop Side Panel Chat (Sticky) */}
+        <div className="hidden lg:block lg:col-span-5 xl:col-span-4 sticky top-6">
+          <ChatPanel
+            householdProfile={profile || undefined}
+            place={currentPlaceName}
+            isSampleData={plan.isSampleData}
+          />
+        </div>
+      </div>
+
+      {/* Floating "Ask Assistant" Button on Mobile & Tablet */}
+      <div className="lg:hidden fixed bottom-6 right-6 z-40">
         <button
           type="button"
-          onClick={onOpenAdvisoryModal}
-          className="inline-flex min-h-[44px] min-w-[44px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          onClick={() => setIsMobileChatOpen(true)}
+          aria-label="Ask SaafHawa Assistant"
+          className="flex items-center gap-2 rounded-full bg-teal-800 px-5 py-3 text-sm font-bold text-white shadow-lg transition-transform hover:scale-105 active:scale-95 dark:bg-teal-700"
         >
-          <span>Share with My Community</span>
-          <span aria-hidden="true">→</span>
+          <ChatIcon className="h-5 w-5" />
+          <span>Ask Assistant</span>
         </button>
-      </section>
-
-      <div className="space-y-10 pt-2">
-        <ActionCategorySection
-          id="daily-routine"
-          icon="🌅"
-          title="Daily Routine & Outdoor Guidance"
-          subtitle="Smart timing and protective equipment shifts tailored to your family's daily movement."
-          badgeClass="bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-200"
-          actions={dailyRoutineActions}
-        />
-
-        <ActionCategorySection
-          id="indoor-air"
-          icon="🏠"
-          title="Indoor Air Quality Hacks"
-          subtitle="Affordable filtration, source control, and ventilation strategies to keep your home safe."
-          badgeClass="bg-teal-100 text-teal-900 dark:bg-teal-950/80 dark:text-teal-200"
-          actions={indoorAirActions}
-        />
-
-        <ActionCategorySection
-          id="sustainable-swaps"
-          icon="🚲"
-          title="Sustainable Swaps & Emission Reductions"
-          subtitle="Commute, fuel, and waste alternatives that eliminate source emissions for the community."
-          badgeClass="bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-200"
-          actions={sustainableSwapActions}
-        />
       </div>
 
-      <div className="pt-4">
-        <ChatPanel
-          place={currentPlaceName}
-          householdProfile={profile}
-          isSampleData={plan.isSampleData}
-        />
-      </div>
-
-      <footer className="mt-12 rounded-2xl border border-slate-200 bg-white p-6 text-center text-xs text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-        <p className="font-medium text-slate-700 dark:text-slate-300">
-          SaafHawa is built to help families and communities navigate severe winter smog through collective action.
-        </p>
-        <p className="mt-1">
-          Data provided via Google Maps Platform & Central Pollution Control Board (CPCB) standards. Impact numbers are calculated by deterministic physical exposure models.
-        </p>
-      </footer>
+      {/* Mobile Full-Height Sheet Modal */}
+      {isMobileChatOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="chat-heading"
+          className="lg:hidden fixed inset-0 z-50 flex flex-col bg-white dark:bg-slate-900 animate-in slide-in-from-bottom duration-200"
+        >
+          <ChatPanel
+            householdProfile={profile || undefined}
+            place={currentPlaceName}
+            isSampleData={plan.isSampleData}
+            onClose={() => setIsMobileChatOpen(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

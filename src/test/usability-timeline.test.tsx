@@ -1,0 +1,126 @@
+import React from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { PlanDashboard } from '@/components/PlanDashboard';
+import { MOCK_PLAN } from './fixtures/mock-plan-data';
+
+describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('keeps top of dashboard in view and moves focus to plan heading on load', () => {
+    const scrollToMock = vi.fn();
+    window.scrollTo = scrollToMock;
+
+    render(
+      <PlanDashboard
+        plan={MOCK_PLAN}
+        profile={MOCK_PLAN.householdProfile}
+        currentPlaceName={MOCK_PLAN.location.name}
+        onOpenAdvisoryModal={() => {}}
+      />
+    );
+
+    // Verify window.scrollTo was called to keep top in view
+    expect(scrollToMock).toHaveBeenCalledWith(
+      expect.objectContaining({ top: 0, left: 0 })
+    );
+
+    // Verify focus moved to the main plan heading
+    const heading = screen.getByRole('heading', {
+      level: 1,
+      name: /Clean Air Action Plan for Connaught Place/i,
+    });
+    expect(heading).toBeDefined();
+    expect(document.activeElement).toBe(heading);
+  });
+
+  it('renders daily timeline with actions placed at their suggested time', () => {
+    render(
+      <PlanDashboard
+        plan={MOCK_PLAN}
+        profile={MOCK_PLAN.householdProfile}
+        currentPlaceName={MOCK_PLAN.location.name}
+        onOpenAdvisoryModal={() => {}}
+      />
+    );
+
+    // Timeline heading
+    expect(screen.getByText(/Today's Action Timeline/i)).toBeDefined();
+
+    // Morning slot
+    expect(screen.getByText('Morning')).toBeDefined();
+    expect(screen.getByText('Wear Certified N95 Mask During Outdoor Commutes')).toBeDefined();
+
+    // Night slot
+    expect(screen.getByText('Night')).toBeDefined();
+    expect(screen.getByText('Run HEPA Air Purifier in Sleeping Area')).toBeDefined();
+
+    // Details toggle
+    const detailsButtons = screen.getAllByText('Details');
+    expect(detailsButtons.length).toBeGreaterThanOrEqual(2);
+
+    // Reason line is visible
+    expect(screen.getByText(/Reduces toxic fine particulate inhalation during transit/i)).toBeDefined();
+  });
+
+  it('marks an action as done, persists in localStorage per day, and updates progress counter', async () => {
+    const user = userEvent.setup();
+    render(
+      <PlanDashboard
+        plan={MOCK_PLAN}
+        profile={MOCK_PLAN.householdProfile}
+        currentPlaceName={MOCK_PLAN.location.name}
+        onOpenAdvisoryModal={() => {}}
+      />
+    );
+
+    // Initial progress
+    expect(screen.getByText(/0 of 3 done \(0%\)/i)).toBeDefined();
+
+    // Click "Mark as done" on mask action
+    const maskDoneBtn = screen.getByRole('button', {
+      name: /Mark action "Wear Certified N95 Mask During Outdoor Commutes" as completed/i,
+    });
+    await user.click(maskDoneBtn);
+
+    // Progress updates to 1 of 3 done (33%)
+    expect(screen.getByText(/1 of 3 done \(33%\)/i)).toBeDefined();
+    expect(maskDoneBtn.getAttribute('aria-pressed')).toBe('true');
+
+    // Verify saved in localStorage under today's date key
+    const today = new Date().toISOString().slice(0, 10);
+    const saved = localStorage.getItem(`saafhawa_done_${today}`);
+    expect(saved).not.toBeNull();
+    const parsed = JSON.parse(saved!);
+    expect(parsed).toContain('wear_n95_mask_outside');
+
+    // Click again to unmark
+    await user.click(maskDoneBtn);
+    expect(screen.getByText(/0 of 3 done \(0%\)/i)).toBeDefined();
+  });
+
+  it('shows sample data once as a single small notice without polluting place name', () => {
+    render(
+      <PlanDashboard
+        plan={MOCK_PLAN}
+        profile={MOCK_PLAN.householdProfile}
+        currentPlaceName={MOCK_PLAN.location.name}
+        onOpenAdvisoryModal={() => {}}
+      />
+    );
+
+    // Real place name is clean
+    const heading = screen.getByRole('heading', { level: 1 });
+    expect(heading.textContent).toContain('Connaught Place, New Delhi');
+    expect(heading.textContent).not.toContain('(Sample Data');
+
+    // Single small sample data notice
+    const sampleNotice = screen.getByRole('status', { name: /Sample data mode active notice/i });
+    expect(sampleNotice).toBeDefined();
+    expect(sampleNotice.textContent).toContain('Sample Data: Using built-in reference air quality data.');
+  });
+});

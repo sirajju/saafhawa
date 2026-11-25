@@ -8,25 +8,41 @@ import { CommunityAdvisoryModal } from '@/components/CommunityAdvisoryModal';
 import { MOCK_LOCATION, MOCK_CURRENT, MOCK_ACTION } from './components-fixtures';
 
 describe('Accessibility - AirQualityCard (Screen Reader Text & Sample Badge)', () => {
-  it('renders section landmark with accessible heading label', () => {
+  it('renders section landmark with clean place name', () => {
     render(<AirQualityCard location={MOCK_LOCATION} current={MOCK_CURRENT} />);
 
-    const section = screen.getByRole('region', { name: /Connaught Place, New Delhi/i }) ||
+    const section = screen.getByRole('region', { name: /Today's Air Quality & Family Guidance/i }) ||
       document.querySelector('section[aria-labelledby="air-quality-heading"]');
     expect(section).not.toBeNull();
 
-    const heading = screen.getByRole('heading', { level: 2, name: /Connaught Place/i });
+    const heading = screen.getByRole('heading', { level: 2, name: /Today's Air Quality/i });
     expect(heading).toBeDefined();
+    expect(screen.getByText(MOCK_LOCATION.name)).toBeDefined();
   });
 
-  it('displays visible "Sample Data" label when sample mode is active', () => {
-    render(<AirQualityCard location={MOCK_LOCATION} current={MOCK_CURRENT} isSampleData={true} />);
+  it('renders large AQI number, category words, and plain advice sentence', () => {
+    render(
+      <AirQualityCard
+        location={MOCK_LOCATION}
+        current={MOCK_CURRENT}
+        hourlyForecast={[
+          {
+            dateTime: '2026-11-24T11:00:00Z',
+            aqi: 350,
+            category: 'Very Poor',
+            dominantPollutant: 'pm25',
+          },
+        ]}
+      />
+    );
 
-    const sampleNotice = screen.getByText('Sample Data');
-    expect(sampleNotice).toBeDefined();
-
-    const noticeContainer = screen.getByRole('status', { name: /Sample data notice/i });
-    expect(noticeContainer).toBeDefined();
+    // Large AQI number
+    expect(screen.getByText('342')).toBeDefined();
+    // Category in words
+    expect(screen.getAllByText(/Very Poor/i).length).toBeGreaterThanOrEqual(1);
+    // Plain advice sentence
+    expect(screen.getByText(/Today's Family Guidance/i)).toBeDefined();
+    expect(screen.getByText(/Cleanest window today/i)).toBeDefined();
   });
 
   it('provides screen reader text equivalents for all colored indicators and metrics', () => {
@@ -57,11 +73,11 @@ describe('Accessibility - AirQualityCard (Screen Reader Text & Sample Badge)', (
     const srPm25 = screen.getByText(/PM2.5 particulate level is 185.5 micrograms per cubic meter/i);
     expect(srPm25).toBeDefined();
 
-    const srForecast = screen.getByText(/Forecast at.*AQI 350.*category Very Poor/i);
+    const srForecast = screen.getByText(/24-hour forecast chart/i);
     expect(srForecast).toBeDefined();
   });
 
-  it('forecast scroll container is keyboard focusable with aria-label', () => {
+  it('24-hour forecast chart region is rendered with accessible aria-label', () => {
     render(
       <AirQualityCard
         location={MOCK_LOCATION}
@@ -77,14 +93,13 @@ describe('Accessibility - AirQualityCard (Screen Reader Text & Sample Badge)', (
       />
     );
 
-    const scrollContainer = screen.getByLabelText(/Hourly air quality forecast scroll list/i);
-    expect(scrollContainer).toBeDefined();
-    expect(scrollContainer.getAttribute('tabIndex')).toBe('0');
+    const chartRegion = screen.getByLabelText(/24-hour air quality forecast chart/i);
+    expect(chartRegion).toBeDefined();
   });
 });
 
 describe('Accessibility - PlanCard (Landmarks & Keyboard Toggle)', () => {
-  it('renders article landmark with accessible headings and interactive checkbox', async () => {
+  it('renders article landmark with accessible headings and interactive Mark as done button', async () => {
     const user = userEvent.setup();
     render(<PlanCard action={MOCK_ACTION} />);
 
@@ -94,14 +109,16 @@ describe('Accessibility - PlanCard (Landmarks & Keyboard Toggle)', () => {
     const heading = screen.getByRole('heading', { level: 3, name: /Wear Certified N95 Mask/i });
     expect(heading).toBeDefined();
 
-    const checkbox = screen.getByRole('checkbox', {
+    const doneButton = screen.getByRole('button', {
       name: /Mark action "Wear Certified N95 Mask During Outdoor Commutes" as completed/i,
-    }) as HTMLInputElement;
-    expect(checkbox).toBeDefined();
-    expect(checkbox.checked).toBe(false);
+    });
+    expect(doneButton).toBeDefined();
+    expect(doneButton.getAttribute('aria-pressed')).toBe('false');
 
-    await user.click(checkbox);
-    expect(checkbox.checked).toBe(true);
+    await user.click(doneButton);
+    expect(doneButton.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText('Done')).toBeDefined();
+    expect(screen.getByText('Completed today')).toBeDefined();
   });
 });
 

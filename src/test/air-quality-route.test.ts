@@ -61,9 +61,30 @@ describe('Air Quality - API Route Integration', () => {
   });
 
   it('returns 429 when quota is exceeded without leaking raw Google error text', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => MOCK_GEOCODE_OVER_LIMIT,
+    const mockFetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('postalpincode.in')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            {
+              Status: 'Success',
+              PostOffice: [{ District: 'Central Delhi', State: 'Delhi', Division: 'New Delhi Central' }],
+            },
+          ],
+        });
+      }
+      if (url.includes('maps.googleapis.com')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => MOCK_GEOCODE_OVER_LIMIT,
+        });
+      }
+      // When falling back to Open-Meteo, rate limit is reached
+      return Promise.resolve({
+        ok: false,
+        status: 429,
+        json: async () => ({ error: 'Rate limit exceeded' }),
+      });
     });
 
     vi.stubGlobal('fetch', mockFetch);

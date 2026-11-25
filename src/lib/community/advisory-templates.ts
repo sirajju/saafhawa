@@ -1,4 +1,5 @@
 import { AirQualityReport } from '../air-quality/types';
+import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
 
 /**
  * High-quality template fallback for WhatsApp advisories in English and Hindi.
@@ -12,6 +13,8 @@ export function generateTemplateAdvisory(
   const aqi = report.current.aqi ?? 250;
   const cat = report.current.category || 'Severe';
   const pm25 = report.current.pm25 ? `${report.current.pm25.value} µg/m³` : 'Extremely High';
+  const source = report.current.dataSource || 'Open-Meteo (CAMS model)';
+  const measuredTime = formatMeasurementTime(report.current.dateTime, report.location.timeZone);
 
   const isSample = Boolean(report.isSampleData || report.current.isSampleData);
   const aqiLabelHi = isSample ? '⚠️ *वायु गुणवत्ता (नमूना संदर्भ डेटा):*' : '⚠️ *वायु गुणवत्ता:*';
@@ -24,6 +27,7 @@ export function generateTemplateAdvisory(
 `*${headline}*
 📅 दिनांक: ${new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 क्षेत्र: ${loc}
+📊 *डेटा स्रोत:* ${source} (मापा गया समय: ${measuredTime})
 ${aqiLabelHi} ${aqi} (${cat} श्रेणी)
 🌫️ *PM2.5 स्तर:* ${pm25}
 
@@ -44,6 +48,7 @@ _साफ़ हवा (SaafHawa) द्वारा जनहित में 
 `*${headline}*
 📅 दिनांक: ${new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 क्षेत्र: ${loc}
+📊 *डेटा स्रोत:* ${source} (मापा गया समय: ${measuredTime})
 ${aqiLabelHi} ${aqi} (${cat})
 🌫️ *PM2.5 प्रदूषण:* ${pm25}
 
@@ -68,6 +73,7 @@ _साफ़ हवा (SaafHawa) द्वारा जनहित में 
 `*${headline}*
 📅 Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 Area: ${loc}
+📊 *Data Source:* ${source} (Measured: ${measuredTime})
 ${aqiLabelEn} ${aqi} (${cat})
 🌫️ *PM2.5 Level:* ${pm25}
 
@@ -88,6 +94,7 @@ _Shared via SaafHawa Community Defense — Please forward to class & parent What
 `*${headline}*
 📅 Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 Location: ${loc}
+📊 *Data Source:* ${source} (Measured: ${measuredTime})
 ${aqiLabelEn} ${aqi} (${cat})
 🌫️ *PM2.5 Concentration:* ${pm25}
 

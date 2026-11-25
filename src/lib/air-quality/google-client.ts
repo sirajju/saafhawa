@@ -17,7 +17,6 @@ export type { ClientRequestOptions };
 
 const GEOCODING_BASE_URL = 'https://maps.googleapis.com/maps/api/geocode/json';
 const AIR_QUALITY_BASE_URL = 'https://airquality.googleapis.com/v1';
-const TIMEZONE_BASE_URL = 'https://maps.googleapis.com/maps/api/timezone/json';
 
 export interface GeocodeLocationResult {
   formattedAddress: string;
@@ -26,7 +25,7 @@ export interface GeocodeLocationResult {
 }
 
 /**
- * Geocodes an address or pincode/postal code into coordinates using Google Geocoding API.
+ * Geocodes an address or pincode into coordinates using Google Geocoding API.
  */
 export async function geocodePlace(
   query: string,
@@ -41,20 +40,13 @@ export async function geocodePlace(
     url.toString(),
     {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: { Accept: 'application/json' },
     },
     options
   );
 
-  if (response.status === 429) {
-    throw new QuotaExceededError();
-  }
-
-  if (!response.ok) {
-    throw new AirQualityError('Failed to communicate with geocoding service.', 502);
-  }
+  if (response.status === 429) throw new QuotaExceededError();
+  if (!response.ok) throw new AirQualityError('Failed to communicate with geocoding service.', 502);
 
   let rawData: unknown;
   try {
@@ -87,7 +79,6 @@ export async function geocodePlace(
 
 /**
  * Fetches real-time current conditions using Google Air Quality API.
- * Uses official parameters including universalAqi and POLLUTANT_CONCENTRATION.
  */
 export async function fetchCurrentConditions(
   latitude: number,
@@ -98,10 +89,7 @@ export async function fetchCurrentConditions(
   const url = `${AIR_QUALITY_BASE_URL}/currentConditions:lookup?key=${apiKey}`;
 
   const requestBody = {
-    location: {
-      latitude,
-      longitude,
-    },
+    location: { latitude, longitude },
     extraComputations: ['POLLUTANT_CONCENTRATION', 'LOCAL_AQI'],
     universalAqi: true,
   };
@@ -110,18 +98,13 @@ export async function fetchCurrentConditions(
     url,
     {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(requestBody),
     },
     options
   );
 
-  if (response.status === 429) {
-    throw new QuotaExceededError();
-  }
+  if (response.status === 429) throw new QuotaExceededError();
 
   if (!response.ok) {
     try {
@@ -141,7 +124,6 @@ export async function fetchCurrentConditions(
 
 /**
  * Fetches hourly forecast for the next 24 hours using Google Air Quality API.
- * Uses explicit period, pageSize: 24, universalAqi, and POLLUTANT_CONCENTRATION.
  */
 export async function fetchHourlyForecast(
   latitude: number,
@@ -154,10 +136,7 @@ export async function fetchHourlyForecast(
   const period = computeForecastPeriod(hours);
 
   const requestBody = {
-    location: {
-      latitude,
-      longitude,
-    },
+    location: { latitude, longitude },
     period,
     pageSize: hours,
     extraComputations: ['POLLUTANT_CONCENTRATION', 'LOCAL_AQI'],
@@ -168,18 +147,13 @@ export async function fetchHourlyForecast(
     url,
     {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(requestBody),
     },
     options
   );
 
-  if (response.status === 429) {
-    throw new QuotaExceededError();
-  }
+  if (response.status === 429) throw new QuotaExceededError();
 
   if (!response.ok) {
     try {
@@ -197,51 +171,4 @@ export async function fetchHourlyForecast(
   return GoogleForecastResponseSchema.parse(rawData);
 }
 
-/**
- * Resolves the IANA time zone identifier for given coordinates via Google Time Zone API.
- * Uses the same Google Maps API key.
- * Returns the IANA timeZoneId (e.g. 'Asia/Kolkata', 'America/New_York') or null if lookup fails.
- */
-export async function fetchTimeZone(
-  latitude: number,
-  longitude: number,
-  apiKey: string,
-  options: ClientRequestOptions = {}
-): Promise<string | null> {
-  try {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const url = new URL(TIMEZONE_BASE_URL);
-    url.searchParams.set('location', `${latitude},${longitude}`);
-    url.searchParams.set('timestamp', String(timestamp));
-    url.searchParams.set('key', apiKey);
-
-    const response = await safeFetch(
-      url.toString(),
-      {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-      },
-      options
-    );
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const rawData = await response.json();
-    if (
-      rawData &&
-      typeof rawData === 'object' &&
-      'status' in rawData &&
-      rawData.status === 'OK' &&
-      'timeZoneId' in rawData &&
-      typeof rawData.timeZoneId === 'string'
-    ) {
-      return rawData.timeZoneId;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
+export { fetchTimeZone } from './timezone-client';

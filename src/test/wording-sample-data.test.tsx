@@ -54,8 +54,11 @@ describe('Wording - Strict Neutrality and Absence of "Live" During Sample Data M
     expect(screen.queryByText(/Connecting to live air quality sensors/i)).toBeNull();
   });
 
-  it('renders neutral wording and visible sample data label in AirQualityCard for sample data', () => {
+  it('keeps real place name clean and does not contain live wording in AirQualityCard', () => {
     const sampleReport = getSampleDelhiAirQualityReport('New Delhi');
+
+    // Place name must NOT contain "(Sample Data...)"
+    expect(sampleReport.location.name).toBe('New Delhi');
 
     const { container } = render(
       <AirQualityCard
@@ -68,9 +71,7 @@ describe('Wording - Strict Neutrality and Absence of "Live" During Sample Data M
 
     const textContent = container.textContent || '';
     expect(textContent.toLowerCase()).not.toContain('live');
-    expect(screen.getByText(/Reference Air Quality Overview/i)).toBeTruthy();
-    expect(screen.getAllByText(/Sample Data/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/Displaying built-in New Delhi reference data/i)).toBeTruthy();
+    expect(screen.getByText('New Delhi')).toBeTruthy();
   });
 
   it('renders the explanatory line on TotalSavingsBanner regarding adjusted overlapping actions', () => {

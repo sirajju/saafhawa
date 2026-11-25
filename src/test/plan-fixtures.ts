@@ -6,6 +6,7 @@ export const MOCK_AIR_QUALITY: AirQualityReport = {
     name: 'Connaught Place, New Delhi, Delhi 110001, India',
     latitude: 28.6315,
     longitude: 77.2167,
+    timeZone: 'Asia/Kolkata',
   },
   current: {
     dateTime: '2026-11-23T08:00:00Z',
@@ -55,3 +56,58 @@ export const MOCK_PROFILE: PlanRequest = {
   hasCarpoolOption: true,
   budget: 'low',
 };
+
+export const TEST_PROFILE_CAR: PlanRequest = {
+  ...MOCK_PROFILE,
+  place: 'Connaught Place, New Delhi',
+  elderlyCount: 0,
+  hasAirPurifier: true,
+  hasKitchenChimneyOrExhaust: true,
+  homeAreaSqFt: 1200,
+  budget: 'moderate',
+};
+
+export const TEST_PROFILE_TWO_WHEELER: PlanRequest = {
+  ...TEST_PROFILE_CAR,
+  primaryCommuteMode: 'two_wheeler',
+};
+
+export const MOCK_GEMINI_OUTPUT = JSON.stringify({
+  selectedActions: [
+    {
+      actionId: 'wear_n95_mask_outside',
+      suggestedTimeOfDay: 'Morning Commute',
+      reason: 'Protects the family and asthma patient from dense outdoor particulate smog.',
+    },
+    {
+      actionId: 'keep_children_indoors_morning_smog',
+      suggestedTimeOfDay: 'Morning',
+      reason: 'Protects your child from hazardous early morning temperature inversion peaks.',
+    },
+    {
+      actionId: 'diy_corsi_rosenthal_box',
+      suggestedTimeOfDay: 'All Day',
+      reason: 'An affordable DIY cleaner providing high air filtration without buying expensive purifiers.',
+    },
+    {
+      actionId: 'eliminate_incense_and_mosquito_coils',
+      suggestedTimeOfDay: 'All Day',
+      reason: 'Avoids heavy indoor particulate accumulation in a home with asthma sufferers.',
+    },
+    {
+      actionId: 'swap_car_for_metro',
+      suggestedTimeOfDay: 'Commute Hours',
+      reason: 'Replaces daily road traffic with clean electric transit to reduce tailpipe emissions.',
+    },
+    {
+      actionId: 'unknown_hallucinated_action_123',
+      suggestedTimeOfDay: 'Afternoon',
+      reason: 'This should be ignored.',
+    },
+    {
+      actionId: 'use_exhaust_fan_cooking',
+      suggestedTimeOfDay: 'Meal Preparation',
+      reason: 'Vents intense cooking and tadka aerosols directly outside.',
+    },
+  ],
+});

@@ -1,5 +1,9 @@
+'use client';
+
 import React from 'react';
 import { PlanRequest } from '@/lib/plan/types';
+import { ChoiceChipGroup } from './ChoiceChipGroup';
+import { CarIcon, BikeIcon, BusIcon, WalkIcon, HomeIcon, ShieldIcon } from '../ui/Icons';
 
 interface CommuteFieldsProps {
   formData: PlanRequest;
@@ -8,91 +12,73 @@ interface CommuteFieldsProps {
 
 export function CommuteFields({ formData, onChange }: CommuteFieldsProps) {
   return (
-    <fieldset className="rounded-xl border border-slate-200 p-4 sm:p-5 dark:border-slate-800">
-      <legend className="px-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-        Daily Commute & Travel
-      </legend>
-      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
-          <label
-            htmlFor="commute-mode"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-          >
-            Primary Commute Mode
-          </label>
-          <select
-            id="commute-mode"
-            value={formData.primaryCommuteMode}
-            onChange={(e) => onChange('primaryCommuteMode', e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          >
-            <option value="petrol_car">Petrol Car</option>
-            <option value="diesel_car">Diesel Car</option>
-            <option value="two_wheeler">Two-Wheeler (Motorcycle / Scooter)</option>
-            <option value="public_transit">Metro / Bus / Train</option>
-            <option value="walking_cycling">Walking / Bicycle</option>
-            <option value="none">Work from Home / No Daily Commute</option>
-          </select>
-        </div>
+    <div className="space-y-6">
+      {/* Primary Commute Mode */}
+      <ChoiceChipGroup<PlanRequest['primaryCommuteMode']>
+        label="Primary Commute Mode"
+        description="How does your household typically travel to work, college, or daily destinations?"
+        value={formData.primaryCommuteMode}
+        onChange={(val) => onChange('primaryCommuteMode', val)}
+        options={[
+          { value: 'petrol_car', label: 'Car (Petrol / Diesel)', icon: <CarIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'two_wheeler', label: 'Two-Wheeler (Bike / Scooter)', icon: <BikeIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'public_transit', label: 'Metro / Public Bus', icon: <BusIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'walking_cycling', label: 'Walk / Bicycle', icon: <WalkIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: 'none', label: 'Work From Home / None', icon: <HomeIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+        ]}
+      />
 
-        <div>
-          <label
-            htmlFor="commute-distance"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-          >
-            Round-Trip Distance (km/day)
-          </label>
-          <input
-            id="commute-distance"
-            type="number"
-            min="0"
-            max="300"
-            value={formData.dailyCommuteDistanceKm}
-            onChange={(e) => onChange('dailyCommuteDistanceKm', Math.max(0, parseFloat(e.target.value) || 0))}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          />
-        </div>
+      {/* Daily Commute Distance */}
+      <ChoiceChipGroup<number>
+        label="Round-trip commute distance per person"
+        description="Typical total distance traveled each working day."
+        value={formData.dailyCommuteDistanceKm}
+        onChange={(val) => onChange('dailyCommuteDistanceKm', val)}
+        options={[
+          { value: 5, label: '5 km' },
+          { value: 10, label: '10 km' },
+          { value: 20, label: '20 km' },
+          { value: 35, label: '35+ km' },
+        ]}
+      />
 
-        <div>
-          <label
-            htmlFor="commuters-count"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
-          >
-            Number of Commuters
-          </label>
-          <input
-            id="commuters-count"
-            type="number"
-            min="0"
-            max="15"
-            value={formData.commutersCount ?? 1}
-            onChange={(e) => onChange('commutersCount', Math.max(0, parseInt(e.target.value) || 0))}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          />
-        </div>
-      </div>
+      {/* Commuters Count */}
+      <ChoiceChipGroup<number>
+        label="Number of daily commuters"
+        description="Occupants traveling outside daily on weekdays."
+        value={formData.commutersCount}
+        onChange={(val) => onChange('commutersCount', val)}
+        options={[
+          { value: 0, label: '0' },
+          { value: 1, label: '1 Commuter' },
+          { value: 2, label: '2 Commuters' },
+          { value: 3, label: '3+ Commuters' },
+        ]}
+      />
 
-      <div className="mt-3 flex flex-wrap gap-4">
-        <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.canWorkFromHome}
-            onChange={(e) => onChange('canWorkFromHome', e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-          />
-          <span>Can work from home on peak smog days</span>
-        </label>
+      {/* Work From Home Flexibility */}
+      <ChoiceChipGroup<boolean>
+        label="Can you work from home on high smog days?"
+        description="Allows your workplace or school to accommodate remote schedules during severe smog emergencies."
+        value={formData.canWorkFromHome}
+        onChange={(val) => onChange('canWorkFromHome', val)}
+        options={[
+          { value: true, label: 'Yes (WFH Option)', icon: <HomeIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: false, label: 'No (In-person required)' },
+        ]}
+      />
 
-        <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.hasCarpoolOption}
-            onChange={(e) => onChange('hasCarpoolOption', e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-          />
-          <span>Has carpool or ride-sharing options</span>
-        </label>
-      </div>
-    </fieldset>
+      {/* Carpool Option */}
+      <ChoiceChipGroup<boolean>
+        label="Do you have a carpool or ride-sharing option?"
+        description="Can share transit with colleagues, neighbors, or organized carpool pools."
+        value={formData.hasCarpoolOption}
+        onChange={(val) => onChange('hasCarpoolOption', val)}
+        options={[
+          { value: true, label: 'Yes (Carpool viable)', icon: <CarIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" /> },
+          { value: false, label: 'No (Solo transit)', icon: <ShieldIcon className="h-4 w-4 text-slate-500" /> },
+        ]}
+      />
+    </div>
   );
 }

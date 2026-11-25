@@ -1,0 +1,26 @@
+import { PlanRequest } from '@/lib/plan/types';
+
+export const DEFAULT_PROFILE: PlanRequest = {
+  place: '110001',
+  adultsCount: 2,
+  childrenCount: 0,
+  elderlyCount: 0,
+  commutersCount: 1,
+  hasAsthmaOrRespiratoryCondition: false,
+  primaryCommuteMode: 'petrol_car',
+  dailyCommuteDistanceKm: 20,
+  cookingFuel: 'lpg',
+  heatingFuel: 'none',
+  hasAirPurifier: false,
+  hasKitchenChimneyOrExhaust: false,
+  usesIncenseOrMosquitoCoils: false,
+  hasGardenOrOpenWasteBurning: false,
+  windowSealingQuality: 'average',
+  dailyOutdoorHoursPerPerson: 1.5,
+  doesOutdoorExercise: false,
+  exerciseHoursPerDay: 1,
+  homeAreaSqFt: 1000,
+  canWorkFromHome: true,
+  hasCarpoolOption: true,
+  budget: 'low',
+};

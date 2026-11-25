@@ -1,66 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import {
-  generateHouseholdPlan,
-  getRuleBasedFallbackActions,
-} from '@/lib/plan';
-import {
-  resolvePlanConsistency,
-  WORK_FROM_HOME_ACTION_ID,
-} from '@/lib/plan/consistency';
+import { generateHouseholdPlan, getRuleBasedFallbackActions } from '@/lib/plan';
+import { resolvePlanConsistency, WORK_FROM_HOME_ACTION_ID } from '@/lib/plan/consistency';
 import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
-import { GeminiSelectedAction, PlanRequest } from '@/lib/plan/types';
-import { AirQualityReport } from '@/lib/air-quality/types';
-
-const TEST_PROFILE_CAR: PlanRequest = {
-  place: 'Connaught Place, New Delhi',
-  adultsCount: 2,
-  childrenCount: 1,
-  elderlyCount: 0,
-  commutersCount: 1,
-  primaryCommuteMode: 'petrol_car',
-  dailyCommuteDistanceKm: 25,
-  hasCarpoolOption: true,
-  canWorkFromHome: true,
-  dailyOutdoorHoursPerPerson: 1.5,
-  doesOutdoorExercise: false,
-  exerciseHoursPerDay: 0,
-  homeAreaSqFt: 1200,
-  hasAirPurifier: true,
-  hasKitchenChimneyOrExhaust: true,
-  usesIncenseOrMosquitoCoils: true,
-  cookingFuel: 'lpg',
-  heatingFuel: 'none',
-  hasGardenOrOpenWasteBurning: false,
-  windowSealingQuality: 'average',
-  hasAsthmaOrRespiratoryCondition: true,
-  budget: 'moderate',
-};
-
-const TEST_PROFILE_TWO_WHEELER: PlanRequest = {
-  ...TEST_PROFILE_CAR,
-  primaryCommuteMode: 'two_wheeler',
-};
-
-const MOCK_AIR_QUALITY: AirQualityReport = {
-  location: {
-    name: 'Connaught Place, New Delhi',
-    latitude: 28.6315,
-    longitude: 77.2167,
-    timeZone: 'Asia/Kolkata',
-  },
-  current: {
-    dateTime: '2026-11-25T08:00:00Z',
-    aqi: 320,
-    category: 'Very Poor',
-    dominantPollutant: 'pm25',
-    indexCode: 'ind_cpcb',
-    indexDisplayName: 'India National AQI (CPCB)',
-    pm25: { value: 160.0, units: 'MICROGRAMS_PER_CUBIC_METER' },
-    pm10: { value: 280.0, units: 'MICROGRAMS_PER_CUBIC_METER' },
-  },
-  hourlyForecast: [],
-  isSampleData: false,
-};
+import { GeminiSelectedAction } from '@/lib/plan/types';
+import { MOCK_AIR_QUALITY, TEST_PROFILE_CAR, TEST_PROFILE_TWO_WHEELER } from './plan-fixtures';
 
 describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
   it('rule-based fallback never produces both work-from-home and a commute swap for the same profile', () => {
@@ -83,39 +26,15 @@ describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
     expect(hasWfh2W && hasCommuteSwap2W).toBe(false);
   });
 
-  it('resolves conflicting Gemini output: keeps the action with larger benefit and replaces the other with an action from a different group', () => {
+  it('resolves conflicting Gemini output: keeps larger benefit and replaces the other with an action from a different group', () => {
     // When WFH conflicts with Carpool: WFH has larger dose benefit (24 ug vs 0 ug for carpool)
     const conflictingGeminiActions: GeminiSelectedAction[] = [
-      {
-        actionId: 'wear_n95_mask_outside',
-        suggestedTimeOfDay: 'Morning Commute',
-        reason: 'Mask protection',
-      },
-      {
-        actionId: 'keep_children_indoors_morning_smog',
-        suggestedTimeOfDay: 'Early Morning',
-        reason: 'Child health',
-      },
-      {
-        actionId: 'run_hepa_air_purifier_bedroom',
-        suggestedTimeOfDay: 'Night',
-        reason: 'Clean bedroom air',
-      },
-      {
-        actionId: 'work_from_home_on_smog_days',
-        suggestedTimeOfDay: 'All Day',
-        reason: 'Remote work eliminates commute',
-      },
-      {
-        actionId: 'carpool_to_work',
-        suggestedTimeOfDay: 'Commute hours',
-        reason: 'Carpool instead of driving solo',
-      },
-      {
-        actionId: 'use_exhaust_fan_cooking',
-        suggestedTimeOfDay: 'Meal times',
-        reason: 'Kitchen ventilation',
-      },
+      { actionId: 'wear_n95_mask_outside', suggestedTimeOfDay: 'Morning Commute', reason: 'Mask protection' },
+      { actionId: 'keep_children_indoors_morning_smog', suggestedTimeOfDay: 'Early Morning', reason: 'Child health' },
+      { actionId: 'run_hepa_air_purifier_bedroom', suggestedTimeOfDay: 'Night', reason: 'Clean bedroom air' },
+      { actionId: 'work_from_home_on_smog_days', suggestedTimeOfDay: 'All Day', reason: 'Remote work eliminates commute' },
+      { actionId: 'carpool_to_work', suggestedTimeOfDay: 'Commute hours', reason: 'Carpool instead of driving solo' },
+      { actionId: 'use_exhaust_fan_cooking', suggestedTimeOfDay: 'Meal times', reason: 'Kitchen ventilation' },
     ];
 
     const airQualityContext = {
@@ -146,26 +65,10 @@ describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
 
   it('keeps commute swap when it provides higher direct benefit than WFH (e.g. 2-wheeler commute to metro)', () => {
     const conflictingActions: GeminiSelectedAction[] = [
-      {
-        actionId: 'wear_n95_mask_outside',
-        suggestedTimeOfDay: 'Morning Commute',
-        reason: 'Mask protection',
-      },
-      {
-        actionId: 'work_from_home_on_smog_days',
-        suggestedTimeOfDay: 'All Day',
-        reason: 'Remote work',
-      },
-      {
-        actionId: 'swap_two_wheeler_for_metro_or_bus',
-        suggestedTimeOfDay: 'Commute',
-        reason: 'Metro swap',
-      },
-      {
-        actionId: 'run_hepa_air_purifier_bedroom',
-        suggestedTimeOfDay: 'Night',
-        reason: 'Purifier',
-      },
+      { actionId: 'wear_n95_mask_outside', suggestedTimeOfDay: 'Morning Commute', reason: 'Mask protection' },
+      { actionId: 'work_from_home_on_smog_days', suggestedTimeOfDay: 'All Day', reason: 'Remote work' },
+      { actionId: 'swap_two_wheeler_for_metro_or_bus', suggestedTimeOfDay: 'Commute', reason: 'Metro swap' },
+      { actionId: 'run_hepa_air_purifier_bedroom', suggestedTimeOfDay: 'Night', reason: 'Purifier' },
     ];
 
     const airQualityContext = {

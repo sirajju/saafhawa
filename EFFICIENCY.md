@@ -21,7 +21,8 @@ This document details the efficiency and resource optimization strategies implem
   ├ ƒ /api/air-quality
   ├ ƒ /api/chat
   ├ ƒ /api/community-advisory
-  └ ƒ /api/plan
+  ├ ƒ /api/plan
+  └ ○ /icon.svg
 
   ○  (Static)   prerendered as static content
   ƒ  (Dynamic)  server-rendered on demand
@@ -45,3 +46,14 @@ This document details the efficiency and resource optimization strategies implem
 ### 5. Client-Side Persistence
 - **LocalStorage Caching:** Returning households skip the onboarding form by retrieving their profile from browser `localStorage`: [`src/app/page.tsx`](src/app/page.tsx).
 - **Instant First-Time Rendering:** First-time visitors are presented with the onboarding form immediately on initial load without a loading screen flash (`isLoading: false` initial state).
+
+---
+
+### 6. Strict Architectural Modularity & File Size Discipline
+- **Every File Strictly $\le$ 200 Lines:** Every source code file across `src/` and `e2e/` is strictly under 200 lines:
+  - Complex monolithic icons split into focused submodules (`TimeIcons.tsx`, `NavIcons.tsx`, `ActionIcons.tsx`, `DomainIcons.tsx`, `VehicleIcons.tsx`).
+  - Onboarding form factored into step components (`OnboardingStep1.tsx`, `CommuteFields.tsx`, `IndoorEnvironmentFields.tsx`, `OnboardingProgressBar.tsx`, `OnboardingNavFooter.tsx`).
+  - Forecast charts separated into SVG renderer (`ForecastChartSvg.tsx`) and container (`ForecastChart.tsx`).
+  - Air quality services cleanly separated across providers (`open-meteo-client.ts`, `waqi-client.ts`, `google-client.ts`, `google-service.ts`, `pincode-resolver.ts`, `timezone-client.ts`).
+  - Playwright E2E suites split into smoke flow (`smoke.spec.ts`) and modal/security verification (`modals-and-security.spec.ts`).
+- **Development & Turbopack Benefits:** Ensures high maintainability, granular tree-shaking, fast hot-module replacement (HMR), and rapid Turbopack compilation.

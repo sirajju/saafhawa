@@ -9,13 +9,13 @@ describe('Time Zone - Location-Aware Hourly Forecast Formatting', () => {
     vi.restoreAllMocks();
   });
 
-  it('formats hourly timestamps in the location specific time zone', () => {
+  it('formats hourly timestamps in the location specific time zone and rounds to the hour', () => {
     // 2026-11-25 12:00:00 UTC
     const sampleUtcDate = '2026-11-25T12:00:00Z';
 
-    // India time: UTC + 5:30 -> 17:30 (5:30 PM)
+    // India time: UTC + 5:30 -> 17:30 (rounds to 5 PM)
     const indiaFormatted = formatHourInPlaceLocalTime(sampleUtcDate, 'Asia/Kolkata');
-    expect(indiaFormatted).toMatch(/5:30\s*PM/);
+    expect(indiaFormatted).toMatch(/5\s*PM/);
 
     // New York time (EST): UTC - 5:00 -> 07:00 (7 AM)
     const nyFormatted = formatHourInPlaceLocalTime(sampleUtcDate, 'America/New_York');
@@ -26,12 +26,26 @@ describe('Time Zone - Location-Aware Hourly Forecast Formatting', () => {
     expect(londonFormatted).toMatch(/12\s*PM/);
   });
 
+  it('rounds odd minutes to the nearest hour without showing minutes', () => {
+    // 10:04 AM UTC -> rounds to 10 AM
+    const oddMinutes1 = '2026-11-25T10:04:00Z';
+    const formatted1 = formatHourInPlaceLocalTime(oddMinutes1, 'UTC');
+    expect(formatted1).toMatch(/10\s*AM/);
+    expect(formatted1).not.toContain(':04');
+
+    // 10:45 AM UTC -> rounds up to 11 AM
+    const oddMinutes2 = '2026-11-25T10:45:00Z';
+    const formatted2 = formatHourInPlaceLocalTime(oddMinutes2, 'UTC');
+    expect(formatted2).toMatch(/11\s*AM/);
+    expect(formatted2).not.toContain(':45');
+  });
+
   it('falls back to India time (Asia/Kolkata) when invalid time zone is supplied', () => {
     const sampleUtcDate = '2026-11-25T12:00:00Z';
     const fallbackFormatted = formatHourInPlaceLocalTime(sampleUtcDate, 'Invalid/TimeZone_DoesNotExist');
 
     // Should gracefully fall back to Asia/Kolkata without throwing
-    expect(fallbackFormatted).toMatch(/5:30\s*PM/);
+    expect(fallbackFormatted).toMatch(/5\s*PM/);
   });
 
   it('fetchTimeZone calls Google Time Zone API with coordinates, timestamp, and API key', async () => {

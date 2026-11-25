@@ -1,4 +1,5 @@
 import { AirQualityReport } from '../air-quality/types';
+import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
 import { ChatRequest, ChatResponse, ExecutedToolRecord } from './types';
 
 /**
@@ -65,6 +66,10 @@ export async function generateFallbackChatResponse(
       `2. **Keep Windows Sealed** during morning and night temperature inversion hours.\n` +
       `3. **Eliminate Indoor Smoke**: Avoid incense sticks, dhoop, and mosquito coils, which create severe indoor particulate spikes.\n` +
       `4. **Wet Mop** floors instead of dry sweeping to stop settled dust from getting kicked back up.`;
+  }
+
+  if (report?.current.dataSource) {
+    reply += `\n\n*(Source: ${report.current.dataSource} · Measured at: ${formatMeasurementTime(report.current.dateTime, report.location.timeZone)})*`;
   }
 
   return { reply, toolsExecuted };

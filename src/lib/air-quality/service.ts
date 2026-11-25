@@ -1,153 +1,146 @@
 import { airQualityCache, normalizeLocationKey } from './cache';
-import { getSampleDelhiAirQualityReport } from './sample-data';
-import {
-  fetchCurrentConditions,
-  fetchHourlyForecast,
-  fetchTimeZone,
-  geocodePlace,
-  GeocodeLocationResult,
-  ClientRequestOptions,
-} from './google-client';
-import {
-  AirQualityQuerySchema,
-  AirQualityReport,
-  AirQualityReportSchema,
-  HourlyForecastPoint,
-} from './types';
-import {
-  extractPrimaryIndex,
-  extractPollutant,
-  ExtractedIndex,
-} from './index-extractor';
+import { ClientRequestOptions } from './google-client';
+import { fetchViaGoogle } from './google-service';
+import { geocodeOpenMeteoPlace, fetchOpenMeteoAirQuality, OpenMeteoLocationResult } from './open-meteo-client';
+import { fetchWaqiNearestStation } from './waqi-client';
+import { AirQualityQuerySchema, AirQualityReport, AirQualityReportSchema } from './types';
+import { extractPrimaryIndex, extractPollutant, ExtractedIndex } from './index-extractor';
 
 export { extractPrimaryIndex, extractPollutant };
 export type { ExtractedIndex };
 
 export interface GetAirQualityOptions extends ClientRequestOptions {
   apiKey?: string;
+  waqiToken?: string;
   bypassCache?: boolean;
   forecastHours?: number;
 }
 
-function resolveApiKey(providedKey?: string): string | null {
+function resolveGoogleApiKey(providedKey?: string): string | null {
   const key = providedKey || process.env.GOOGLE_MAPS_API_KEY;
-
-  if (!key || key.trim() === '' || key === 'undefined') {
-    return null;
-  }
-
+  if (!key || key.trim() === '' || key === 'undefined') return null;
   return key;
 }
 
+function resolveWaqiToken(providedToken?: string): string | null {
+  const token = providedToken || process.env.WAQI_TOKEN;
+  if (!token || token.trim() === '' || token === 'undefined') return null;
+  return token.trim();
+}
+
 /**
- * Main service to fetch complete Air Quality data (Current + 24-hr Forecast) for a place name or pincode.
- * - Prioritizes India's local AQI (ind_cpcb) with fallback to Universal AQI (uaqi)
- * - Returns AQI as null when no index is returned
- * - Recovers gracefully from forecast failures by returning current conditions with an empty forecast
- * - Caches validated reports for 15 minutes with a capacity cap
+ * Fetches real-time air quality report using free Open-Meteo APIs (keyless default).
  */
-export async function getAirQualityByLocation(
-  rawPlace: string,
-  options: GetAirQualityOptions = {}
+async function fetchViaOpenMeteo(
+  place: string,
+  options: GetAirQualityOptions,
+  preResolvedLocation?: OpenMeteoLocationResult
 ): Promise<AirQualityReport> {
-  const { place } = AirQualityQuerySchema.parse({ place: rawPlace });
-  const apiKey = resolveApiKey(options.apiKey);
-
-  if (!apiKey) {
-    return getSampleDelhiAirQualityReport(place);
-  }
-
-  const cacheKey = normalizeLocationKey(place);
-  const forecastHours = options.forecastHours ?? 24;
-
-  const cached = airQualityCache.get(cacheKey);
-  if (cached) {
-    return cached.value;
-  }
-
-  const location: GeocodeLocationResult = await geocodePlace(place, apiKey, options);
-
-  const currentConditionsPromise = fetchCurrentConditions(
-    location.latitude,
-    location.longitude,
-    apiKey,
-    options
-  );
-
-  const forecastPromise = fetchHourlyForecast(
-    location.latitude,
-    location.longitude,
-    apiKey,
-    forecastHours,
-    options
-  ).catch(() => null);
-
-  const timeZonePromise = fetchTimeZone(
-    location.latitude,
-    location.longitude,
-    apiKey,
-    options
-  ).catch(() => null);
-
-  const [currentConditions, rawForecast, resolvedTimeZone] = await Promise.all([
-    currentConditionsPromise,
-    forecastPromise,
-    timeZonePromise,
-  ]);
-
-  const timeZone = resolvedTimeZone || 'Asia/Kolkata';
-
-  const primaryIndex = extractPrimaryIndex(currentConditions.indexes || []);
-  const pm25 = extractPollutant(currentConditions.pollutants || [], 'pm25');
-  const pm10 = extractPollutant(currentConditions.pollutants || [], 'pm10');
-
-  const hourlyForecast: HourlyForecastPoint[] = [];
-
-  if (rawForecast && Array.isArray(rawForecast.hourlyForecasts)) {
-    for (const item of rawForecast.hourlyForecasts) {
-      if (!item || !item.dateTime) continue;
-
-      const itemIndex = extractPrimaryIndex(item.indexes || []);
-      const itemPm25 = extractPollutant(item.pollutants || [], 'pm25');
-      const itemPm10 = extractPollutant(item.pollutants || [], 'pm10');
-
-      hourlyForecast.push({
-        dateTime: item.dateTime,
-        aqi: itemIndex.aqi,
-        category: itemIndex.category,
-        dominantPollutant: itemIndex.dominantPollutant,
-        indexCode: itemIndex.indexCode,
-        indexDisplayName: itemIndex.indexDisplayName,
-        pm25: itemPm25,
-        pm10: itemPm10,
-      });
-    }
-  }
+  const location = preResolvedLocation || (await geocodeOpenMeteoPlace(place, options));
+  const aqData = await fetchOpenMeteoAirQuality(location.latitude, location.longitude, location.timeZone, options);
 
   const report: AirQualityReport = {
     location: {
       name: location.formattedAddress,
       latitude: location.latitude,
       longitude: location.longitude,
-      timeZone,
+      timeZone: location.timeZone,
     },
     current: {
-      dateTime: currentConditions.dateTime,
-      aqi: primaryIndex.aqi,
-      category: primaryIndex.category,
-      dominantPollutant: primaryIndex.dominantPollutant,
-      indexCode: primaryIndex.indexCode,
-      indexDisplayName: primaryIndex.indexDisplayName,
-      pm25,
-      pm10,
+      ...aqData.current,
+      dataSource: 'Open-Meteo (CAMS model)',
+      attribution: 'Air quality data provided by Open-Meteo under CC BY 4.0 (Copernicus CAMS model)',
+      isSampleData: false,
     },
-    hourlyForecast,
+    hourlyForecast: aqData.hourlyForecast,
     cachedAt: new Date().toISOString(),
     isSampleData: false,
+    dataSource: 'Open-Meteo (CAMS model)',
+    attribution: 'Air quality data provided by Open-Meteo under CC BY 4.0 (Copernicus CAMS model)',
   };
 
-  const validatedReport = AirQualityReportSchema.parse(report);
-  airQualityCache.set(cacheKey, validatedReport);
+  return AirQualityReportSchema.parse(report);
+}
 
-  return validatedReport;
+/**
+ * Main service to fetch real-time Air Quality data (Current + 24-hr Forecast) for a place name, pincode, or coordinates.
+ *
+ * Priority:
+ * 1. Nearest CPCB ground station via WAQI API (if WAQI_TOKEN is set).
+ * 2. Google Air Quality API (if GOOGLE_MAPS_API_KEY is set).
+ * 3. Free real-time Open-Meteo Copernicus CAMS model (default and universal fallback).
+ */
+export async function getAirQualityByLocation(
+  rawPlace: string,
+  options: GetAirQualityOptions = {}
+): Promise<AirQualityReport> {
+  const { place } = AirQualityQuerySchema.parse({ place: rawPlace });
+  const cacheKey = normalizeLocationKey(place);
+
+  if (!options.bypassCache) {
+    const cached = airQualityCache.get(cacheKey);
+    if (cached) return cached.value;
+  }
+
+  const waqiToken = resolveWaqiToken(options.waqiToken);
+  const googleApiKey = resolveGoogleApiKey(options.apiKey);
+
+  // 1. If WAQI_TOKEN is set, use nearest CPCB ground station as the main source
+  if (waqiToken) {
+    try {
+      const location = await geocodeOpenMeteoPlace(place, options);
+      const waqiStation = await fetchWaqiNearestStation(location.latitude, location.longitude, waqiToken, options.fetchFn);
+
+      if (waqiStation) {
+        // Merge with 24-hr rolling forecast from Open-Meteo
+        const openMeteoData = await fetchOpenMeteoAirQuality(
+          location.latitude,
+          location.longitude,
+          location.timeZone,
+          options
+        ).catch(() => null);
+
+        const report: AirQualityReport = {
+          location: {
+            name: `${location.formattedAddress} · Station: ${waqiStation.stationName}`,
+            latitude: waqiStation.latitude,
+            longitude: waqiStation.longitude,
+            timeZone: location.timeZone,
+          },
+          current: waqiStation.current,
+          hourlyForecast: openMeteoData?.hourlyForecast || [],
+          cachedAt: new Date().toISOString(),
+          isSampleData: false,
+          dataSource: waqiStation.current.dataSource,
+          attribution: waqiStation.current.attribution,
+        };
+
+        const parsedReport = AirQualityReportSchema.parse(report);
+        airQualityCache.set(cacheKey, parsedReport);
+        return parsedReport;
+      }
+    } catch (waqiError) {
+      console.warn(
+        `[AirQualityService] WAQI lookup failed (${waqiError instanceof Error ? waqiError.message : 'Unknown error'}), falling back.`
+      );
+    }
+  }
+
+  // 2. If Google API key is configured, try Google as an optional upgrade
+  if (googleApiKey) {
+    try {
+      const googleReport = await fetchViaGoogle(place, googleApiKey, options);
+      airQualityCache.set(cacheKey, googleReport);
+      return googleReport;
+    } catch (googleError) {
+      console.warn(
+        `[AirQualityService] Google API lookup failed (${googleError instanceof Error ? googleError.message : 'Unknown error'}), falling back to free Open-Meteo source.`
+      );
+    }
+  }
+
+  // 3. Free real-time Open-Meteo (default or fallback)
+  const openMeteoReport = await fetchViaOpenMeteo(place, options);
+  airQualityCache.set(cacheKey, openMeteoReport);
+  return openMeteoReport;
 }

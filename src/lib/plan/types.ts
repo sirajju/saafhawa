@@ -25,7 +25,7 @@ export const PlanRequestSchema = z.object({
   heatingFuel: z.enum(['biomass', 'kerosene', 'electric', 'none']).default('none'),
   hasAirPurifier: z.boolean().default(false),
   hasKitchenChimneyOrExhaust: z.boolean().default(false),
-  usesIncenseOrMosquitoCoils: z.boolean().default(true),
+  usesIncenseOrMosquitoCoils: z.boolean().default(false),
   hasGardenOrOpenWasteBurning: z.boolean().default(false),
   windowSealingQuality: z.enum(['poor', 'average', 'good']).default('average'),
   dailyOutdoorHoursPerPerson: z.number().min(0).max(24).default(1.5),
