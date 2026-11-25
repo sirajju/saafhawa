@@ -127,6 +127,40 @@ export function evaluateIndoorImpact(
       };
     }
 
+    case 'cook_with_kitchen_cross_ventilation': {
+      if (profile.cookingFuel !== 'biomass') {
+        return { applicable: false, reasonIfNotApplicable: 'Household does not cook using wood or biomass chulha', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
+      }
+      const conc = 120.0;
+      const vol = calculateInhaledAirVolumeM3(profile, 'light', 2);
+      return {
+        applicable: true,
+        concentrationReduction: conc,
+        doseAvoidedUg: conc * vol * 0.45,
+        percentageDrop: 45.0,
+        pm25SavedGrams: 0,
+        co2SavedGrams: 0,
+        methodologyNotes: 'Flushes 45% of chulha cooking smoke directly outdoors by isolating and cross-ventilating the kitchen.',
+      };
+    }
+
+    case 'use_dry_seasoned_chulha_fuel': {
+      if (profile.cookingFuel !== 'biomass') {
+        return { applicable: false, reasonIfNotApplicable: 'Household does not cook using wood or biomass chulha', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
+      }
+      const conc = 70.0;
+      const vol = calculateInhaledAirVolumeM3(profile, 'light', 2);
+      return {
+        applicable: true,
+        concentrationReduction: conc,
+        doseAvoidedUg: conc * vol * 0.3,
+        percentageDrop: 30.0,
+        pm25SavedGrams: 12.5,
+        co2SavedGrams: 0,
+        methodologyNotes: 'Using dry, seasoned firewood reduces particulate emissions by 25-30% compared to wet wood.',
+      };
+    }
+
     default:
       return null;
   }

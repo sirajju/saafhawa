@@ -37,7 +37,8 @@ PERSONALIZATION & CLINICAL RULES:
 5. SENIOR PROTECTION: If seniors live in the home, prioritize "senior_indoor_morning_walk" and "seniors_avoid_strenuous_outdoor".
 6. FORECAST TIMING: Schedule time-sensitive actions (ventilation, walks, workouts, outdoor chores) specifically for the cleanest forecast window: ${cleanestWindowText}.
    - If commutersCount is 0, do NOT schedule masks for "Commute Hours"; schedule for "Any outdoor walks or errands".
-7. Return strictly structured JSON matching the requested schema.`;
+7. COMMUTE ACTIONS: If primaryCommuteMode is "none" or commutersCount is 0, DO NOT select commute actions ("post_commute_hygiene", "swap_car_for_metro", "swap_two_wheeler_for_metro_or_bus", "carpool_to_work", "work_from_home_on_smog_days").
+8. Return strictly structured JSON matching the requested schema.`;
 
   const catalogueList = catalogue
     .map(

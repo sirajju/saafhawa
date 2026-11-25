@@ -81,7 +81,7 @@ export function PlanCard({
         </div>
 
         <p className="mt-1.5 text-base leading-relaxed text-slate-600 dark:text-slate-400">
-          <strong className="font-semibold text-slate-800 dark:text-slate-200">Why this suits your family: </strong>
+          <strong className="font-semibold text-slate-800 dark:text-slate-200">Why this suits your household: </strong>
           {action.reason}
         </p>
 

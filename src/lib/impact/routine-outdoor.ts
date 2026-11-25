@@ -55,8 +55,8 @@ export function evaluateRoutineOutdoorAction(
   }
 
   if (action.id === 'post_commute_hygiene') {
-    if (profile.dailyOutdoorHoursPerPerson <= 0 && profile.primaryCommuteMode === 'none') {
-      return { applicable: false, reasonIfNotApplicable: 'Household has no outdoor exposure or commute', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
+    if (profile.primaryCommuteMode === 'none' || profile.commutersCount <= 0) {
+      return { applicable: false, reasonIfNotApplicable: 'Household has no daily commute', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
     }
     if (currentPm25 === null) {
       return { applicable: true, concentrationReduction: null, doseAvoidedUg: null, percentageDrop: null, isUnknown: true, pm25SavedGrams: 0, co2SavedGrams: 0, methodologyNotes: 'Impact unknown: local ambient PM2.5 measurement is missing.' };

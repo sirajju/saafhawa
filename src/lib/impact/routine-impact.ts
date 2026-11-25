@@ -108,6 +108,27 @@ export function evaluateRoutineImpact(
       };
     }
 
+    case 'keep_vulnerable_out_of_chulha_kitchen': {
+      if (profile.cookingFuel !== 'biomass') {
+        return { applicable: false, reasonIfNotApplicable: 'Household does not cook using wood or biomass chulha', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
+      }
+      const hasOther = profile.childrenCount > 0 || profile.elderlyCount > 0 || profile.hasAsthmaOrRespiratoryCondition || profile.adultsCount > 1;
+      if (!hasOther) {
+        return { applicable: false, reasonIfNotApplicable: 'Single occupant cooks and lives alone', concentrationReduction: 0, doseAvoidedUg: 0, percentageDrop: 0, pm25SavedGrams: 0, co2SavedGrams: 0 };
+      }
+      const conc = 180.0;
+      const vol = calculateInhaledAirVolumeM3(profile, 'light', 2);
+      return {
+        applicable: true,
+        concentrationReduction: conc,
+        doseAvoidedUg: conc * vol * 0.6,
+        percentageDrop: 60.0,
+        pm25SavedGrams: 0,
+        co2SavedGrams: 0,
+        methodologyNotes: 'Isolates vulnerable household members from acute 2-hour cooking biomass smoke plumes.',
+      };
+    }
+
     default:
       return null;
   }

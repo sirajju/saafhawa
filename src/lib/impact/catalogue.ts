@@ -22,15 +22,13 @@ const RAW_CATALOGUE: Omit<ActionDefinition, 'costRupees' | 'costLabel'>[] = [
     title: 'Wear a Fitted N95 / FFP2 Mask Outdoors',
     description: 'Wear a well-fitted certified N95 or FFP2 respirator for all outdoor commutes, walks, and errands during smog hours.',
     category: 'daily_routine',
-  },
-  {
+  }, {
     id: 'senior_indoor_morning_walk',
     title: 'Move Senior Morning Walks Indoors or to Cleanest Window',
     description: 'Shift early morning walks during peak cold-air smog inversions (5 AM – 8 AM) indoors or to the cleanest forecast window.',
     category: 'daily_routine',
     defaultDurationHours: 1,
-  },
-  {
+  }, {
     id: 'seniors_avoid_strenuous_outdoor',
     title: 'Avoid Strenuous Outdoor Exertion for Elderly Family Members',
     description: 'Keep physical exertion low during peak smog alerts; substitute outdoor chores with restful indoor routines.',
@@ -73,6 +71,13 @@ const RAW_CATALOGUE: Omit<ActionDefinition, 'costRupees' | 'costLabel'>[] = [
     title: 'Combine or Cancel Non-Essential Outdoor Errands',
     description: 'Consolidate multiple trips into a single errand or defer non-urgent outdoor travel during hazardous smog alerts.',
     category: 'daily_routine',
+  },
+  {
+    id: 'keep_vulnerable_out_of_chulha_kitchen',
+    title: 'Keep Children & Seniors Away from Kitchen During Stove Burning',
+    description: 'Keep children, seniors, and family members with breathing sensitivity away from the kitchen area while wood or chulha burns.',
+    category: 'daily_routine',
+    defaultDurationHours: 2,
   },
 
   // ==========================================================================
@@ -121,6 +126,19 @@ const RAW_CATALOGUE: Omit<ActionDefinition, 'costRupees' | 'costLabel'>[] = [
     id: 'weatherstrip_doors_and_windows',
     title: 'Weatherstrip Exterior Doors & Seal Window Gaps',
     description: 'Install silicone draft seals, door sweeps, or damp rolled towels under outer doors and window sills to stop smog leaks.',
+    category: 'indoor_air',
+  },
+  {
+    id: 'cook_with_kitchen_cross_ventilation',
+    title: 'Ventilate Kitchen During Cleanest Window While Cooking on Chulha',
+    description: 'Keep doors and windows open strictly on the kitchen side while cooking to vent smoke outdoors, keeping living area doors closed.',
+    category: 'indoor_air',
+    defaultDurationHours: 2,
+  },
+  {
+    id: 'use_dry_seasoned_chulha_fuel',
+    title: 'Burn Only Dry, Well-Seasoned Wood & Biomass Fuel',
+    description: 'Use thoroughly dried, seasoned firewood and biomass; burning damp or green wood produces up to 3x more toxic particulates and dense indoor smoke.',
     category: 'indoor_air',
   },
 

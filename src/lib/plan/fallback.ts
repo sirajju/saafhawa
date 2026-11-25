@@ -77,8 +77,11 @@ export function getRuleBasedFallbackActions(
       score += 30;
     }
 
-    if (!isZeroCost && profile.cookingFuel === 'biomass' && id === 'swap_biomass_cookstove_to_induction') {
-      score += 50;
+    if (profile.cookingFuel === 'biomass') {
+      if (id === 'cook_with_kitchen_cross_ventilation') score += 55;
+      if (id === 'keep_vulnerable_out_of_chulha_kitchen') score += 55;
+      if (id === 'use_dry_seasoned_chulha_fuel') score += 50;
+      if (!isZeroCost && id === 'swap_biomass_cookstove_to_induction') score += 50;
     }
 
     if (profile.hasGardenOrOpenWasteBurning && id === 'stop_open_waste_burning') {

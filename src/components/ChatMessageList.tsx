@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { RefreshIcon } from './ui/Icons';
+import { SafeMarkdown } from './chat/SafeMarkdown';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -40,7 +41,11 @@ export function ChatMessageList({
           key={index}
           className={`bubble ${msg.role === 'user' ? 'user-bubble' : ''}`}
         >
-          <div className="whitespace-pre-wrap">{msg.content}</div>
+          {msg.role === 'assistant' ? (
+            <SafeMarkdown content={msg.content} />
+          ) : (
+            <div className="whitespace-pre-wrap">{msg.content}</div>
+          )}
           {msg.toolsSummary && msg.toolsSummary.length > 0 && (
             <div className="mt-2 space-y-0.5 border-t border-[var(--line)] pt-1.5 caption">
               {msg.toolsSummary.map((summary, idx) => (
