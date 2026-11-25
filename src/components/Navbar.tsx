@@ -119,17 +119,6 @@ export function Navbar({
             <SystemThemeIcon className="icon" />
           </button>
         </div>
-
-        {onEditProfile && (
-          <button
-            type="button"
-            className="btn btn-ghost hide-sm"
-            onClick={onEditProfile}
-            aria-label="Edit household profile"
-          >
-            Edit household
-          </button>
-        )}
       </div>
     </header>
   );

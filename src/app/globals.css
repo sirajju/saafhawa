@@ -774,8 +774,7 @@ header.app-header {
 /* Onboarding */
 .onb {
   max-width: 600px;
-  margin: 40px auto 140px;
-  padding-bottom: 96px;
+  margin: 40px auto 180px;
 }
 
 .steps {
@@ -802,10 +801,32 @@ header.app-header {
 
 .q h3 {
   margin-bottom: 4px;
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 600;
 }
 
 .q .caption {
   margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.onb-step[hidden] {
+  display: none;
+}
+
+.onb-intro {
+  color: var(--ink-2);
+  margin-top: 8px;
+  max-width: 52ch;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.q + .q {
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
 }
 
 .input-row {
@@ -830,6 +851,34 @@ header.app-header {
   font-size: 17px;
 }
 
+.input-row input[aria-invalid="true"] {
+  border-color: var(--aqi-vpoor);
+  box-shadow: inset 0 0 0 1px var(--aqi-vpoor);
+}
+
+.icon-btn {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.field-error {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--aqi-vpoor);
+}
+
+.field-note {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
 .opts {
   display: flex;
   flex-wrap: wrap;
@@ -845,25 +894,108 @@ header.app-header {
   color: var(--ink);
   font-weight: 500;
   font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.opt[aria-checked="true"] {
+.opt[aria-checked="true"],
+.opt[aria-pressed="true"] {
   border-color: var(--brand);
   background: var(--brand-soft);
   color: var(--brand);
   box-shadow: inset 0 0 0 1px var(--brand);
 }
 
-.actions-sticky {
-  position: sticky;
-  bottom: 0;
+.opt-card {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  height: auto;
+  min-height: 56px;
+  padding: 12px 16px;
+  text-align: left;
+  width: 100%;
+}
+
+.opt-card .icon {
+  color: var(--ink-3);
+}
+
+.opt-card[aria-checked="true"] .icon {
+  color: var(--brand);
+}
+
+.opt-card small {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.opt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.cost {
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+/* Sticky action bar: full width, always visible, never covers content */
+.onb-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 15;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line);
+}
+
+.onb-bar .inner {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 12px 24px calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
-  margin-top: 40px;
-  background: linear-gradient(transparent, var(--bg) 30%);
+  gap: 12px;
+}
+
+.onb-bar .step-count {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.onb-bar .btn-primary {
+  min-width: 140px;
+  justify-content: center;
+}
+
+/* Floating view switch */
+.view-switch {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 20;
+  box-shadow: var(--shadow);
+}
+
+body.on-onb .view-switch {
+  bottom: 84px;
+}
+
+.chat-fab-mobile {
+  position: fixed;
+  bottom: 76px;
+  right: 20px;
+  z-index: 40;
 }
 
 /* Responsive Rules */
@@ -929,6 +1061,26 @@ header.app-header {
     width: 52px;
     padding: 0;
     justify-content: center;
+  }
+  .opt-grid {
+    grid-template-columns: 1fr;
+  }
+  .onb-bar .inner {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .onb-bar .step-count {
+    display: none;
+  }
+  .view-switch {
+    bottom: 16px;
+  }
+  body.on-onb .view-switch {
+    bottom: 80px;
+  }
+  .chat-fab-mobile {
+    bottom: 72px;
+    right: 16px;
   }
   .place span,
   .hide-sm,

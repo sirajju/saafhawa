@@ -18,14 +18,11 @@ test.describe('Layout & Interaction Polish E2E Tests', () => {
     });
     expect(paddingLeft).toBe('16px');
 
-    // Location button text is hidden under 720px via .hide-sm
-    const locateBtn = page.getByRole('button', { name: /Use browser location/i });
+    // Location button is an icon-only square button with accessible label
+    const locateBtn = page.getByRole('button', { name: /Use my location/i });
     await expect(locateBtn).toBeVisible();
 
-    const textSpan = locateBtn.locator('span.hide-sm');
-    await expect(textSpan).toBeHidden();
-
-    // Button should be compact (around 52px width) without wrapping
+    // Button should be compact (around 52px width)
     const box = await locateBtn.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.width).toBeLessThanOrEqual(56);

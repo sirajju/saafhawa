@@ -26,49 +26,44 @@ describe('Usability Overhaul - Three-Step Onboarding & Habit Defaults', () => {
     const user = userEvent.setup();
     render(<OnboardingForm onSubmit={() => {}} />);
 
-    // Step 1: Who lives here
-    expect(screen.getByText(/Step 1 of 3: Who lives here/i)).toBeDefined();
+    // Step 1: Your home
+    expect(screen.getByText(/Step 1 of 3 · Your home/i)).toBeDefined();
 
-    // Place input is top field
-    const placeInput = screen.getByLabelText(/Where do you live/i) as HTMLInputElement;
+    // Place input is top field with label "Your area"
+    const placeInput = screen.getByLabelText(/Your area/i) as HTMLInputElement;
     expect(placeInput).toBeDefined();
 
     // Browser location button
-    const locationBtn = screen.getByRole('button', { name: /Use browser location/i });
+    const locationBtn = screen.getByRole('button', { name: /Use my location/i });
     await user.click(locationBtn);
 
     expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
     expect(placeInput.value).toBe('28.5355, 77.3910');
   });
 
-  it('does NOT pre-tick incense, leaf burning, or outdoor exercise habits', async () => {
+  it('does NOT preselect incense choice on step 3', async () => {
     const user = userEvent.setup();
-    render(<OnboardingForm onSubmit={() => {}} />);
+    render(<OnboardingForm initialProfile={{ place: 'Delhi' }} onSubmit={() => {}} />);
 
     // Advance to Step 2
-    const toCommuteBtn = screen.getByRole('button', { name: /Continue to Commute/i });
-    await user.click(toCommuteBtn);
+    const continueBtn = screen.getByRole('button', { name: /Continue/i });
+    await user.click(continueBtn);
+    expect(screen.getByText(/Step 2 of 3 · Getting around/i)).toBeDefined();
 
     // Advance to Step 3
-    const toHomeBtn = screen.getByRole('button', { name: /Continue to Home/i });
-    await user.click(toHomeBtn);
+    await user.click(continueBtn);
+    expect(screen.getByText(/Step 3 of 3 · Inside your home/i)).toBeDefined();
 
-    expect(screen.getByText(/Step 3 of 3: Your home/i)).toBeDefined();
-
-    // Incense habit: "No (Never / Rarely)" must be selected by default (not pre-ticked!)
-    const incenseRadios = screen.getAllByRole('radio', { name: /No \(Never \/ Rarely\)/i });
-    expect(incenseRadios[0].getAttribute('aria-checked')).toBe('true');
-
-    // Waste burning: "No nearby burning" selected by default
-    const burningNoRadio = screen.getByRole('radio', { name: /No nearby burning/i });
-    expect(burningNoRadio.getAttribute('aria-checked')).toBe('true');
-
-    // Outdoor workouts: "No outdoor workouts" selected by default
-    const workoutsNoRadio = screen.getByRole('radio', { name: /No outdoor workouts/i });
-    expect(workoutsNoRadio.getAttribute('aria-checked')).toBe('true');
+    // Incense question options: all must have aria-checked="false" initially
+    const incenseGroup = screen.getByRole('radiogroup', { name: /Incense/i });
+    expect(incenseGroup).toBeDefined();
+    const incenseRadios = screen.getAllByRole('radio', { name: /Yes, often|Sometimes|No/i });
+    for (const radio of incenseRadios) {
+      expect(radio.getAttribute('aria-checked')).toBe('false');
+    }
   });
 
-  it('shows clear error and focuses place input when location permission is denied', async () => {
+  it('shows clear note and focuses area input when location permission is denied', async () => {
     const mockGeolocation = {
       getCurrentPosition: vi.fn((_success, error) =>
         error({ code: 1, message: 'User denied Geolocation' })
@@ -80,14 +75,14 @@ describe('Usability Overhaul - Three-Step Onboarding & Habit Defaults', () => {
     const user = userEvent.setup();
     render(<OnboardingForm onSubmit={() => {}} />);
 
-    const locationBtn = screen.getByRole('button', { name: /Use browser location/i });
+    const locationBtn = screen.getByRole('button', { name: /Use my location/i });
     await user.click(locationBtn);
 
     expect(
-      screen.getByText(/Location permission denied\. Please enter your locality or PIN code\./i)
+      screen.getByText(/Location access was blocked\. Type your area or pincode instead\./i)
     ).toBeDefined();
 
-    const placeInput = screen.getByLabelText(/Where do you live/i) as HTMLInputElement;
+    const placeInput = screen.getByLabelText(/Your area/i) as HTMLInputElement;
     expect(document.activeElement).toBe(placeInput);
   });
 });

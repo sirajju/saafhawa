@@ -135,7 +135,7 @@ export function PlanDashboard({
       </aside>
 
       {/* Floating "Ask Assistant" Button on Mobile & Tablet */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-40">
+      <div className="lg:hidden chat-fab-mobile fixed bottom-6 right-6 z-40">
         <button
           type="button"
           onClick={() => setIsMobileChatOpen(true)}

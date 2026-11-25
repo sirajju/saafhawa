@@ -17,11 +17,9 @@ describe('Layout and Interaction Polish Fixes', () => {
     expect(mainOnb).toBeDefined();
     expect(mainOnb?.classList.contains('wrap')).toBe(true);
 
-    const locateBtn = screen.getByRole('button', { name: /Use browser location/i });
+    const locateBtn = screen.getByRole('button', { name: /Use my location/i });
     expect(locateBtn).toBeDefined();
-    const textSpan = locateBtn.querySelector('span');
-    expect(textSpan?.classList.contains('hide-sm')).toBe(true);
-    expect(textSpan?.textContent).toBe('Use my location');
+    expect(locateBtn.classList.contains('icon-btn')).toBe(true);
   });
 
   it('2. Forecast chart text sizes are >= 12px and labels step every 6 hours on small screens', () => {

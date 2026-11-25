@@ -76,6 +76,26 @@ export function AlertTriangleIcon({ className = 'w-4 h-4', ...props }: IconProps
   );
 }
 
+export function AlertCircleIcon({ className = 'w-4 h-4', ...props }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 8v4" />
+      <path d="M12 16h.01" />
+    </svg>
+  );
+}
+
 export function InfoIcon({ className = 'w-4 h-4', ...props }: IconProps) {
   return (
     <svg

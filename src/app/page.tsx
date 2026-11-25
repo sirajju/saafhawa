@@ -6,6 +6,7 @@ import { OnboardingForm } from '@/components/OnboardingForm';
 import { LoadingState } from '@/components/LoadingState';
 import { CommunityAdvisoryModal } from '@/components/CommunityAdvisoryModal';
 import { PlanDashboard } from '@/components/PlanDashboard';
+import { ViewSwitch } from '@/components/ViewSwitch';
 import { Footer } from '@/components/Footer';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PlanRequest, PlanResponse } from '@/lib/plan/types';
@@ -16,10 +17,16 @@ export default function HomePage() {
   const [profile, setProfile] = useState<PlanRequest | null>(null);
   const [plan, setPlan] = useState<PlanResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isEditingProfile, setIsEditingProfile] = useState<boolean>(false);
+  const [currentView, setCurrentView] = useState<'dash' | 'onb'>('onb');
   const [isAdvisoryModalOpen, setIsAdvisoryModalOpen] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState<string>('');
+
+  const isOnboarding = currentView === 'onb' || !plan;
+
+  useEffect(() => {
+    document.body.classList.toggle('on-onb', isOnboarding);
+  }, [isOnboarding]);
 
   const fetchPlan = async (currentProfile: PlanRequest) => {
     setIsLoading(true);
@@ -35,20 +42,17 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errData = await response.json().catch(() => null);
-        throw new Error(
-          errData?.message || `Unable to generate smog plan (HTTP ${response.status})`
-        );
+        throw new Error(errData?.message || `Unable to generate smog plan (HTTP ${response.status})`);
       }
 
       const planData: PlanResponse = await response.json();
       setPlan(planData);
-      setIsEditingProfile(false);
+      setCurrentView('dash');
       setLiveAnnouncement(
-        `Action plan ready for ${planData.location.name}. ${planData.actions.length} clean air interventions recommended, avoiding ${planData.summary.totalPm25InhaledDoseAvoidedUg} micrograms of PM2.5 inhaled dose.`
+        `Action plan ready for ${planData.location.name}. ${planData.actions.length} clean air interventions recommended.`
       );
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'An unexpected error occurred while generating your plan.';
+      const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
       setErrorMessage(message);
       setLiveAnnouncement(`Error: ${message}`);
     } finally {
@@ -58,7 +62,6 @@ export default function HomePage() {
 
   useEffect(() => {
     let isMounted = true;
-
     async function loadSavedProfile() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -68,20 +71,14 @@ export default function HomePage() {
             setProfile(parsed);
             await fetchPlan(parsed);
           }
-        } else {
-          if (isMounted) {
-            setIsLoading(false);
-          }
         }
       } catch {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        // Fallback to fresh onboarding
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     }
-
     void loadSavedProfile();
-
     return () => {
       isMounted = false;
     };
@@ -91,39 +88,30 @@ export default function HomePage() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newProfile));
     } catch {
-      // Storage quota or private browsing safety
+      // Local storage safety
     }
     setProfile(newProfile);
     fetchPlan(newProfile);
   };
 
-  const currentPlaceName = plan ? (plan.location.name || profile?.place || '') : '';
+  const currentPlaceName = plan && currentView === 'dash' ? (plan.location.name || profile?.place || '') : '';
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', flexDirection: 'column' }}>
       <Navbar
         currentPlace={currentPlaceName}
-        onEditProfile={plan ? () => setIsEditingProfile(true) : undefined}
-        onRefresh={plan && profile ? () => fetchPlan(profile) : undefined}
-        isLoading={isLoading}
+        onEditProfile={plan ? () => setCurrentView('onb') : undefined}
       />
 
       <main id="main-content" style={{ flex: 1, width: '100%' }}>
-        <div
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-          className="sr-only"
-        >
+        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {liveAnnouncement}
         </div>
 
-        {(!profile || isEditingProfile) && !isLoading && (
+        {isOnboarding && !isLoading && (
           <OnboardingForm
             initialProfile={profile}
             onSubmit={handleProfileSubmit}
-            onCancel={profile ? () => setIsEditingProfile(false) : undefined}
-            isEditing={Boolean(profile)}
           />
         )}
 
@@ -133,11 +121,11 @@ export default function HomePage() {
           <ErrorState
             message={errorMessage}
             onRetry={profile ? () => fetchPlan(profile) : undefined}
-            onChangeLocation={() => setIsEditingProfile(true)}
+            onChangeLocation={() => setCurrentView('onb')}
           />
         )}
 
-        {plan && !isLoading && !isEditingProfile && (
+        {plan && !isLoading && currentView === 'dash' && (
           <PlanDashboard
             plan={plan}
             profile={profile}
@@ -146,6 +134,16 @@ export default function HomePage() {
           />
         )}
       </main>
+
+      {plan && !isLoading && (
+        <ViewSwitch
+          currentView={currentView}
+          onChangeView={(v) => {
+            setCurrentView(v);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+      )}
 
       <Footer dataSource={plan?.currentAirQuality?.dataSource} />
 

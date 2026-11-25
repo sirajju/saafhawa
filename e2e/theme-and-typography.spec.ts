@@ -115,7 +115,7 @@ test.describe('Theme Switching & Typography System', () => {
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await expect(page.getByRole('heading', { name: /Tell Us About Your Household/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Where do you live, and who lives with you/i })).toBeVisible();
 
     const onboardingViolations = await scanVisibleTextForSmallSizes();
     expect(onboardingViolations).toEqual([]);

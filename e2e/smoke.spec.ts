@@ -18,30 +18,27 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     await page.reload();
 
     // 3. Verify Step 1 of onboarding is displayed
-    await expect(page.getByRole('heading', { name: /Tell Us About Your Household/i })).toBeVisible();
-    await expect(page.getByText(/Step 1 of 3: Who lives here/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Where do you live, and who lives with you/i })).toBeVisible();
+    await expect(page.getByText(/Step 1 of 3 · Your home/i)).toBeVisible();
 
     // 4. Fill in location input (top field)
-    const placeInput = page.locator('#place-input');
+    const placeInput = page.locator('#area');
     await expect(placeInput).toBeVisible();
     await placeInput.fill('110001');
 
-    // 5. Navigate to Step 2: How you get around
-    const toCommuteBtn = page.getByRole('button', { name: /Continue to Commute/i });
-    await expect(toCommuteBtn).toBeVisible();
-    await toCommuteBtn.click();
-    await expect(page.getByText(/Step 2 of 3: How you get around/i)).toBeVisible();
+    // 5. Navigate to Step 2: Getting around
+    const nextBtn = page.locator('#onb-next');
+    await expect(nextBtn).toBeVisible();
+    await nextBtn.click();
+    await expect(page.getByText(/Step 2 of 3 · Getting around/i)).toBeVisible();
 
-    // 6. Navigate to Step 3: Your home
-    const toHomeBtn = page.getByRole('button', { name: /Continue to Home/i });
-    await expect(toHomeBtn).toBeVisible();
-    await toHomeBtn.click();
-    await expect(page.getByText(/Step 3 of 3: Your home/i)).toBeVisible();
+    // 6. Navigate to Step 3: Inside your home
+    await nextBtn.click();
+    await expect(page.getByText(/Step 3 of 3 · Inside your home/i)).toBeVisible();
 
     // 7. Submit the onboarding form
-    const submitButton = page.getByRole('button', { name: /Generate My Smog Action Plan/i });
-    await expect(submitButton).toBeVisible();
-    await submitButton.click();
+    await expect(nextBtn).toHaveText(/See my plan/i);
+    await nextBtn.click();
 
     // 8. Verify dashboard displays with clean location name and top in view
     await expect(page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })).toBeVisible({ timeout: 10000 });

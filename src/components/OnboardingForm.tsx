@@ -1,182 +1,196 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PlanRequest } from '@/lib/plan/types';
-import { CommuteFields } from './onboarding/CommuteFields';
-import { IndoorEnvironmentFields } from './onboarding/IndoorEnvironmentFields';
-import { OnboardingProgressBar } from './onboarding/OnboardingProgressBar';
-import { OnboardingStep1 } from './onboarding/OnboardingStep1';
-import { OnboardingNavFooter } from './onboarding/OnboardingNavFooter';
 import { DEFAULT_PROFILE } from './onboarding/default-profile';
-import { AlertTriangleIcon } from './ui/Icons';
+import { OnboardingStep1 } from './onboarding/OnboardingStep1';
+import { OnboardingStep2 } from './onboarding/OnboardingStep2';
+import { OnboardingStep3 } from './onboarding/OnboardingStep3';
 
 interface OnboardingFormProps {
   initialProfile?: Partial<PlanRequest> | null;
   onSubmit: (profile: PlanRequest) => void;
-  onCancel?: () => void;
-  isEditing?: boolean;
 }
 
-export function OnboardingForm({
-  initialProfile,
-  onSubmit,
-  onCancel,
-  isEditing = false,
-}: OnboardingFormProps) {
-  const [formData, setFormData] = useState<PlanRequest>({
+export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps) {
+  const [formData, setFormData] = useState<PlanRequest>(() => ({
     ...DEFAULT_PROFILE,
     ...(initialProfile || {}),
-  });
+  }));
 
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [geoStatus, setGeoStatus] = useState<string | null>(null);
+  const [areaError, setAreaError] = useState<string | null>(null);
+  const [areaNote, setAreaNote] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [hasAirConditioner, setHasAirConditioner] = useState<boolean>(false);
+  const [incenseChoice, setIncenseChoice] = useState<'often' | 'sometimes' | 'no' | null>(() => {
+    if (initialProfile?.usesIncenseOrMosquitoCoils === true) return 'sometimes';
+    if (initialProfile?.usesIncenseOrMosquitoCoils === false) return 'no';
+    return null;
+  });
 
-  const handleChange = (field: keyof PlanRequest, value: string | number | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const areaInputRef = useRef<HTMLInputElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus({ preventScroll: true });
+  }, [currentStep]);
+
+  const handleFieldChange = (field: string, val: unknown) => {
+    setFormData((prev) => ({ ...prev, [field]: val }));
   };
 
-  const handleUseBrowserLocation = () => {
+  const handleAreaChange = (val: string) => {
+    setAreaError(null);
+    setAreaNote(null);
+    setFormData((prev) => ({ ...prev, place: val }));
+  };
+
+  const handleLocate = () => {
+    setAreaNote('Finding your location…');
     if (!navigator.geolocation) {
-      setGeoStatus('Browser location is not supported by your browser.');
+      setAreaNote("Location isn't available in this browser. Type your area instead.");
+      areaInputRef.current?.focus();
       return;
     }
-    setIsLocating(true);
-    setGeoStatus('Detecting your location...');
 
+    setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setIsLocating(false);
         const { latitude, longitude } = position.coords;
         const coordsStr = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-        handleChange('place', coordsStr);
-        setGeoStatus(`Location detected: ${coordsStr}`);
-        setErrorMessage(null);
+        setAreaError(null);
+        setFormData((prev) => ({ ...prev, place: coordsStr }));
+        setAreaNote(`Found your location near ${coordsStr}.`);
       },
-      (error) => {
+      () => {
         setIsLocating(false);
-        if (error.code === 1 || error.code === error.PERMISSION_DENIED) {
-          setGeoStatus('Location permission denied. Please enter your locality or PIN code.');
-        } else {
-          setGeoStatus('Unable to determine location. Please enter your locality or PIN code.');
-        }
-        document.getElementById('place-input')?.focus();
+        setAreaNote('Location access was blocked. Type your area or pincode instead.');
+        areaInputRef.current?.focus();
       },
-      { timeout: 10000, enableHighAccuracy: false }
+      { timeout: 8000 }
     );
   };
 
-  const validateStep1 = (): boolean => {
-    const placeTrimmed = formData.place.trim();
-    if (placeTrimmed.length < 2) {
-      setErrorMessage('Please enter a valid place name, city, or pincode (at least 2 characters).');
-      return false;
+  const handleToggleEquipment = (
+    field: 'hasAirPurifier' | 'hasKitchenChimneyOrExhaust' | 'hasAirConditioner'
+  ) => {
+    if (field === 'hasAirConditioner') {
+      setHasAirConditioner((prev) => !prev);
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: !prev[field] }));
     }
-    if (placeTrimmed.length > 120) {
-      setErrorMessage('Place name cannot exceed 120 characters.');
-      return false;
-    }
-    if (formData.adultsCount < 1) {
-      setErrorMessage('Household must include at least 1 adult occupant.');
-      return false;
-    }
-    setErrorMessage(null);
-    return true;
   };
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleIncenseChange = (choice: 'often' | 'sometimes' | 'no') => {
+    setIncenseChoice(choice);
+    setFormData((prev) => ({ ...prev, usesIncenseOrMosquitoCoils: choice === 'often' || choice === 'sometimes' }));
+  };
+
+  const handleNext = () => {
     if (currentStep === 1) {
-      if (!validateStep1()) return;
+      if (formData.place.trim().length < 2) {
+        setAreaError('Enter your city, area or pincode to continue.');
+        areaInputRef.current?.focus();
+        return;
+      }
       setCurrentStep(2);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentStep === 2) {
       setCurrentStep(3);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      onSubmit({ ...formData, place: formData.place.trim() });
     }
   };
 
-  const handleBack = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
+  const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => (prev - 1) as 1 | 2 | 3);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateStep1()) {
-      setCurrentStep(1);
-      return;
-    }
-    onSubmit({ ...formData, place: formData.place.trim() });
-  };
-
-  const progressPercent = currentStep === 1 ? 33 : currentStep === 2 ? 66 : 100;
-
   return (
     <main id="onb" className="wrap">
       <div className="onb">
-        <OnboardingProgressBar
-          currentStep={currentStep}
-          isEditing={isEditing}
-          progressPercent={progressPercent}
-        />
+        <div className="steps" aria-hidden="true">
+          <i className={currentStep >= 1 ? 'on' : ''} />
+          <i className={currentStep >= 2 ? 'on' : ''} />
+          <i className={currentStep >= 3 ? 'on' : ''} />
+        </div>
 
-        <form onSubmit={handleSubmit} aria-label="Household Profile Form" noValidate>
-          {errorMessage && (
-            <div
-              id="form-error-alert"
-              role="alert"
-              style={{
-                marginBottom: 24,
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--aqi-severe)',
-                background: 'var(--aqi-severe-soft)',
-                color: 'var(--ink)',
-                fontSize: 14,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <AlertTriangleIcon className="h-4 w-4 shrink-0" style={{ color: 'var(--aqi-severe)' }} />
-              <span>{errorMessage}</span>
-            </div>
-          )}
-
-          {currentStep === 1 && (
-            <OnboardingStep1
-              formData={formData}
-              errorMessage={errorMessage}
-              geoStatus={geoStatus}
-              isLocating={isLocating}
-              onChange={handleChange}
-              onClearError={() => setErrorMessage(null)}
-              onUseBrowserLocation={handleUseBrowserLocation}
-            />
-          )}
-
-          {currentStep === 2 && (
-            <CommuteFields formData={formData} onChange={handleChange} />
-          )}
-
-          {currentStep === 3 && (
-            <IndoorEnvironmentFields formData={formData} onChange={handleChange} />
-          )}
-
-          <OnboardingNavFooter
-            currentStep={currentStep}
-            isEditing={isEditing}
-            onCancel={onCancel}
-            onBack={handleBack}
-            onNext={handleNext}
+        {currentStep === 1 && (
+          <OnboardingStep1
+            area={formData.place}
+            adultsCount={formData.adultsCount}
+            childrenCount={formData.childrenCount}
+            elderlyCount={formData.elderlyCount}
+            hasAsthmaOrRespiratoryCondition={formData.hasAsthmaOrRespiratoryCondition}
+            areaError={areaError}
+            areaNote={areaNote}
+            isLocating={isLocating}
+            onAreaChange={handleAreaChange}
+            onFieldChange={handleFieldChange}
+            onLocate={handleLocate}
+            areaInputRef={areaInputRef}
+            headingRef={headingRef}
           />
-        </form>
+        )}
+
+        {currentStep === 2 && (
+          <OnboardingStep2
+            primaryCommuteMode={formData.primaryCommuteMode}
+            dailyCommuteDistanceKm={formData.dailyCommuteDistanceKm}
+            commutersCount={formData.commutersCount}
+            canWorkFromHome={formData.canWorkFromHome}
+            hasCarpoolOption={formData.hasCarpoolOption}
+            onFieldChange={handleFieldChange}
+            headingRef={headingRef}
+          />
+        )}
+
+        {currentStep === 3 && (
+          <OnboardingStep3
+            homeAreaSqFt={formData.homeAreaSqFt}
+            cookingFuel={formData.cookingFuel}
+            hasAirPurifier={formData.hasAirPurifier}
+            hasKitchenChimneyOrExhaust={formData.hasKitchenChimneyOrExhaust}
+            hasAirConditioner={hasAirConditioner}
+            incenseChoice={incenseChoice}
+            budget={formData.budget}
+            onFieldChange={handleFieldChange}
+            onToggleEquipment={handleToggleEquipment}
+            onIncenseChange={handleIncenseChange}
+            headingRef={headingRef}
+          />
+        )}
+      </div>
+
+      <div className="onb-bar">
+        <div className="inner">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            id="onb-back"
+            onClick={handleBack}
+            style={{ visibility: currentStep === 1 ? 'hidden' : 'visible' }}
+          >
+            Back
+          </button>
+          <span className="step-count" id="onb-count">
+            Step {currentStep} of 3
+          </span>
+          <button
+            type="button"
+            className="btn btn-primary"
+            id="onb-next"
+            onClick={handleNext}
+          >
+            {currentStep === 3 ? 'See my plan' : 'Continue'}
+          </button>
+        </div>
       </div>
     </main>
   );

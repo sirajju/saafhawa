@@ -5,36 +5,36 @@ import userEvent from '@testing-library/user-event';
 import { OnboardingForm } from '@/components/OnboardingForm';
 
 describe('Accessibility - OnboardingForm (3 Steps, Progress, Labels & Keyboard)', () => {
-  it('contains appropriate landmarks and fieldsets with legends in step 1', () => {
+  it('contains appropriate landmarks and radiogroups in step 1', () => {
     const handleSubmit = vi.fn();
     render(<OnboardingForm onSubmit={handleSubmit} />);
 
-    const form = screen.getByRole('form', { name: /Household Profile Form/i });
-    expect(form).toBeDefined();
+    const step1 = screen.getByText(/Step 1 of 3 · Your home/i);
+    expect(step1).toBeDefined();
 
-    const progressbar = screen.getByRole('progressbar');
-    expect(progressbar).toBeDefined();
-    expect(progressbar.getAttribute('aria-valuenow')).toBe('1');
+    const adultsGroup = screen.getByRole('radiogroup', { name: /Adults/i });
+    expect(adultsGroup).toBeDefined();
 
-    const fieldsets = document.querySelectorAll('fieldset');
-    expect(fieldsets.length).toBeGreaterThanOrEqual(1);
+    const childrenGroup = screen.getByRole('radiogroup', { name: /Children/i });
+    expect(childrenGroup).toBeDefined();
 
-    const legends = document.querySelectorAll('legend');
-    expect(legends.length).toBeGreaterThanOrEqual(1);
+    const seniorsGroup = screen.getByRole('radiogroup', { name: /Seniors/i });
+    expect(seniorsGroup).toBeDefined();
   });
 
-  it('provides explicit labels and browser location button in step 1', () => {
+  it('provides explicit labels and location button in step 1', () => {
     const handleSubmit = vi.fn();
     render(<OnboardingForm onSubmit={handleSubmit} />);
 
-    const placeInput = screen.getByLabelText(/Where do you live/i);
-    expect(placeInput).toBeDefined();
-    expect(placeInput.getAttribute('id')).toBe('place-input');
+    const areaInput = screen.getByLabelText(/Your area/i);
+    expect(areaInput).toBeDefined();
+    expect(areaInput.getAttribute('id')).toBe('area');
 
-    const locationBtn = screen.getByRole('button', { name: /Use browser location/i });
+    const locationBtn = screen.getByRole('button', { name: /Use my location/i });
     expect(locationBtn).toBeDefined();
+    expect(locationBtn.classList.contains('icon-btn')).toBe(true);
 
-    expect(screen.getByText(/Adults in home/i)).toBeDefined();
+    expect(screen.getByText(/Adults/i)).toBeDefined();
   });
 
   it('supports navigation across all 3 steps with back button and submission', async () => {
@@ -42,37 +42,35 @@ describe('Accessibility - OnboardingForm (3 Steps, Progress, Labels & Keyboard)'
     const handleSubmit = vi.fn();
     render(<OnboardingForm onSubmit={handleSubmit} />);
 
-    const placeInput = screen.getByLabelText(/Where do you live/i) as HTMLInputElement;
+    const areaInput = screen.getByLabelText(/Your area/i) as HTMLInputElement;
 
-    await user.clear(placeInput);
-    await user.type(placeInput, 'Noida Sector 62');
-    expect(placeInput.value).toBe('Noida Sector 62');
+    await user.clear(areaInput);
+    await user.type(areaInput, 'Noida Sector 62');
+    expect(areaInput.value).toBe('Noida Sector 62');
 
     // Step 1 -> Step 2
-    const nextToCommuteBtn = screen.getByRole('button', { name: /Continue to Commute/i });
-    await user.click(nextToCommuteBtn);
+    const continueBtn = screen.getByRole('button', { name: /Continue/i });
+    await user.click(continueBtn);
 
     // Verify Step 2 is active
-    expect(screen.getByText(/Step 2 of 3: How you get around/i)).toBeDefined();
-    expect(screen.getByText(/Primary Commute Mode/i)).toBeDefined();
+    expect(screen.getByText(/Step 2 of 3 · Getting around/i)).toBeDefined();
+    expect(screen.getByRole('radiogroup', { name: /Main commute/i })).toBeDefined();
 
     // Verify Back button returns to Step 1
-    const backBtn = screen.getByRole('button', { name: /Back to step 1/i });
+    const backBtn = screen.getByRole('button', { name: /Back/i });
     await user.click(backBtn);
-    expect(screen.getByText(/Step 1 of 3: Who lives here/i)).toBeDefined();
+    expect(screen.getByText(/Step 1 of 3 · Your home/i)).toBeDefined();
 
     // Return to Step 2, then advance to Step 3
-    const nextAgain = screen.getByRole('button', { name: /Continue to Commute/i });
-    await user.click(nextAgain);
-    const nextToHomeBtn = screen.getByRole('button', { name: /Continue to Home/i });
-    await user.click(nextToHomeBtn);
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
 
     // Verify Step 3 is active
-    expect(screen.getByText(/Step 3 of 3: Your home/i)).toBeDefined();
-    expect(screen.getByText(/Primary Cooking Fuel/i)).toBeDefined();
+    expect(screen.getByText(/Step 3 of 3 · Inside your home/i)).toBeDefined();
+    expect(screen.getByRole('radiogroup', { name: /Cooking fuel/i })).toBeDefined();
 
-    // Submit form on Step 3
-    const submitBtn = screen.getByRole('button', { name: /Generate My Smog Action Plan/i });
+    // Submit form on Step 3: button labelled "See my plan"
+    const submitBtn = screen.getByRole('button', { name: /See my plan/i });
     await user.click(submitBtn);
 
     expect(handleSubmit).toHaveBeenCalledTimes(1);
@@ -83,27 +81,27 @@ describe('Accessibility - OnboardingForm (3 Steps, Progress, Labels & Keyboard)'
     );
   });
 
-  it('validates place input and ties errors to invalid input', async () => {
+  it('validates area input and outlines in red when empty', async () => {
     const user = userEvent.setup();
     const handleSubmit = vi.fn();
     render(<OnboardingForm onSubmit={handleSubmit} />);
 
-    const placeInput = screen.getByLabelText(/Where do you live/i) as HTMLInputElement;
+    const areaInput = screen.getByLabelText(/Your area/i) as HTMLInputElement;
 
-    // Clear place input to trigger validation error
-    await user.clear(placeInput);
-    const nextBtn = screen.getByRole('button', { name: /Continue to Commute/i });
-    await user.click(nextBtn);
+    // Clear area input to trigger validation error
+    await user.clear(areaInput);
+    const continueBtn = screen.getByRole('button', { name: /Continue/i });
+    await user.click(continueBtn);
 
-    // Verify error alert and accessibility linkage
-    const alert = screen.getByRole('alert');
-    expect(alert).toBeDefined();
-    expect(alert.textContent).toContain('valid place name');
-    expect(placeInput.getAttribute('aria-invalid')).toBe('true');
-    expect(placeInput.getAttribute('aria-describedby')).toContain('form-error-alert');
+    // Verify error message and focus
+    expect(
+      screen.getByText(/Enter your city, area or pincode to continue\./i)
+    ).toBeDefined();
+    expect(areaInput.getAttribute('aria-invalid')).toBe('true');
+    expect(document.activeElement).toBe(areaInput);
 
-    // Type valid place and continue
-    await user.type(placeInput, 'Dwarka');
-    expect(placeInput.getAttribute('aria-invalid')).toBe('false');
+    // Type valid place to clear error
+    await user.type(areaInput, 'Dwarka');
+    expect(areaInput.getAttribute('aria-invalid')).toBeNull();
   });
 });
