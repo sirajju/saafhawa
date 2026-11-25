@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 const themeScript = `
 (function() {
   try {
-    var stored = localStorage.getItem('saafhawa_theme') || 'system';
+    var stored = localStorage.getItem('saafhawa_theme') || 'light';
     var isDark = stored === 'dark' || (stored === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     document.documentElement.setAttribute('data-user-theme', stored);

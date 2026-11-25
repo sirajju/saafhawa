@@ -18,11 +18,11 @@ export function Navbar({
   onEditProfile,
 }: NavbarProps) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window === 'undefined') return 'system';
+    if (typeof window === 'undefined') return 'light';
     try {
-      return (localStorage.getItem('saafhawa_theme') as ThemeMode) || 'system';
+      return (localStorage.getItem('saafhawa_theme') as ThemeMode) || 'light';
     } catch {
-      return 'system';
+      return 'light';
     }
   });
 
