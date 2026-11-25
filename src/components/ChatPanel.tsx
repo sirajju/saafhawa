@@ -95,6 +95,7 @@ export function ChatPanel({
           role: 'assistant',
           content: data.reply,
           toolsSummary: data.toolsSummary,
+          fallbackReason: data.fallbackReason,
         },
       ]);
     } catch (err: unknown) {
@@ -107,6 +108,15 @@ export function ChatPanel({
     } finally {
       setIsLoading(false);
       setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  };
+
+  const handleRetryMessage = (msgIdx: number) => {
+    for (let i = msgIdx - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        handleSendMessage(messages[i].content);
+        break;
+      }
     }
   };
 
@@ -128,6 +138,7 @@ export function ChatPanel({
         isSampleData={isSampleData}
         suggestedPrompts={SAMPLE_PROMPTS}
         onSelectPrompt={handleSendMessage}
+        onRetryMessage={handleRetryMessage}
       />
 
       {errorMessage && (

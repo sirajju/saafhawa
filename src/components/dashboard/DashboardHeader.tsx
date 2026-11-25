@@ -10,6 +10,7 @@ interface DashboardHeaderProps {
   plan: PlanResponse;
   currentPlaceName: string;
   onOpenAdvisoryModal?: () => void;
+  onRetry?: () => void;
 }
 
 export function DashboardHeader({
@@ -17,6 +18,7 @@ export function DashboardHeader({
   plan,
   currentPlaceName,
   onOpenAdvisoryModal,
+  onRetry,
 }: DashboardHeaderProps) {
   const fullPlace = plan.location.name || currentPlaceName;
   const shortPlace = getShortPlaceName(fullPlace);
@@ -62,6 +64,29 @@ export function DashboardHeader({
         >
           <AlertTriangleIcon className="icon" />
           <span>Sample Data: Using built-in reference air quality data.</span>
+        </div>
+      )}
+
+      {plan.generationMethod === 'rule_based_fallback' && plan.fallbackReason === 'gemini_busy' && (
+        <div
+          role="status"
+          aria-label="Gemini busy notice"
+          className="mb-6 flex items-center justify-between gap-3 flex-wrap rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-[13px] text-[var(--ink-2)]"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangleIcon className="icon text-amber-600 dark:text-amber-400" />
+            <span>Gemini was busy, so this plan was built by our rules. Try again in a minute.</span>
+          </div>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="btn btn-sm"
+              style={{ padding: '2px 10px', fontSize: '12px', height: '26px' }}
+            >
+              Retry
+            </button>
+          )}
         </div>
       )}
     </div>

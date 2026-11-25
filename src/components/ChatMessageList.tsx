@@ -8,6 +8,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   toolsSummary?: string[];
+  fallbackReason?: 'gemini_busy' | 'no_key' | 'model_error';
 }
 
 interface ChatMessageListProps {
@@ -17,6 +18,7 @@ interface ChatMessageListProps {
   isSampleData?: boolean;
   suggestedPrompts?: string[];
   onSelectPrompt?: (prompt: string) => void;
+  onRetryMessage?: (msgIndex: number) => void;
 }
 
 export function ChatMessageList({
@@ -26,6 +28,7 @@ export function ChatMessageList({
   isSampleData = false,
   suggestedPrompts = [],
   onSelectPrompt,
+  onRetryMessage,
 }: ChatMessageListProps) {
   const isInitialState = messages.length <= 1;
 
@@ -45,6 +48,21 @@ export function ChatMessageList({
             <SafeMarkdown content={msg.content} />
           ) : (
             <div className="whitespace-pre-wrap">{msg.content}</div>
+          )}
+          {msg.fallbackReason === 'gemini_busy' && (
+            <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between gap-2 flex-wrap text-xs text-[var(--ink-2)]">
+              <span>Gemini was busy, so this answer was built by our rules. Try again in a minute.</span>
+              {onRetryMessage && (
+                <button
+                  type="button"
+                  onClick={() => onRetryMessage(index)}
+                  className="btn btn-sm"
+                  style={{ padding: '2px 8px', fontSize: '12px', height: '24px' }}
+                >
+                  Retry
+                </button>
+              )}
+            </div>
           )}
           {msg.toolsSummary && msg.toolsSummary.length > 0 && (
             <div className="mt-2 space-y-0.5 border-t border-[var(--line)] pt-1.5 caption">

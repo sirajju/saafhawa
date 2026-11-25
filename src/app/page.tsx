@@ -131,6 +131,7 @@ export default function HomePage() {
             profile={profile}
             currentPlaceName={currentPlaceName}
             onOpenAdvisoryModal={() => setIsAdvisoryModalOpen(true)}
+            onRetry={profile ? () => fetchPlan(profile) : undefined}
           />
         )}
       </main>

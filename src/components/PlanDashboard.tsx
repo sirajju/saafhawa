@@ -14,6 +14,7 @@ interface PlanDashboardProps {
   profile: PlanRequest | null;
   currentPlaceName: string;
   onOpenAdvisoryModal?: () => void;
+  onRetry?: () => void;
 }
 
 function getTodayStorageKey(): string {
@@ -26,6 +27,7 @@ export function PlanDashboard({
   profile,
   currentPlaceName,
   onOpenAdvisoryModal,
+  onRetry,
 }: PlanDashboardProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
@@ -70,6 +72,7 @@ export function PlanDashboard({
           plan={plan}
           currentPlaceName={currentPlaceName}
           onOpenAdvisoryModal={onOpenAdvisoryModal}
+          onRetry={onRetry}
         />
 
         {/* 1. Hero Card: AQI + Scale + Advice + 24hr Chart + Meta */}
@@ -85,6 +88,8 @@ export function PlanDashboard({
         <TotalSavingsBanner
           summary={plan.summary}
           generationMethod={plan.generationMethod}
+          fallbackReason={plan.fallbackReason}
+          onRetry={onRetry}
         />
 
         {/* 3. Your Plan for Today Card: Timeline by period */}

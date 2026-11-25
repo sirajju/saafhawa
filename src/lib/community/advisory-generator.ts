@@ -3,6 +3,7 @@ import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
 import { capTextLength, withTimeout } from '../gemini-utils';
+import { executeWithGeminiRetry } from '../gemini-executor';
 import { logServerError } from '../logger';
 import { AdvisoryRequest, AdvisoryResponse } from './types';
 import { generateTemplateAdvisory } from './advisory-templates';
@@ -11,21 +12,19 @@ export { generateTemplateAdvisory } from './advisory-templates';
 
 export interface AdvisoryGeneratorOptions {
   model?: string;
+  fallbackModel?: string;
   apiKey?: string;
   airQualityFetcher?: (place: string) => Promise<AirQualityReport>;
 }
 
 function resolveModel(customModel?: string): string {
-  return customModel || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  return customModel || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 }
 
 function resolveApiKey(customApiKey?: string): string | undefined {
   return customApiKey || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
 }
 
-/**
- * Generates an advisory for WhatsApp sharing via Gemini (or localized template fallback).
- */
 export async function generateCommunityAdvisory(
   request: AdvisoryRequest,
   options: AdvisoryGeneratorOptions = {}
@@ -34,6 +33,7 @@ export async function generateCommunityAdvisory(
   const report = await fetcher(request.place);
 
   const model = resolveModel(options.model);
+  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || undefined;
   const apiKey = resolveApiKey(options.apiKey);
 
   const snapshot = {
@@ -59,8 +59,6 @@ export async function generateCommunityAdvisory(
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const isSample = Boolean(report.isSampleData || report.current.isSampleData);
-
     const prompt = `You are a public health and air quality communication specialist in India.
 Write a concise, impactful WhatsApp broadcast advisory in ${request.language === 'hi' ? 'Hindi (Devanagari script)' : 'English'} for a ${request.audience === 'school_group' ? 'School / Parent Teacher Group' : 'Housing Society / Resident Welfare Association (RWA)'}.
 
@@ -80,22 +78,29 @@ REQUIREMENTS:
 4. Keep it brief (under 250 words) so it fits in a single mobile screen and is ready to copy-paste.
 5. Output ONLY the raw WhatsApp text with no conversational preamble or markdown code fences.`;
 
-    const generatePromise = ai.models.generateContent({
-      model,
-      contents: prompt,
+    const execResult = await executeWithGeminiRetry<string>({
+      primaryModel: model,
+      fallbackModel,
+      apiKey,
+      label: 'AdvisoryGenerator',
+      fn: async (activeModel, timeoutMs) => {
+        const response = await withTimeout(
+          ai.models.generateContent({ model: activeModel, contents: prompt }),
+          timeoutMs,
+          'Gemini Advisory Generation'
+        );
+        return capTextLength(response.text?.trim(), 2500) || '';
+      },
     });
 
-    const response = await withTimeout(generatePromise, 15000, 'Gemini Advisory Generation');
-    const rawText = capTextLength(response.text?.trim(), 2500);
-
-    if (rawText && rawText.length > 50) {
+    if (execResult.data && execResult.data.length > 50) {
       const headline = request.language === 'hi'
         ? (request.audience === 'school_group' ? `🏫 स्कूल परामर्श: ${report.location.name}` : `🏘️ सोसायटी परामर्श: ${report.location.name}`)
         : (request.audience === 'school_group' ? `🏫 School Smog Advisory: ${report.location.name}` : `🏘️ Community Clean Air Advisory: ${report.location.name}`);
 
       return {
         headline,
-        advisoryText: rawText,
+        advisoryText: execResult.data,
         audience: request.audience,
         language: request.language,
         isSampleData: isSample,

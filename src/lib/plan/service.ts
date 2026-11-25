@@ -1,4 +1,3 @@
-import { logServerError } from '../logger';
 import { ACTION_CATALOGUE, ActionDefinition } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { calculateDeduplicatedTotals } from '../impact/deduplication';
@@ -11,6 +10,7 @@ import { defaultGeminiGenerator } from './gemini-client';
 import { resolvePlanConsistency } from './consistency';
 import { generateBasisExplanation } from './basis-generator';
 import { buildForecastAdvice } from '../air-quality/forecast-advice';
+import { executeWithGeminiRetry } from '../gemini-executor';
 import {
   GeminiPlanOutputSchema,
   GeminiSelectedAction,
@@ -23,32 +23,26 @@ import {
 
 export interface GeneratePlanOptions {
   model?: string;
+  fallbackModel?: string;
   apiKey?: string;
   airQualityFetcher?: (place: string) => Promise<AirQualityReport>;
   geminiGenerator?: (
     systemInstruction: string,
     userPrompt: string,
     model: string,
-    apiKey: string
+    apiKey: string,
+    timeoutMs?: number
   ) => Promise<string | null>;
 }
 
-function resolveGeminiModel(customModel?: string): string {
-  return customModel || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+function resolveGeminiModel(custom?: string): string {
+  return custom || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 }
 
-function resolveGeminiApiKey(customApiKey?: string): string | undefined {
-  return customApiKey || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
+function resolveGeminiApiKey(custom?: string): string | undefined {
+  return custom || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
 }
 
-/**
- * Main service to generate a customized smog mitigation plan for a household.
- * 1. Validates input profile via Zod
- * 2. Fetches real-time AQI from existing air quality module
- * 3. Asks Gemini for 6-8 chosen action IDs, times of day, and friendly reasons (no numbers)
- * 4. Drops invalid action IDs and falls back to rule-based selection if Gemini fails
- * 5. Attaches deterministic scientific calculations from calculator engine
- */
 export async function generateHouseholdPlan(
   rawInput: unknown,
   options: GeneratePlanOptions = {}
@@ -58,11 +52,9 @@ export async function generateHouseholdPlan(
   const airQuality = await fetchAirQuality(profile.place);
 
   const model = resolveGeminiModel(options.model);
+  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || undefined;
   const apiKey = resolveGeminiApiKey(options.apiKey);
-
-  const catalogueMap = new Map<string, ActionDefinition>(
-    ACTION_CATALOGUE.map((a) => [a.id, a])
-  );
+  const catalogueMap = new Map<string, ActionDefinition>(ACTION_CATALOGUE.map((a) => [a.id, a]));
 
   const forecastAdvice = buildForecastAdvice(
     airQuality.current.aqi ?? 300,
@@ -77,40 +69,48 @@ export async function generateHouseholdPlan(
 
   let selectedActions: GeminiSelectedAction[] = [];
   let generationMethod: 'gemini' | 'rule_based_fallback' = 'gemini';
+  let fallbackReason: 'gemini_busy' | 'no_key' | 'model_error' | undefined = undefined;
+  let modelUsed: string | undefined = undefined;
 
   if (apiKey) {
-    try {
-      const { systemInstruction, userPrompt } = buildPlanPrompt(
-        profile,
-        airQuality,
-        ACTION_CATALOGUE,
-        cleanestWindowSpan
-      );
-      const generator = options.geminiGenerator ?? defaultGeminiGenerator;
-      const rawJson = await generator(systemInstruction, userPrompt, model, apiKey);
+    const { systemInstruction, userPrompt } = buildPlanPrompt(profile, airQuality, ACTION_CATALOGUE, cleanestWindowSpan);
+    const generator = options.geminiGenerator ?? defaultGeminiGenerator;
 
-      if (rawJson) {
-        const parsed = JSON.parse(rawJson);
+    const execResult = await executeWithGeminiRetry<string>({
+      primaryModel: model,
+      fallbackModel,
+      apiKey,
+      label: 'PlanService',
+      fn: async (activeModel, timeoutMs) => {
+        const raw = await generator(systemInstruction, userPrompt, activeModel, apiKey, timeoutMs);
+        if (!raw) throw new Error('Empty response from model');
+        return raw;
+      },
+    });
+
+    if (execResult.data) {
+      try {
+        const parsed = JSON.parse(execResult.data);
         const validatedOutput = GeminiPlanOutputSchema.parse(parsed);
-
-        const validActions = validatedOutput.selectedActions.filter((item) =>
-          catalogueMap.has(item.actionId)
-        );
-
+        const validActions = validatedOutput.selectedActions.filter((item) => catalogueMap.has(item.actionId));
         if (validActions.length >= 4) {
           selectedActions = validActions.slice(0, 8);
+          modelUsed = execResult.modelUsed;
         } else {
           generationMethod = 'rule_based_fallback';
+          fallbackReason = 'model_error';
         }
-      } else {
+      } catch {
         generationMethod = 'rule_based_fallback';
+        fallbackReason = 'model_error';
       }
-    } catch (err: unknown) {
-      logServerError('PlanService', err);
+    } else {
       generationMethod = 'rule_based_fallback';
+      fallbackReason = execResult.failedDueToBusy ? 'gemini_busy' : 'model_error';
     }
   } else {
     generationMethod = 'rule_based_fallback';
+    fallbackReason = 'no_key';
   }
 
   if (generationMethod === 'rule_based_fallback' || selectedActions.length === 0) {
@@ -131,13 +131,7 @@ export async function generateHouseholdPlan(
     const impact = calculateActionImpact(actionDef, profile, airQualityContext);
     actionImpacts.push(impact);
 
-    const basisExplanation = generateBasisExplanation(
-      actionDef.id,
-      profile,
-      airQuality.current.aqi,
-      cleanestWindowSpan
-    );
-
+    const basisExplanation = generateBasisExplanation(actionDef.id, profile, airQuality.current.aqi, cleanestWindowSpan);
     let timeOfDay = selected.suggestedTimeOfDay;
     if (actionDef.id === 'wear_n95_mask_outside' && profile.commutersCount === 0) {
       timeOfDay = 'Any outdoor walks or errands';
@@ -167,7 +161,6 @@ export async function generateHouseholdPlan(
   });
 
   plannedActions.sort((a, b) => ((a.costRupees ?? 0) > 0 ? 1 : 0) - ((b.costRupees ?? 0) > 0 ? 1 : 0));
-
   const deduped = calculateDeduplicatedTotals(actionImpacts, profile, airQualityContext.currentPm25);
 
   const summary: PlanSummary = {
@@ -187,6 +180,8 @@ export async function generateHouseholdPlan(
     actions: plannedActions,
     summary,
     generationMethod,
+    fallbackReason,
+    modelUsed,
     isSampleData: Boolean(airQuality.isSampleData || airQuality.current.isSampleData),
   };
 }

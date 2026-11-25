@@ -7,7 +7,7 @@
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)
-![Google Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-8e75ff?logo=googlegemini)
+![Google Gemini](https://img.shields.io/badge/Gemini-3.8%20Flash-8e75ff?logo=googlegemini)
 ![Vitest](https://img.shields.io/badge/Vitest-5.1-6e9f18?logo=vitest)
 ![Playwright](https://img.shields.io/badge/Playwright-E2E-2ead33?logo=playwright)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -342,12 +342,35 @@ gcloud run deploy saafhawa \
   --port 8080 \
   --memory 1Gi \
   --cpu 1 \
-  --set-env-vars "NODE_ENV=production,GEMINI_MODEL=gemini-2.5-flash"
+  --set-env-vars "NODE_ENV=production,GEMINI_MODEL=gemini-3.8-flash"
+```
+
+### 7. Deploy to Vercel
+
+SaafHawa is pre-configured for zero-friction deployment on [Vercel](https://vercel.com):
+- **Serverless API Timeout**: `export const maxDuration = 30` is declared on all AI and telemetry API routes to allow resilient Gemini retries without edge gateway timeouts.
+- **Client IP Resolution**: Rate limiting automatically detects `process.env.VERCEL` to resolve the real client IP from the first address of `x-forwarded-for` or `x-real-ip`.
+- **Standalone Mode Handling**: `output: "standalone"` is disabled automatically when running under Vercel (`process.env.VERCEL`), allowing Vercel's native deployment pipeline to bundle serverless functions cleanly.
+
+#### Environment Variables to Set on Vercel:
+
+| Variable | Required? | Default / Example | Purpose |
+|---|---|---|---|
+| `GEMINI_API_KEY` | **Required** | `AIzaSy...` | Powers Gemini action selection, live function-calling chat, and WhatsApp community advisories. |
+| `GEMINI_MODEL` | Optional | `gemini-3.8-flash` | Primary Gemini model ID (defaults to `gemini-3.8-flash`). |
+| `GEMINI_FALLBACK_MODEL` | Optional | *(None)* | Secondary model to try on 429 / 503 transient spikes (e.g. `gemini-2.5-flash` or alternative). |
+| `GOOGLE_MAPS_API_KEY` | Optional | `AIzaSy...` | Upgrades telemetry to Tier 2 Google Air Quality ML model (falls back to Open-Meteo CAMS if omitted). |
+| `WAQI_TOKEN` | Optional | `your_waqi_token` | Upgrades telemetry to Tier 1 official CPCB continuous ambient ground station monitoring. |
+| `RATE_LIMIT_ENABLED` | Optional | `true` | In-memory token-bucket sliding rate limiter on sensitive API routes. |
+
+Deploy using the Vercel CLI or Git integration:
+```bash
+vercel --prod
 ```
 
 ---
 
-## 7. Evidence Documentation Index
+## 8. Evidence Documentation Index
 
 For in-depth audits of each scoring criterion, see the dedicated documentation files:
 - 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64KB body caps, rate limiters, credential hygiene, trusted proxy hops (`TRUSTED_PROXY_HOPS`).

@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 import { SECURITY_HEADERS_LIST } from "./src/lib/security";
 
+const isVercel = Boolean(process.env.VERCEL);
+
 const nextConfig: NextConfig = {
-  output: "standalone",
+  ...(!isVercel && { output: "standalone" }),
   poweredByHeader: false,
   cacheComponents: true,
   partialPrefetching: true,

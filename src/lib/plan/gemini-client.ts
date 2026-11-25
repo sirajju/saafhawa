@@ -9,7 +9,8 @@ export async function defaultGeminiGenerator(
   systemInstruction: string,
   userPrompt: string,
   model: string,
-  apiKey: string
+  apiKey: string,
+  timeoutMs: number = 15000
 ): Promise<string | null> {
   const ai = new GoogleGenAI({ apiKey });
 
@@ -51,7 +52,7 @@ export async function defaultGeminiGenerator(
     },
   });
 
-  const response = await withTimeout(generatePromise, 15000, 'Gemini Plan Generation');
+  const response = await withTimeout(generatePromise, timeoutMs, 'Gemini Plan Generation');
 
   return capTextLength(response.text, 10000) || null;
 }

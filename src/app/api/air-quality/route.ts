@@ -5,6 +5,8 @@ import { airQualityRateLimiter, getClientIp } from '@/lib/rate-limit';
 import { logServerError, isNextControlFlowError } from '@/lib/logger';
 import { ZodError } from 'zod';
 
+export const maxDuration = 30;
+
 export async function GET(request: NextRequest) {
   try {
     // 1. IP-based rate limiting
