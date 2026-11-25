@@ -3,6 +3,7 @@ import { calculateActionImpact } from '../impact/calculator';
 import { AirQualityReport } from '../air-quality/types';
 import { GeminiSelectedAction, PlanRequest } from './types';
 import { FALLBACK_METADATA_MAP } from './metadata';
+import { resolvePlanConsistency } from './consistency';
 
 /**
  * Fallback selection engine when Gemini is unavailable or returns an invalid output.
@@ -93,7 +94,7 @@ export function getRuleBasedFallbackActions(
     }
   }
 
-  return selected.map((item) => {
+  const mappedActions = selected.map((item) => {
     const meta = FALLBACK_METADATA_MAP[item.action.id] || {
       suggestedTimeOfDay: 'Throughout the day',
       generateReason: () => item.action.description,
@@ -105,4 +106,6 @@ export function getRuleBasedFallbackActions(
       reason: meta.generateReason(profile),
     };
   });
+
+  return resolvePlanConsistency(mappedActions, profile, airQualityContext);
 }

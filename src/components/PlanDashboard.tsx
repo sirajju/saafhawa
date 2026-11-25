@@ -133,6 +133,7 @@ export function PlanDashboard({
         <ChatPanel
           place={currentPlaceName}
           householdProfile={profile}
+          isSampleData={plan.isSampleData}
         />
       </div>
 

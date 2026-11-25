@@ -63,6 +63,7 @@ export function getSampleDelhiAirQualityReport(placeQuery?: string): AirQualityR
       name: locationName,
       latitude: 28.6315,
       longitude: 77.2167,
+      timeZone: 'Asia/Kolkata',
     },
     current: {
       dateTime: now.toISOString(),

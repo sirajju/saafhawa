@@ -134,16 +134,21 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     const liveRegion = page.locator('div[role="status"][aria-live="polite"]');
     await expect(liveRegion).toContainText(/Action plan ready/i);
 
-    // 8. Verify total daily household impact summary
+    // 8. Verify total daily household impact summary and adjusted overlapping actions note
     await expect(page.getByText('What Following This Plan Saves Today')).toBeVisible();
+    await expect(
+      page.getByText('Overlapping actions are adjusted, so the total can be less than the cards added together.')
+    ).toBeVisible();
 
     // 9. Verify action cards are rendered
     await expect(page.getByText('Wear Certified N95 Mask During Outdoor Commutes')).toBeVisible();
     await expect(page.getByText('Run HEPA Air Purifier in Sleeping Area')).toBeVisible();
     await expect(page.getByText('Take Metro Instead of Driving a Petrol Car')).toBeVisible();
 
-    // 10. Verify the conversational smog assistant chat panel is mounted
+    // 10. Verify the conversational smog assistant chat panel is mounted with sample data wording
     await expect(page.getByText('Ask SaafHawa Assistant')).toBeVisible();
+    await expect(page.getByRole('status', { name: 'Sample data mode active', exact: true })).toBeVisible();
+    await expect(page.getByText(/Connected to reference AQI data/i)).toBeVisible();
   });
 
   test('serves strict security headers without unsafe-eval and without x-powered-by', async ({ request }) => {

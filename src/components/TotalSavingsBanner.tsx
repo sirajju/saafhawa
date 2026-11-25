@@ -125,6 +125,11 @@ export function TotalSavingsBanner({
             </p>
           </div>
         </div>
+
+        {/* Adjusted Overlapping Actions Note */}
+        <p className="mt-4 text-xs text-emerald-100/80">
+          Overlapping actions are adjusted, so the total can be less than the cards added together.
+        </p>
       </div>
     </section>
   );

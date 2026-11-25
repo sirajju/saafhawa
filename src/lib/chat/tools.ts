@@ -22,7 +22,19 @@ export function formatHourInPlaceLocalTime(
       })
       .replace(':00', '');
   } catch {
-    return dateTimeIso;
+    try {
+      const d = new Date(dateTimeIso);
+      return d
+        .toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+          timeZone: 'Asia/Kolkata',
+        })
+        .replace(':00', '');
+    } catch {
+      return dateTimeIso;
+    }
   }
 }
 
@@ -49,9 +61,10 @@ export async function executeGetAirQualityTool(
 ): Promise<AirQualityToolResult> {
   const queryPlace = args.place && args.place.trim().length >= 2 ? args.place.trim() : defaultPlace;
   const report = await fetcher(queryPlace);
+  const timeZone = report.location.timeZone || 'Asia/Kolkata';
 
   const forecastSummary = (report.hourlyForecast || []).slice(0, 24).map((f) => ({
-    hour: formatHourInPlaceLocalTime(f.dateTime),
+    hour: formatHourInPlaceLocalTime(f.dateTime, timeZone),
     aqi: f.aqi,
     category: f.category,
     pm25UgM3: f.pm25 ? f.pm25.value : null,

@@ -3,7 +3,7 @@ import { handleChatQuery } from '@/lib/chat/service';
 import { ChatRequestSchema } from '@/lib/chat/types';
 import { chatRateLimiter, getClientIp } from '@/lib/rate-limit';
 import { readJsonBodyWithLimit } from '@/lib/security';
-import { logServerError } from '@/lib/logger';
+import { logServerError, isNextControlFlowError } from '@/lib/logger';
 import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
@@ -58,6 +58,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
+    if (isNextControlFlowError(error)) {
+      throw error;
+    }
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         {

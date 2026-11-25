@@ -13,14 +13,16 @@ export interface ForecastPoint {
 
 interface ForecastTimelineProps {
   hourlyForecast: ForecastPoint[];
+  timeZone?: string;
 }
 
-function formatHour(dateTimeIso: string): string {
-  return formatHourInPlaceLocalTime(dateTimeIso);
-}
-
-export function ForecastTimeline({ hourlyForecast }: ForecastTimelineProps) {
+export function ForecastTimeline({
+  hourlyForecast,
+  timeZone = 'Asia/Kolkata',
+}: ForecastTimelineProps) {
   if (!hourlyForecast || hourlyForecast.length === 0) return null;
+
+  const formatHour = (dateTimeIso: string) => formatHourInPlaceLocalTime(dateTimeIso, timeZone);
 
   return (
     <div className="mt-6 border-t border-slate-100 pt-5 dark:border-slate-800">

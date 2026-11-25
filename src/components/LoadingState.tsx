@@ -2,8 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 
-const LOADING_MESSAGES = [
-  'Connecting to live air quality sensors...',
+interface LoadingStateProps {
+  isSampleData?: boolean;
+}
+
+const getLoadingMessages = (isSample: boolean) => [
+  isSample
+    ? 'Connecting to reference air quality data...'
+    : 'Connecting to air quality sensors...',
   'Analyzing PM2.5, PM10, and diurnal temperature inversion...',
   'Evaluating 21 mitigation strategies for your family...',
   'Consulting Gemini AI for customized routine optimizations...',
@@ -11,16 +17,17 @@ const LOADING_MESSAGES = [
   'Finalizing your customized clean air plan...',
 ];
 
-export function LoadingState() {
+export function LoadingState({ isSampleData = false }: LoadingStateProps) {
   const [stepIndex, setStepIndex] = useState(0);
+  const loadingMessages = getLoadingMessages(isSampleData);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setStepIndex((prev) => (prev < LOADING_MESSAGES.length - 1 ? prev + 1 : prev));
+      setStepIndex((prev) => (prev < loadingMessages.length - 1 ? prev + 1 : prev));
     }, 1800);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [loadingMessages.length]);
 
   return (
     <div
@@ -42,15 +49,26 @@ export function LoadingState() {
           Crafting Your Winter Smog Action Plan
         </h2>
         <p className="mt-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
-          {LOADING_MESSAGES[stepIndex]}
+          {loadingMessages[stepIndex]}
         </p>
+
+        {isSampleData && (
+          <div
+            role="status"
+            aria-label="Sample data mode active"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-0.5 text-xs font-bold text-amber-900 dark:border-amber-700 dark:bg-amber-950/80 dark:text-amber-200"
+          >
+            <span aria-hidden="true">⚠️</span>
+            <span>Sample Data Mode</span>
+          </div>
+        )}
 
         {/* Visual Progress Bar */}
         <div className="mt-6 h-2 w-full max-w-md overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
           <div
             className="h-full bg-emerald-700 transition-all duration-500 ease-out motion-reduce:transition-none dark:bg-emerald-500"
             style={{
-              width: `${Math.min(95, ((stepIndex + 1) / LOADING_MESSAGES.length) * 100)}%`,
+              width: `${Math.min(95, ((stepIndex + 1) / loadingMessages.length) * 100)}%`,
             }}
           />
         </div>

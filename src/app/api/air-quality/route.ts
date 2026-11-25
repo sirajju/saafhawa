@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAirQualityByLocation } from '@/lib/air-quality/service';
 import { AirQualityError, AirQualityQuerySchema } from '@/lib/air-quality/types';
 import { airQualityRateLimiter, getClientIp } from '@/lib/rate-limit';
-import { logServerError } from '@/lib/logger';
+import { logServerError, isNextControlFlowError } from '@/lib/logger';
 import { ZodError } from 'zod';
 
 export async function GET(request: NextRequest) {
@@ -53,6 +53,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
+    if (isNextControlFlowError(error)) {
+      throw error;
+    }
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         {

@@ -126,7 +126,7 @@ export default function HomePage() {
           />
         )}
 
-        {isLoading && <LoadingState />}
+        {isLoading && <LoadingState isSampleData={plan?.isSampleData} />}
 
         {errorMessage && !isLoading && (
           <div className="mx-auto mt-8 max-w-2xl px-4 sm:px-6">

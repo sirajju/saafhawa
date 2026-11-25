@@ -103,26 +103,77 @@ export class SlidingWindowRateLimiter {
 
 export const RateLimiter = SlidingWindowRateLimiter;
 
+export const DEFAULT_TRUSTED_PROXY_HOPS = 1;
+export const SHARED_UNTRUSTED_KEY = '127.0.0.1';
+
+/**
+ * Resolves the configured number of trusted proxy hops.
+ * Setting `TRUSTED_PROXY_HOPS=1` is safe for direct Cloud Run ingress (*.run.app).
+ * Setting `TRUSTED_PROXY_HOPS=2` is safe for Cloud Run behind a Google Cloud Load Balancer.
+ * Setting `TRUSTED_PROXY_HOPS=0` or 'unknown' falls back to a single shared rate-limit bucket.
+ */
+export function getTrustedProxyHops(customHops?: number): number {
+  if (typeof customHops === 'number') {
+    return customHops;
+  }
+  const raw = process.env.TRUSTED_PROXY_HOPS;
+  if (raw === undefined || raw === '') {
+    return DEFAULT_TRUSTED_PROXY_HOPS;
+  }
+  if (raw === 'unknown' || raw === 'none') {
+    return 0;
+  }
+  const parsed = parseInt(raw, 10);
+  return isNaN(parsed) || parsed < 0 ? 0 : parsed;
+}
+
 /**
  * Extracts a normalized client IP address from a Next.js request.
- * On Cloud Run / Google Cloud Load Balancer, the platform appends the verified caller IP
- * as the last entry in X-Forwarded-For, preventing spoofing via client-provided headers.
+ *
+ * Cloud Run Ingress Architecture:
+ * - Direct Ingress (*.run.app): Cloud Run's Google Front End (GFE) appends the verified caller IP
+ *   as the last entry in X-Forwarded-For: <client-spoofed-values>, <Google-observed-client-IP>.
+ *   This corresponds to trustedProxyHops = 1 (safe default).
+ * - Behind Google Cloud Load Balancer (Serverless NEG): The load balancer adds client IP and
+ *   its own forwarding proxy IP: <client-spoofed-values>, <CLIENT_IP>, <LOAD_BALANCER_IP>.
+ *   This corresponds to trustedProxyHops = 2.
+ *
+ * Untrusted / Unknown / Direct Node Environment:
+ * - When running without a trusted reverse proxy (e.g. direct Node.js server) or when
+ *   TRUSTED_PROXY_HOPS=0 or 'unknown', client-provided headers (X-Forwarded-For, X-Real-IP)
+ *   are completely untrusted. To prevent attackers from evading rate limits by spoofing
+ *   headers, all requests fall back to a single shared rate-limit key ('shared_untrusted_client').
+ * - If the X-Forwarded-For chain contains fewer entries than trustedProxyHops, the setup is
+ *   untrusted/unknown and safely falls back to SHARED_UNTRUSTED_KEY.
  */
-export function getClientIp(request: NextRequest): string {
+export function getClientIp(request: NextRequest, customHops?: number): string {
+  const hops = getTrustedProxyHops(customHops);
+
+  // If the setup is unknown or proxy hops are unconfigured/0, never trust headers;
+  // fall back to a single shared rate limit key.
+  if (hops <= 0) {
+    return SHARED_UNTRUSTED_KEY;
+  }
+
   const forwardedFor = request.headers.get('x-forwarded-for');
   if (forwardedFor) {
     const parts = forwardedFor.split(',').map((p) => p.trim()).filter(Boolean);
-    if (parts.length > 0) {
-      let ip = parts[parts.length - 1];
+    // When trusting `hops` proxies from the right, the client IP is located at:
+    // parts[parts.length - hops]. If parts has fewer items than hops, the chain is suspect/unknown.
+    if (parts.length >= hops) {
+      let ip = parts[parts.length - hops];
       if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+$/.test(ip)) {
         ip = ip.split(':')[0];
       }
       return ip;
     }
+    // Fewer hops than configured: unknown/untrusted setup
+    return SHARED_UNTRUSTED_KEY;
   }
 
+  // If no X-Forwarded-For header is present, check x-real-ip only if hops === 1 (e.g. single reverse proxy or test)
   const realIp = request.headers.get('x-real-ip');
-  if (realIp) {
+  if (realIp && hops === 1) {
     let ip = realIp.trim();
     if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+$/.test(ip)) {
       ip = ip.split(':')[0];
@@ -130,7 +181,8 @@ export function getClientIp(request: NextRequest): string {
     return ip;
   }
 
-  return '127.0.0.1';
+  // Without any trusted proxy header, fall back to shared untrusted limit
+  return SHARED_UNTRUSTED_KEY;
 }
 
 // Singletons for the API endpoints

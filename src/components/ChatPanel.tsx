@@ -9,6 +9,7 @@ import { ChatHeader } from './ChatHeader';
 interface ChatPanelProps {
   place: string;
   householdProfile?: PlanRequest | null;
+  isSampleData?: boolean;
 }
 
 const SAMPLE_PROMPTS = [
@@ -18,7 +19,7 @@ const SAMPLE_PROMPTS = [
   'How much emissions do I save if I take the metro instead of my car?',
 ];
 
-export function ChatPanel({ place, householdProfile }: ChatPanelProps) {
+export function ChatPanel({ place, householdProfile, isSampleData }: ChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
@@ -105,12 +106,13 @@ export function ChatPanel({ place, householdProfile }: ChatPanelProps) {
       aria-labelledby="chat-heading"
       className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
-      <ChatHeader />
+      <ChatHeader isSampleData={isSampleData} />
 
       <ChatMessageList
         messages={messages}
         isLoading={isLoading}
         messagesEndRef={messagesEndRef}
+        isSampleData={isSampleData}
       />
 
       <ChatSuggestions

@@ -8,6 +8,7 @@ import { AirQualityReport } from '../air-quality/types';
 import { buildPlanPrompt } from './prompt-builder';
 import { getRuleBasedFallbackActions } from './fallback';
 import { defaultGeminiGenerator } from './gemini-client';
+import { resolvePlanConsistency } from './consistency';
 import {
   GeminiPlanOutputSchema,
   GeminiSelectedAction,
@@ -107,6 +108,8 @@ export async function generateHouseholdPlan(
     currentPm25: airQuality.current.pm25?.value ?? null,
     hourlyForecast: airQuality.hourlyForecast,
   };
+
+  selectedActions = resolvePlanConsistency(selectedActions, profile, airQualityContext);
 
   const actionImpacts: ActionImpactResult[] = [];
   const plannedActions: PlannedAction[] = selectedActions.map((selected) => {

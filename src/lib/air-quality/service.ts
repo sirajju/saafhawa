@@ -3,6 +3,7 @@ import { getSampleDelhiAirQualityReport } from './sample-data';
 import {
   fetchCurrentConditions,
   fetchHourlyForecast,
+  fetchTimeZone,
   geocodePlace,
   GeocodeLocationResult,
   ClientRequestOptions,
@@ -81,10 +82,20 @@ export async function getAirQualityByLocation(
     options
   ).catch(() => null);
 
-  const [currentConditions, rawForecast] = await Promise.all([
+  const timeZonePromise = fetchTimeZone(
+    location.latitude,
+    location.longitude,
+    apiKey,
+    options
+  ).catch(() => null);
+
+  const [currentConditions, rawForecast, resolvedTimeZone] = await Promise.all([
     currentConditionsPromise,
     forecastPromise,
+    timeZonePromise,
   ]);
+
+  const timeZone = resolvedTimeZone || 'Asia/Kolkata';
 
   const primaryIndex = extractPrimaryIndex(currentConditions.indexes || []);
   const pm25 = extractPollutant(currentConditions.pollutants || [], 'pm25');
@@ -118,6 +129,7 @@ export async function getAirQualityByLocation(
       name: location.formattedAddress,
       latitude: location.latitude,
       longitude: location.longitude,
+      timeZone,
     },
     current: {
       dateTime: currentConditions.dateTime,

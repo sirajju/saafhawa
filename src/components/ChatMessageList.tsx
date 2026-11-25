@@ -10,9 +10,15 @@ interface ChatMessageListProps {
   messages: ChatMessage[];
   isLoading: boolean;
   messagesEndRef: RefObject<HTMLDivElement | null>;
+  isSampleData?: boolean;
 }
 
-export function ChatMessageList({ messages, isLoading, messagesEndRef }: ChatMessageListProps) {
+export function ChatMessageList({
+  messages,
+  isLoading,
+  messagesEndRef,
+  isSampleData = false,
+}: ChatMessageListProps) {
   return (
     <div
       className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6 max-h-[420px] min-h-[260px]"
@@ -58,7 +64,11 @@ export function ChatMessageList({ messages, isLoading, messagesEndRef }: ChatMes
               <span className="animate-spin text-base" aria-hidden="true">
                 ⚙️
               </span>
-              <span>Checking live forecast & calculating guidance...</span>
+              <span>
+                {isSampleData
+                  ? 'Checking forecast & calculating guidance...'
+                  : 'Checking live forecast & calculating guidance...'}
+              </span>
             </div>
           </div>
         </div>

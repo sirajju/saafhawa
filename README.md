@@ -179,6 +179,11 @@ The table below maps each requirement from the problem statement to its implemen
 | **Rate limiting per IP & message length cap** | [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts), [`src/lib/chat/types.ts`](src/lib/chat/types.ts) | [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), [`src/test/chat-tools-exec.test.ts`](src/test/chat-tools-exec.test.ts) |
 | **Zero-key mode: Delhi reference sample data & visible label** | [`src/lib/air-quality/sample-data.ts`](src/lib/air-quality/sample-data.ts), [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx) | [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts), [`src/test/plan-generation.test.ts`](src/test/plan-generation.test.ts), [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) |
 | **Security headers (CSP), request body cap (64KB)** | [`src/lib/security.ts`](src/lib/security.ts), [`next.config.ts`](next.config.ts) | [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) |
+| **Plan consistency: WFH & commute swap mutual exclusivity, benefit comparison, replacement & dashboard line** | [`src/lib/plan/consistency.ts`](src/lib/plan/consistency.ts), [`src/components/TotalSavingsBanner.tsx`](src/components/TotalSavingsBanner.tsx) | [`src/test/plan-consistency.test.ts`](src/test/plan-consistency.test.ts) |
+| **Strict neutrality & sample data labels across all screens without "live" wording** | [`src/components/ChatHeader.tsx`](src/components/ChatHeader.tsx), [`src/components/ChatMessageList.tsx`](src/components/ChatMessageList.tsx), [`src/components/LoadingState.tsx`](src/components/LoadingState.tsx), [`src/components/AirQualityCard.tsx`](src/components/AirQualityCard.tsx) | [`src/test/wording-sample-data.test.tsx`](src/test/wording-sample-data.test.tsx) |
+| **Rate limiting trusted proxy hops (`TRUSTED_PROXY_HOPS`) & untrusted setup fallback to shared bucket** | [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts) | [`src/test/rate-limit-proxy.test.ts`](src/test/rate-limit-proxy.test.ts) |
+| **Location-aware time zone lookup (Google Time Zone API) with India time fallback** | [`src/lib/air-quality/google-client.ts`](src/lib/air-quality/google-client.ts), [`src/lib/chat/tools.ts`](src/lib/chat/tools.ts), [`src/components/ForecastTimeline.tsx`](src/components/ForecastTimeline.tsx) | [`src/test/timezone.test.ts`](src/test/timezone.test.ts) |
+| **Pass through Next.js internal control-flow errors unchanged without error logging** | [`src/lib/logger.ts`](src/lib/logger.ts), [`src/app/api/air-quality/route.ts`](src/app/api/air-quality/route.ts) | [`src/test/logger-control-flow.test.ts`](src/test/logger-control-flow.test.ts) |
 | **Docker standalone Cloud Run deployment & GitHub Actions CI** | [`Dockerfile`](Dockerfile), [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Verified in CI workflow and Docker multi-stage build |
 
 ---
@@ -224,7 +229,7 @@ npm run lint
 # 2. Run TypeScript compiler check
 npx tsc --noEmit
 
-# 3. Run all unit and component tests (111 tests, 100% offline)
+# 3. Run all unit and component tests (138 tests across 22 test files, 100% offline)
 npm test
 
 # 4. Run production standalone build

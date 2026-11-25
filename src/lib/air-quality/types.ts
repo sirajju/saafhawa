@@ -142,6 +142,7 @@ export const CleanLocationSchema = z.object({
   name: z.string(),
   latitude: z.number(),
   longitude: z.number(),
+  timeZone: z.string().optional(),
 });
 
 export type CleanLocation = z.infer<typeof CleanLocationSchema>;

@@ -15,7 +15,7 @@ This document records the testing architecture of **SaafHawa** and includes exac
 
 ---
 
-### 2. Measured Vitest Output (111 Tests)
+### 2. Measured Vitest Output (138 Tests)
 
 ```
 > saafhawa@0.1.0 test
@@ -24,26 +24,31 @@ This document records the testing architecture of **SaafHawa** and includes exac
  RUN  v5.1.1 C:/Users/USER/Desktop/Learn/SAAFHAWA
 
  ✓ src/test/security-headers-real.test.ts (9 tests)
- ✓ src/test/air-quality-service.test.ts (3 tests)
  ✓ src/test/air-quality-client.test.ts (6 tests)
  ✓ src/test/air-quality-route.test.ts (4 tests)
+ ✓ src/test/timezone.test.ts (5 tests)
  ✓ src/test/chat-tools-exec.test.ts (13 tests)
- ✓ src/test/security.test.ts (10 tests)
  ✓ src/test/chat-advisory-rate.test.ts (8 tests)
- ✓ src/test/plan-generation.test.ts (6 tests)
+ ✓ src/test/wording-sample-data.test.tsx (5 tests)
  ✓ src/test/components-advisory-dialog.test.tsx (2 tests)
+ ✓ src/test/plan-generation.test.ts (6 tests)
  ✓ src/test/components-cards.test.tsx (7 tests)
  ✓ src/test/components-form.test.tsx (4 tests)
+ ✓ src/test/air-quality-service.test.ts (3 tests)
  ✓ src/test/impact-corrections.test.ts (9 tests)
- ✓ src/test/impact-catalogue.test.ts (7 tests)
+ ✓ src/test/logger-control-flow.test.ts (5 tests)
+ ✓ src/test/security.test.ts (10 tests)
+ ✓ src/test/rate-limit-proxy.test.ts (8 tests)
+ ✓ src/test/plan-consistency.test.ts (4 tests)
  ✓ src/test/impact-edge-cases.test.ts (4 tests)
+ ✓ src/test/impact-catalogue.test.ts (7 tests)
+ ✓ src/test/plan-validation.test.ts (6 tests)
  ✓ src/test/impact-indoor-swaps.test.ts (7 tests)
  ✓ src/test/air-quality-cache-index.test.ts (6 tests)
- ✓ src/test/plan-validation.test.ts (6 tests)
 
- Test Files  17 passed (17)
-      Tests  111 passed (111)
-   Duration  4.26s
+ Test Files  22 passed (22)
+      Tests  138 passed (138)
+   Duration  3.50s
 ```
 
 ---
@@ -56,10 +61,10 @@ This document records the testing architecture of **SaafHawa** and includes exac
 
 Running 2 tests using 1 worker
 
-  ok 1 [chromium] › e2e\smoke.spec.ts:99:3 › SaafHawa Onboarding & Plan Smoke Test › completes onboarding and renders the customized clean air action plan (573ms)
-  ok 2 [chromium] › e2e\smoke.spec.ts:149:3 › SaafHawa Onboarding & Plan Smoke Test › serves strict security headers without unsafe-eval and without x-powered-by (26ms)
+  ok 1 [chromium] › e2e\smoke.spec.ts:99:3 › SaafHawa Onboarding & Plan Smoke Test › completes onboarding and renders the customized clean air action plan (509ms)
+  ok 2 [chromium] › e2e\smoke.spec.ts:154:3 › SaafHawa Onboarding & Plan Smoke Test › serves strict security headers without unsafe-eval and without x-powered-by (17ms)
 
-  2 passed (2.5s)
+  2 passed (2.1s)
 ```
 
 ---
@@ -98,4 +103,9 @@ Running 2 tests using 1 worker
 | [`src/test/components-form.test.tsx`](src/test/components-form.test.tsx) | Form accessibility | Semantic fieldsets, explicit input labels, keyboard Tab navigation, error alert linkage |
 | [`src/test/components-advisory-dialog.test.tsx`](src/test/components-advisory-dialog.test.tsx) | Dialog focus trap | Trapping focus within dialog on Tab/Shift+Tab, restoring focus to trigger on Escape, `lang="hi"` markup |
 | [`src/test/components-cards.test.tsx`](src/test/components-cards.test.tsx) | Component accessibility | `role="status"` sample notice, screen reader text equivalents, modal escape key |
+| [`src/test/plan-consistency.test.ts`](src/test/plan-consistency.test.ts) | Plan consistency | Mutual exclusivity of WFH and commute swaps, benefit ranking comparison, replacement with different group |
+| [`src/test/wording-sample-data.test.tsx`](src/test/wording-sample-data.test.tsx) | Sample data neutrality | Absence of "live" text across screens during sample mode, visible sample notices, adjusted totals line |
+| [`src/test/rate-limit-proxy.test.ts`](src/test/rate-limit-proxy.test.ts) | Proxy hops rate limiting | `TRUSTED_PROXY_HOPS` setting, Cloud Run ingress parsing, untrusted/direct fallback to single shared bucket |
+| [`src/test/timezone.test.ts`](src/test/timezone.test.ts) | Time zone lookup & formatting | Google Time Zone API resolution, fallback to Asia/Kolkata, hour formatting in location local time |
+| [`src/test/logger-control-flow.test.ts`](src/test/logger-control-flow.test.ts) | Server logging & control flow | Prerender bailout suppression, Next.js control flow passthrough, sensitive key redaction |
 | [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) | E2E smoke test | Onboarding completion to dashboard rendering with mocked APIs, live server security header inspection |

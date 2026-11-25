@@ -152,7 +152,10 @@ export function AirQualityCard({
         </div>
 
         {/* 24-Hour Forecast Timeline */}
-        <ForecastTimeline hourlyForecast={hourlyForecast} />
+        <ForecastTimeline
+          hourlyForecast={hourlyForecast}
+          timeZone={location.timeZone}
+        />
       </div>
     </section>
   );
