@@ -14,6 +14,13 @@
 
 ---
 
+## Demo
+
+- **Live App:** https://saafhawa-peach.vercel.app
+- **Demo Video:** [docs/demo/saafhawa-demo.webm](docs/demo/saafhawa-demo.webm)
+
+---
+
 ## 1. Chosen Vertical
 
 **Vertical:** Environmental Public Health & Winter Smog Defense (Clean Air for Households and Communities).
