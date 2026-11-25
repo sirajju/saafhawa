@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PlanRequest } from '@/lib/plan/types';
 import { DEFAULT_PROFILE } from './onboarding/default-profile';
-import { reverseGeocodeCoordinates } from '@/lib/air-quality/reverse-geocoder';
+import { useOnboardingLocation } from './onboarding/use-onboarding-location';
 import { OnboardingStep1 } from './onboarding/OnboardingStep1';
 import { OnboardingStep2 } from './onboarding/OnboardingStep2';
 import { OnboardingStep3 } from './onboarding/OnboardingStep3';
@@ -20,9 +20,6 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
   }));
 
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [areaError, setAreaError] = useState<string | null>(null);
-  const [areaNote, setAreaNote] = useState<string | null>(null);
-  const [isLocating, setIsLocating] = useState<boolean>(false);
   const [hasAirConditioner, setHasAirConditioner] = useState<boolean>(false);
   const [incenseChoice, setIncenseChoice] = useState<'often' | 'sometimes' | 'no' | null>(() => {
     if (initialProfile?.usesIncenseOrMosquitoCoils === true) return 'sometimes';
@@ -32,6 +29,15 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
 
   const areaInputRef = useRef<HTMLInputElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+
+  const {
+    isLocating,
+    areaError,
+    setAreaError,
+    areaNote,
+    setAreaNote,
+    handleLocate,
+  } = useOnboardingLocation(setFormData, areaInputRef);
 
   useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
@@ -47,44 +53,6 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
     setFormData((prev) => ({ ...prev, place: val }));
   };
 
-  const handleLocate = () => {
-    setAreaNote('Finding your location…');
-    if (!navigator.geolocation) {
-      setAreaNote("Location isn't available in this browser. Type your area instead.");
-      areaInputRef.current?.focus();
-      return;
-    }
-
-    setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        const coordsStr = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-        setAreaError(null);
-        setFormData((prev) => ({ ...prev, place: coordsStr, coordinates: coordsStr }));
-        setAreaNote('Looking up your locality…');
-
-        void reverseGeocodeCoordinates(latitude, longitude)
-          .then((rev) => {
-            if (rev?.formattedAddress) {
-              setFormData((prev) => ({ ...prev, place: rev.formattedAddress, coordinates: coordsStr }));
-              setAreaNote(`Found your location near ${rev.formattedAddress}.`);
-            }
-          })
-          .catch(() => {})
-          .finally(() => {
-            setIsLocating(false);
-          });
-      },
-      () => {
-        setIsLocating(false);
-        setAreaNote('Location access was blocked. Type your area or pincode instead.');
-        areaInputRef.current?.focus();
-      },
-      { timeout: 8000 }
-    );
-  };
-
   const handleToggleEquipment = (
     field: 'hasAirPurifier' | 'hasKitchenChimneyOrExhaust' | 'hasAirConditioner'
   ) => {
@@ -95,18 +63,14 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
     }
   };
 
-  const handleIncenseChange = (choice: 'often' | 'sometimes' | 'no') => {
-    setIncenseChoice(choice);
-    setFormData((prev) => ({ ...prev, usesIncenseOrMosquitoCoils: choice === 'often' || choice === 'sometimes' }));
-  };
-
   const handleNext = () => {
     if (currentStep === 1) {
-      if (formData.place.trim().length < 2) {
+      if (!formData.place || formData.place.trim().length < 2) {
         setAreaError('Enter your city, area or pincode to continue.');
         areaInputRef.current?.focus();
         return;
       }
+      setAreaError(null);
       setCurrentStep(2);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentStep === 2) {
@@ -118,19 +82,25 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep((prev) => (prev - 1) as 1 | 2 | 3);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (currentStep === 2) setCurrentStep(1);
+    if (currentStep === 3) setCurrentStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <main id="onb" className="wrap">
-      <div className="onb">
-        <div className="steps" aria-hidden="true">
-          <i className={currentStep >= 1 ? 'on' : ''} />
-          <i className={currentStep >= 2 ? 'on' : ''} />
-          <i className={currentStep >= 3 ? 'on' : ''} />
+    <div id="onb" className="onboarding-flow wrap">
+      <div className="onboarding-col">
+        <div
+          className="step-progress"
+          role="progressbar"
+          aria-valuenow={currentStep}
+          aria-valuemin={1}
+          aria-valuemax={3}
+          aria-label={`Step ${currentStep} of 3`}
+        >
+          <div className={`step-bar ${currentStep >= 1 ? 'active' : ''}`} />
+          <div className={`step-bar ${currentStep >= 2 ? 'active' : ''}`} />
+          <div className={`step-bar ${currentStep >= 3 ? 'active' : ''}`} />
         </div>
 
         {currentStep === 1 && (
@@ -143,11 +113,11 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
             areaError={areaError}
             areaNote={areaNote}
             isLocating={isLocating}
-            onAreaChange={handleAreaChange}
-            onFieldChange={handleFieldChange}
-            onLocate={handleLocate}
-            areaInputRef={areaInputRef}
             headingRef={headingRef}
+            areaInputRef={areaInputRef}
+            onAreaChange={handleAreaChange}
+            onLocate={handleLocate}
+            onFieldChange={handleFieldChange}
           />
         )}
 
@@ -158,8 +128,8 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
             commutersCount={formData.commutersCount}
             canWorkFromHome={formData.canWorkFromHome}
             hasCarpoolOption={formData.hasCarpoolOption}
-            onFieldChange={handleFieldChange}
             headingRef={headingRef}
+            onFieldChange={handleFieldChange}
           />
         )}
 
@@ -172,38 +142,41 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
             hasAirConditioner={hasAirConditioner}
             incenseChoice={incenseChoice}
             budget={formData.budget}
+            headingRef={headingRef}
             onFieldChange={handleFieldChange}
             onToggleEquipment={handleToggleEquipment}
-            onIncenseChange={handleIncenseChange}
-            headingRef={headingRef}
+            onIncenseChange={(choice: 'often' | 'sometimes' | 'no') => {
+              setIncenseChoice(choice);
+              setFormData((prev) => ({
+                ...prev,
+                usesIncenseOrMosquitoCoils: choice === 'often' || choice === 'sometimes',
+              }));
+            }}
           />
         )}
-      </div>
 
-      <div className="onb-bar">
-        <div className="inner">
+        <div className="form-actions">
+          {currentStep > 1 && (
+            <button
+              type="button"
+              onClick={handleBack}
+              className="btn btn-secondary"
+              aria-label="Back to previous step"
+            >
+              Back
+            </button>
+          )}
           <button
-            type="button"
-            className="btn btn-ghost"
-            id="onb-back"
-            onClick={handleBack}
-            style={{ visibility: currentStep === 1 ? 'hidden' : 'visible' }}
-          >
-            Back
-          </button>
-          <span className="step-count" id="onb-count">
-            Step {currentStep} of 3
-          </span>
-          <button
-            type="button"
-            className="btn btn-primary"
             id="onb-next"
+            type="button"
             onClick={handleNext}
+            className="btn btn-primary"
+            style={{ minWidth: '160px' }}
           >
             {currentStep === 3 ? 'See my plan' : 'Continue'}
           </button>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

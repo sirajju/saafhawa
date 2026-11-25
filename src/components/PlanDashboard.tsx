@@ -96,6 +96,7 @@ export function PlanDashboard({
           summary={plan.summary}
           generationMethod={plan.generationMethod}
           fallbackReason={plan.fallbackReason}
+          dailyQuotaResetTime={plan.dailyQuotaResetTime}
           onRetry={onRetry}
         />
 

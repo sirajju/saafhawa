@@ -8,9 +8,11 @@ import { buildPlanPrompt } from './prompt-builder';
 import { getRuleBasedFallbackActions } from './fallback';
 import { defaultGeminiGenerator } from './gemini-client';
 import { resolvePlanConsistency } from './consistency';
+import { pruneCleanAirActions } from './consistency-scoring';
 import { generateBasisExplanation } from './basis-generator';
 import { buildForecastAdvice } from '../air-quality/forecast-advice';
 import { executeWithGeminiRetry } from '../gemini-executor';
+import { buildPlanCacheKey, getCachedPlan, setCachedPlan } from '../gemini-cache';
 import {
   GeminiPlanOutputSchema,
   GeminiSelectedAction,
@@ -36,7 +38,7 @@ export interface GeneratePlanOptions {
 }
 
 function resolveGeminiModel(custom?: string): string {
-  return custom || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  return custom || process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
 }
 
 function resolveGeminiApiKey(custom?: string): string | undefined {
@@ -50,10 +52,15 @@ export async function generateHouseholdPlan(
   const profile: PlanRequest = PlanRequestSchema.parse(rawInput);
   const fetchAirQuality = options.airQualityFetcher ?? getAirQualityByLocation;
   const lookupKey = profile.coordinates || profile.place;
+
+  const cacheKey = buildPlanCacheKey(lookupKey, profile);
+  const cached = getCachedPlan(cacheKey);
+  if (cached && !options.geminiGenerator) return cached;
+
   const airQuality = await fetchAirQuality(lookupKey);
 
   const model = resolveGeminiModel(options.model);
-  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || undefined;
+  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite';
   const apiKey = resolveGeminiApiKey(options.apiKey);
   const catalogueMap = new Map<string, ActionDefinition>(ACTION_CATALOGUE.map((a) => [a.id, a]));
 
@@ -70,7 +77,8 @@ export async function generateHouseholdPlan(
 
   let selectedActions: GeminiSelectedAction[] = [];
   let generationMethod: 'gemini' | 'rule_based_fallback' = 'gemini';
-  let fallbackReason: 'gemini_busy' | 'no_key' | 'model_error' | undefined = undefined;
+  let fallbackReason: 'gemini_busy' | 'daily_quota_exhausted' | 'no_key' | 'model_error' | undefined = undefined;
+  let dailyQuotaResetTime: string | undefined = undefined;
   let modelUsed: string | undefined = undefined;
 
   if (apiKey) {
@@ -107,7 +115,12 @@ export async function generateHouseholdPlan(
       }
     } else {
       generationMethod = 'rule_based_fallback';
-      fallbackReason = execResult.failedDueToBusy ? 'gemini_busy' : 'model_error';
+      if (execResult.failedDueToDailyQuota) {
+        fallbackReason = 'daily_quota_exhausted';
+        dailyQuotaResetTime = execResult.dailyQuotaResetTime;
+      } else {
+        fallbackReason = execResult.failedDueToBusy ? 'gemini_busy' : 'model_error';
+      }
     }
   } else {
     generationMethod = 'rule_based_fallback';
@@ -124,7 +137,15 @@ export async function generateHouseholdPlan(
     hourlyForecast: airQuality.hourlyForecast,
   };
 
+  const aqiNum = airQuality.current.aqi;
+  const maxForecast = airQuality.hourlyForecast?.length
+    ? Math.max(...airQuality.hourlyForecast.filter((p) => typeof p.aqi === 'number').map((p) => p.aqi!))
+    : (aqiNum ?? 100);
+  const isCleanAir = aqiNum !== null && aqiNum !== undefined && aqiNum <= 100 && maxForecast <= 100;
+
+  selectedActions = pruneCleanAirActions(selectedActions, isCleanAir, catalogueMap);
   selectedActions = resolvePlanConsistency(selectedActions, profile, airQualityContext);
+  selectedActions = pruneCleanAirActions(selectedActions, isCleanAir, catalogueMap);
 
   const actionImpacts: ActionImpactResult[] = [];
   const plannedActions: PlannedAction[] = selectedActions.map((selected) => {
@@ -151,7 +172,9 @@ export async function generateHouseholdPlan(
       description: actionDef.description,
       category: actionDef.category,
       suggestedTimeOfDay: timeOfDay,
-      reason: selected.reason,
+      reason: isCleanAir
+        ? selected.reason.replace(/severe smog/gi, 'outdoor pollution').replace(/ground-level temperature inversion concentrates severe smog outdoors/gi, 'routine respiratory hygiene')
+        : selected.reason,
       basisExplanation,
       costRupees: actionDef.costRupees ?? 0,
       costLabel: actionDef.costLabel ?? 'Free (₹0)',
@@ -173,7 +196,7 @@ export async function generateHouseholdPlan(
     totalCo2EmissionsSavedKg: Number((deduped.totalCo2EmissionsSavedGrams / 1000).toFixed(2)),
   };
 
-  return {
+  const planResult: PlanResponse = {
     location: airQuality.location,
     currentAirQuality: airQuality.current,
     hourlyForecast: airQuality.hourlyForecast,
@@ -182,7 +205,14 @@ export async function generateHouseholdPlan(
     summary,
     generationMethod,
     fallbackReason,
+    dailyQuotaResetTime,
     modelUsed,
     isSampleData: Boolean(airQuality.isSampleData || airQuality.current.isSampleData),
   };
+
+  if (generationMethod === 'gemini') {
+    setCachedPlan(cacheKey, planResult);
+  }
+
+  return planResult;
 }

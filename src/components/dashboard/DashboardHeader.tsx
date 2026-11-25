@@ -75,7 +75,7 @@ export function DashboardHeader({
         >
           <div className="flex items-center gap-2">
             <AlertTriangleIcon className="icon text-amber-600 dark:text-amber-400" />
-            <span>Gemini was busy, so this plan was built by our rules. Try again in a minute.</span>
+            <span>Gemini is busy right now, so this plan was built by our rules. Try again in a minute.</span>
           </div>
           {onRetry && (
             <button
@@ -87,6 +87,19 @@ export function DashboardHeader({
               Retry
             </button>
           )}
+        </div>
+      )}
+
+      {plan.generationMethod === 'rule_based_fallback' && plan.fallbackReason === 'daily_quota_exhausted' && (
+        <div
+          role="status"
+          aria-label="Daily quota exhausted notice"
+          className="mb-6 flex items-center justify-between gap-3 flex-wrap rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-[13px] text-[var(--ink-2)]"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangleIcon className="icon text-amber-600 dark:text-amber-400" />
+            <span>Today&apos;s free Gemini limit is used up, so plans are built by our rules until {plan.dailyQuotaResetTime || 'tomorrow'}.</span>
+          </div>
         </div>
       )}
     </div>

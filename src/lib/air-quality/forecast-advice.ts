@@ -3,22 +3,12 @@ import {
   ForecastAdvicePoint,
   ForecastAdviceHousehold,
   ForecastAdviceResult,
-  LocalTimeDetails,
   getLocalTimeDetails,
 } from './forecast-advice-types';
+import { findWakingWindowCandidates } from './forecast-window-search';
 
 export type { ForecastAdvicePoint, ForecastAdviceHousehold, ForecastAdviceResult };
 export { getLocalTimeDetails };
-
-interface WindowCandidate {
-  startIndex: number;
-  length: number;
-  avgAqi: number;
-  startPoint: ForecastAdvicePoint;
-  endPoint: ForecastAdvicePoint;
-  isTomorrow: boolean;
-  startHour: number;
-}
 
 /**
  * Builds actionable family advice from future hours in waking periods (6 AM to 10 PM local time).
@@ -31,7 +21,6 @@ export function buildForecastAdvice(
   referenceNow: Date = new Date()
 ): ForecastAdviceResult {
   const nowDetails = getLocalTimeDetails(referenceNow.toISOString(), timeZone);
-  // Allow points within the current hour (up to 30 mins past)
   const currentHourFloorMs = referenceNow.getTime() - 30 * 60 * 1000;
   const validPoints = hourlyForecast.filter(
     (p): p is ForecastAdvicePoint & { aqi: number } =>
@@ -43,7 +32,6 @@ export function buildForecastAdvice(
   const candidates = findWakingWindowCandidates(validPoints, timeZone, nowDetails);
   if (candidates.length === 0) return buildFallbackAdvice(household);
 
-  // Pick candidate with lowest average AQI
   candidates.sort((a, b) => a.avgAqi - b.avgAqi);
   const best = candidates[0];
 
@@ -101,52 +89,6 @@ export function buildForecastAdvice(
     isTomorrow: best.isTomorrow,
     minAqi: Math.round(best.avgAqi),
   };
-}
-
-function findWakingWindowCandidates(
-  points: (ForecastAdvicePoint & { aqi: number })[],
-  timeZone: string,
-  nowDetails: LocalTimeDetails
-): WindowCandidate[] {
-  const candidates: WindowCandidate[] = [];
-  const pointDetails = points.map((p) => ({
-    point: p,
-    local: getLocalTimeDetails(p.dateTime, timeZone),
-  }));
-
-  for (let i = 0; i < pointDetails.length; i++) {
-    const start = pointDetails[i];
-    // Waking hours: 6 AM (6) to 10 PM (22)
-    if (start.local.hour < 6 || start.local.hour >= 22) continue;
-
-    const isTomorrow =
-      start.local.day !== nowDetails.day ||
-      start.local.month !== nowDetails.month ||
-      start.local.year !== nowDetails.year;
-
-    // Try a 3-hour or 2-hour window
-    for (const winSize of [3, 2]) {
-      if (i + winSize <= pointDetails.length) {
-        const slice = pointDetails.slice(i, i + winSize);
-        const end = slice[slice.length - 1];
-        if (end.local.hour <= 21 && end.local.day === start.local.day) {
-          const avg = slice.reduce((acc, curr) => acc + curr.point.aqi, 0) / winSize;
-          candidates.push({
-            startIndex: i,
-            length: winSize,
-            avgAqi: avg,
-            startPoint: start.point,
-            endPoint: end.point,
-            isTomorrow,
-            startHour: start.local.hour,
-          });
-          break;
-        }
-      }
-    }
-  }
-
-  return candidates;
 }
 
 function getAdvicePrefix(

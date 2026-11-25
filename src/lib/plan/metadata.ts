@@ -28,7 +28,7 @@ export const FALLBACK_METADATA_MAP: Record<string, ActionPriorityMetadata> = {
   keep_children_indoors_morning_smog: {
     getSuggestedTimeOfDay: () => 'Early Morning',
     generateReason: (p) =>
-      `Keeps your ${p.childrenCount === 1 ? 'child' : `${p.childrenCount} children`} safely inside while ground-level temperature inversion concentrates severe smog outdoors.`,
+      `Keeps your ${p.childrenCount === 1 ? 'child' : `${p.childrenCount} children`} safely inside while cold morning inversion concentrates outdoor pollution.`,
   },
   run_hepa_air_purifier_bedroom: {
     getSuggestedTimeOfDay: () => 'Night / Bedtime',

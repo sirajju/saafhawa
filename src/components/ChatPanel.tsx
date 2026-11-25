@@ -98,6 +98,7 @@ export function ChatPanel({
           content: data.reply,
           toolsSummary: data.toolsSummary,
           fallbackReason: data.fallbackReason,
+          dailyQuotaResetTime: data.dailyQuotaResetTime,
         },
       ]);
     } catch (err: unknown) {

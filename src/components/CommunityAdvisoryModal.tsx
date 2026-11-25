@@ -12,12 +12,14 @@ interface CommunityAdvisoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   place: string;
+  displayPlace?: string;
 }
 
 export function CommunityAdvisoryModal({
   isOpen,
   onClose,
   place,
+  displayPlace,
 }: CommunityAdvisoryModalProps) {
   const [audience, setAudience] = useState<'housing_society' | 'school_group'>('housing_society');
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
@@ -135,7 +137,7 @@ export function CommunityAdvisoryModal({
                   Share Smog Advisory
                 </h2>
                 <p className="caption" style={{ margin: '4px 0 0' }}>
-                  Ready-to-copy WhatsApp advisory based on today&apos;s air quality in {place}.
+                  Ready-to-copy WhatsApp advisory based on today&apos;s air quality in {displayPlace || place}.
                 </p>
               </div>
             </div>

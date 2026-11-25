@@ -21,7 +21,7 @@ export interface ChatServiceOptions {
 }
 
 function resolveModel(customModel?: string): string {
-  return customModel || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  return customModel || process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
 }
 
 function resolveApiKey(customApiKey?: string): string | undefined {
@@ -89,7 +89,7 @@ export async function handleChatQuery(
 ): Promise<ChatResponse> {
   const request = ChatRequestSchema.parse(rawRequest);
   const model = resolveModel(options.model);
-  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || undefined;
+  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite';
   const apiKey = resolveApiKey(options.apiKey);
   const fetcher = options.airQualityFetcher ?? getAirQualityByLocation;
 
@@ -125,8 +125,16 @@ export async function handleChatQuery(
   }
 
   const fallback = await generateFallbackChatResponse(request, fetcher);
+  let fallbackReason: ChatResponse['fallbackReason'] = 'model_error';
+  if (execResult.failedDueToDailyQuota) {
+    fallbackReason = 'daily_quota_exhausted';
+  } else if (execResult.failedDueToBusy) {
+    fallbackReason = 'gemini_busy';
+  }
+
   return {
     ...fallback,
-    fallbackReason: execResult.failedDueToBusy ? 'gemini_busy' : 'model_error',
+    fallbackReason,
+    dailyQuotaResetTime: execResult.dailyQuotaResetTime,
   };
 }

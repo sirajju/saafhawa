@@ -94,7 +94,8 @@ export interface PlanResponse {
   actions: PlannedAction[];
   summary: PlanSummary;
   generationMethod: 'gemini' | 'rule_based_fallback';
-  fallbackReason?: 'gemini_busy' | 'no_key' | 'model_error';
+  fallbackReason?: 'gemini_busy' | 'daily_quota_exhausted' | 'no_key' | 'model_error';
+  dailyQuotaResetTime?: string;
   modelUsed?: string;
   isSampleData?: boolean;
 }

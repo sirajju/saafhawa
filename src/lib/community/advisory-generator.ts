@@ -7,6 +7,7 @@ import { executeWithGeminiRetry } from '../gemini-executor';
 import { logServerError } from '../logger';
 import { AdvisoryRequest, AdvisoryResponse } from './types';
 import { generateTemplateAdvisory } from './advisory-templates';
+import { buildAdvisoryCacheKey, getCachedAdvisory, setCachedAdvisory } from '../gemini-cache';
 
 export { generateTemplateAdvisory } from './advisory-templates';
 
@@ -18,7 +19,7 @@ export interface AdvisoryGeneratorOptions {
 }
 
 function resolveModel(customModel?: string): string {
-  return customModel || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  return customModel || process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
 }
 
 function resolveApiKey(customApiKey?: string): string | undefined {
@@ -29,11 +30,15 @@ export async function generateCommunityAdvisory(
   request: AdvisoryRequest,
   options: AdvisoryGeneratorOptions = {}
 ): Promise<AdvisoryResponse> {
+  const cacheKey = buildAdvisoryCacheKey(request.place, request.audience, request.language);
+  const cached = getCachedAdvisory(cacheKey);
+  if (cached) return cached;
+
   const fetcher = options.airQualityFetcher ?? getAirQualityByLocation;
   const report = await fetcher(request.place);
 
   const model = resolveModel(options.model);
-  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || undefined;
+  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite';
   const apiKey = resolveApiKey(options.apiKey);
 
   const snapshot = {
@@ -93,12 +98,13 @@ REQUIREMENTS:
       },
     });
 
+    let responseToReturn: AdvisoryResponse;
     if (execResult.data && execResult.data.length > 50) {
       const headline = request.language === 'hi'
         ? (request.audience === 'school_group' ? `🏫 स्कूल परामर्श: ${report.location.name}` : `🏘️ सोसायटी परामर्श: ${report.location.name}`)
         : (request.audience === 'school_group' ? `🏫 School Smog Advisory: ${report.location.name}` : `🏘️ Community Clean Air Advisory: ${report.location.name}`);
 
-      return {
+      responseToReturn = {
         headline,
         advisoryText: execResult.data,
         audience: request.audience,
@@ -106,23 +112,26 @@ REQUIREMENTS:
         isSampleData: isSample,
         airQualitySnapshot: snapshot,
       };
+    } else {
+      responseToReturn = {
+        ...generateTemplateAdvisory(report, request.audience, request.language),
+        audience: request.audience,
+        language: request.language,
+        isSampleData: isSample,
+        airQualitySnapshot: snapshot,
+      };
     }
-
-    return {
-      ...generateTemplateAdvisory(report, request.audience, request.language),
-      audience: request.audience,
-      language: request.language,
-      isSampleData: isSample,
-      airQualitySnapshot: snapshot,
-    };
+    setCachedAdvisory(cacheKey, responseToReturn);
+    return responseToReturn;
   } catch (err: unknown) {
     logServerError('AdvisoryGenerator', err);
-    return {
+    const fallbackResponse: AdvisoryResponse = {
       ...generateTemplateAdvisory(report, request.audience, request.language),
       audience: request.audience,
       language: request.language,
       isSampleData: isSample,
       airQualitySnapshot: snapshot,
     };
+    return fallbackResponse;
   }
 }

@@ -7,7 +7,7 @@
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)
-![Google Gemini](https://img.shields.io/badge/Gemini-3.8%20Flash-8e75ff?logo=googlegemini)
+![Google Gemini](https://img.shields.io/badge/Gemini-Flash--Lite-8e75ff?logo=googlegemini)
 ![Vitest](https://img.shields.io/badge/Vitest-5.1-6e9f18?logo=vitest)
 ![Playwright](https://img.shields.io/badge/Playwright-E2E-2ead33?logo=playwright)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -295,8 +295,16 @@ If configuring live API keys, edit `.env.local`:
 GOOGLE_MAPS_API_KEY=your_google_maps_platform_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 # AI_API_KEY is also supported as an alternate fallback
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-flash-lite-latest
+GEMINI_FALLBACK_MODEL=gemini-2.5-flash-lite
 ```
+
+#### Gemini Free-Tier Model Allowances:
+| Model ID | Free Tier RPM | Free Tier RPD | Structured JSON & Tools | Role in SaafHawa |
+|---|---|---|---|---|
+| `gemini-flash-lite-latest` | **15 RPM** | **1,500 RPD** | Fully Supported | **Default Primary Model** |
+| `gemini-2.5-flash-lite` | **15 RPM** | **1,500 RPD** | Fully Supported | **Default Fallback Model** |
+| `gemini-3.8-flash` | 5 RPM | 20 RPD | Fully Supported | High demand, rapid free-tier exhaustion |
 
 ### 4. Running Locally
 ```bash
@@ -342,7 +350,7 @@ gcloud run deploy saafhawa \
   --port 8080 \
   --memory 1Gi \
   --cpu 1 \
-  --set-env-vars "NODE_ENV=production,GEMINI_MODEL=gemini-3.8-flash"
+  --set-env-vars "NODE_ENV=production,GEMINI_MODEL=gemini-flash-lite-latest,GEMINI_FALLBACK_MODEL=gemini-2.5-flash-lite"
 ```
 
 ### 7. Deploy to Vercel
@@ -357,8 +365,8 @@ SaafHawa is pre-configured for zero-friction deployment on [Vercel](https://verc
 | Variable | Required? | Default / Example | Purpose |
 |---|---|---|---|
 | `GEMINI_API_KEY` | **Required** | `AIzaSy...` | Powers Gemini action selection, live function-calling chat, and WhatsApp community advisories. |
-| `GEMINI_MODEL` | Optional | `gemini-3.8-flash` | Primary Gemini model ID (defaults to `gemini-3.8-flash`). |
-| `GEMINI_FALLBACK_MODEL` | Optional | *(None)* | Secondary model to try on 429 / 503 transient spikes (e.g. `gemini-2.5-flash` or alternative). |
+| `GEMINI_MODEL` | Optional | `gemini-flash-lite-latest` | Primary Gemini model ID (15 RPM / 1,500 RPD free allowance). |
+| `GEMINI_FALLBACK_MODEL` | Optional | `gemini-2.5-flash-lite` | Secondary model to try on 429 / 503 transient spikes (15 RPM / 1,500 RPD free allowance). |
 | `GOOGLE_MAPS_API_KEY` | Optional | `AIzaSy...` | Upgrades telemetry to Tier 2 Google Air Quality ML model (falls back to Open-Meteo CAMS if omitted). |
 | `WAQI_TOKEN` | Optional | `your_waqi_token` | Upgrades telemetry to Tier 1 official CPCB continuous ambient ground station monitoring. |
 | `RATE_LIMIT_ENABLED` | Optional | `true` | In-memory token-bucket sliding rate limiter on sensitive API routes. |

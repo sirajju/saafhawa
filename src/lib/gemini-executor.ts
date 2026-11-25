@@ -1,17 +1,31 @@
-/**
- * Resilient Gemini execution engine with transient error retries,
- * optional fallback model switching, and 25-second execution ceiling.
- */
+import {
+  QuotaAnalysis,
+  modelExhaustionMap,
+  clearModelExhaustion,
+  sanitizeErrorMessage,
+  isFatalGeminiError,
+  parseGeminiQuotaError,
+  isTransientGeminiError,
+} from './gemini-quota';
+
+export {
+  type QuotaAnalysis,
+  clearModelExhaustion,
+  sanitizeErrorMessage,
+  isFatalGeminiError,
+  parseGeminiQuotaError,
+  isTransientGeminiError,
+};
 
 export interface GeminiRetryOptions<T> {
   primaryModel: string;
   fallbackModel?: string;
   apiKey?: string;
   label?: string;
-  fn: (model: string, timeoutMs: number) => Promise<T>;
+  totalTimeoutMs?: number;
   maxRetriesPerModel?: number;
   initialBackoffMs?: number;
-  totalTimeoutMs?: number;
+  fn: (activeModel: string, timeoutMs: number) => Promise<T>;
 }
 
 export interface GeminiExecutionResult<T> {
@@ -19,69 +33,15 @@ export interface GeminiExecutionResult<T> {
   modelUsed?: string;
   error?: unknown;
   failedDueToBusy: boolean;
-}
-
-export function sanitizeErrorMessage(error: unknown, apiKey?: string): string {
-  let msg = error instanceof Error ? error.message : String(error || 'Unknown error');
-  if (apiKey && apiKey.length > 5) {
-    msg = msg.replaceAll(apiKey, '[REDACTED_API_KEY]');
-  }
-  // Strip common URL query parameter keys
-  msg = msg.replace(/key=[a-zA-Z0-9_\-]+/gi, 'key=[REDACTED]');
-  return msg;
-}
-
-export function isFatalGeminiError(error: unknown): boolean {
-  if (!error) return false;
-  const msg = error instanceof Error ? error.message : String(error);
-  const errObj = error as { status?: number; code?: number | string; statusCode?: number };
-  const status = errObj.status ?? errObj.statusCode;
-
-  if (status === 400 || status === 401 || status === 403) return true;
-  if (errObj.code === 400 || errObj.code === 401 || errObj.code === 403) return true;
-
-  return (
-    msg.includes('400') ||
-    msg.includes('401') ||
-    msg.includes('403') ||
-    msg.includes('API_KEY_INVALID') ||
-    msg.includes('INVALID_ARGUMENT') ||
-    msg.includes('PERMISSION_DENIED') ||
-    msg.includes('UNAUTHENTICATED')
-  );
-}
-
-export function isTransientGeminiError(error: unknown): boolean {
-  if (!error || isFatalGeminiError(error)) return false;
-
-  const msg = error instanceof Error ? error.message : String(error);
-  const errObj = error as { status?: number; code?: number | string; statusCode?: number };
-  const status = errObj.status ?? errObj.statusCode;
-
-  if (status === 429 || status === 503) return true;
-  if (errObj.code === 429 || errObj.code === 503) return true;
-
-  const lower = msg.toLowerCase();
-  return (
-    msg.includes('429') ||
-    msg.includes('503') ||
-    lower.includes('resource_exhausted') ||
-    lower.includes('unavailable') ||
-    lower.includes('high demand') ||
-    lower.includes('overloaded') ||
-    lower.includes('timed out') ||
-    lower.includes('quota')
-  );
+  failedDueToDailyQuota?: boolean;
+  dailyQuotaResetTime?: string;
 }
 
 export async function executeWithGeminiRetry<T>(
   options: GeminiRetryOptions<T>
 ): Promise<GeminiExecutionResult<T>> {
   const label = options.label || 'Gemini';
-  const maxRetries = options.maxRetriesPerModel ?? 2;
-  const backoffBase = options.initialBackoffMs ?? 500;
   const deadline = Date.now() + Math.min(24000, options.totalTimeoutMs ?? 24000);
-
   const models: string[] = [options.primaryModel];
   if (options.fallbackModel && options.fallbackModel !== options.primaryModel) {
     models.push(options.fallbackModel);
@@ -89,55 +49,80 @@ export async function executeWithGeminiRetry<T>(
 
   let lastError: unknown = null;
   let failedDueToBusy = false;
+  let failedDueToDailyQuota = false;
+  let latestDailyResetAt: number | undefined;
 
   for (const model of models) {
+    const exhaustedUntil = modelExhaustionMap.get(model);
+    if (exhaustedUntil && Date.now() < exhaustedUntil) {
+      console.warn(`[${label}] Model ${model} is exhausted until ${new Date(exhaustedUntil).toLocaleTimeString()} (skipping).`);
+      failedDueToDailyQuota = true;
+      latestDailyResetAt = Math.max(latestDailyResetAt || 0, exhaustedUntil);
+      continue;
+    }
+
+    const maxRetries = options.maxRetriesPerModel ?? 2;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const remainingMs = deadline - Date.now();
-      if (remainingMs < 1000) {
-        console.warn(`[${label}] Total timeout approaching deadline, aborting further attempts.`);
-        break;
-      }
+      if (remainingMs < 1000) break;
 
       try {
         const timeoutForCall = Math.min(12000, remainingMs);
         const data = await options.fn(model, timeoutForCall);
         if (data !== null && data !== undefined) {
-          console.log(`[${label}] Model answered successfully: ${model}`);
           return { data, modelUsed: model, failedDueToBusy: false };
         }
       } catch (err: unknown) {
         lastError = err;
-        const sanitized = sanitizeErrorMessage(err, options.apiKey);
+        sanitizeErrorMessage(err, options.apiKey);
 
         if (isFatalGeminiError(err)) {
-          console.error(`[${label}] Fatal error (no retry) on model ${model}: ${sanitized}`);
           return { data: null, error: err, failedDueToBusy: false };
+        }
+
+        const quota = parseGeminiQuotaError(err);
+        if (quota.isDailyQuota) {
+          failedDueToDailyQuota = true;
+          const reset = quota.resetAt || Date.now() + 24 * 3600 * 1000;
+          latestDailyResetAt = Math.max(latestDailyResetAt || 0, reset);
+          modelExhaustionMap.set(model, reset);
+          console.warn(`[${label}] Daily quota exhausted on ${model} until ${new Date(reset).toLocaleTimeString()}. Switching model immediately.`);
+          break; // Switch to fallback model without retrying this model
+        }
+
+        if (quota.isQuota && !quota.isDailyQuota) {
+          failedDueToBusy = true;
+          if (attempt === 0 && quota.retryDelayMs !== undefined && quota.retryDelayMs <= 5000) {
+            console.warn(`[${label}] Per-minute rate limit on ${model}, waiting ${quota.retryDelayMs}ms once.`);
+            await new Promise((r) => setTimeout(r, quota.retryDelayMs));
+            continue;
+          }
+          console.warn(`[${label}] Per-minute rate limit on ${model} (delay > 5s or retried). Switching model.`);
+          break; // Move on to next model
         }
 
         if (isTransientGeminiError(err)) {
           failedDueToBusy = true;
-          console.warn(`[${label}] Transient error (attempt ${attempt + 1}/${maxRetries + 1}) on ${model}: ${sanitized}`);
           if (attempt < maxRetries) {
-            const delay = backoffBase * Math.pow(2, attempt);
-            if (Date.now() + delay < deadline) {
-              await new Promise((r) => setTimeout(r, delay));
-            }
+            const delay = (options.initialBackoffMs ?? 500) * Math.pow(2, attempt);
+            if (Date.now() + delay < deadline) await new Promise((r) => setTimeout(r, delay));
           }
         } else {
-          console.warn(`[${label}] Unexpected error on model ${model}: ${sanitized}`);
-          break; // Try next model if available
+          break;
         }
       }
     }
   }
 
-  console.error(
-    `[${label}] All Gemini attempts exhausted. Using rule-based fallback. (Busy: ${failedDueToBusy})`
-  );
+  const resetTimeString = latestDailyResetAt
+    ? new Date(latestDailyResetAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    : undefined;
 
   return {
     data: null,
     error: lastError,
-    failedDueToBusy,
+    failedDueToBusy: failedDueToBusy && !failedDueToDailyQuota,
+    failedDueToDailyQuota,
+    dailyQuotaResetTime: resetTimeString,
   };
 }

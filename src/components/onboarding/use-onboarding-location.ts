@@ -1,0 +1,59 @@
+import { useState, RefObject } from 'react';
+import { PlanRequest } from '@/lib/plan/types';
+import { reverseGeocodeCoordinates } from '@/lib/air-quality/reverse-geocoder';
+
+export function useOnboardingLocation(
+  setFormData: React.Dispatch<React.SetStateAction<PlanRequest>>,
+  areaInputRef: RefObject<HTMLInputElement | null>
+) {
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [areaError, setAreaError] = useState<string | null>(null);
+  const [areaNote, setAreaNote] = useState<string | null>(null);
+
+  const handleLocate = () => {
+    setAreaNote('Finding your location…');
+    if (!navigator.geolocation) {
+      setAreaNote("Location isn't available in this browser. Type your area instead.");
+      areaInputRef.current?.focus();
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const coordsStr = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        setAreaError(null);
+        setFormData((prev) => ({ ...prev, place: coordsStr, coordinates: coordsStr }));
+        setAreaNote('Looking up your locality…');
+
+        void reverseGeocodeCoordinates(latitude, longitude)
+          .then((rev) => {
+            if (rev?.formattedAddress) {
+              setFormData((prev) => ({ ...prev, place: rev.formattedAddress, coordinates: coordsStr }));
+              setAreaNote(`Found your location near ${rev.formattedAddress}.`);
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            setIsLocating(false);
+          });
+      },
+      () => {
+        setIsLocating(false);
+        setAreaNote('Location access was blocked. Type your area or pincode instead.');
+        areaInputRef.current?.focus();
+      },
+      { timeout: 8000 }
+    );
+  };
+
+  return {
+    isLocating,
+    areaError,
+    setAreaError,
+    areaNote,
+    setAreaNote,
+    handleLocate,
+  };
+}

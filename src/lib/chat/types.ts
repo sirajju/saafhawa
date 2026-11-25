@@ -56,6 +56,7 @@ export interface ExecutedToolRecord {
 export interface ChatResponse {
   reply: string;
   toolsExecuted: ExecutedToolRecord[];
-  fallbackReason?: 'gemini_busy' | 'no_key' | 'model_error';
+  fallbackReason?: 'gemini_busy' | 'daily_quota_exhausted' | 'no_key' | 'model_error';
+  dailyQuotaResetTime?: string;
   modelUsed?: string;
 }

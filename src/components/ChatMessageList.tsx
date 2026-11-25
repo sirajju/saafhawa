@@ -8,7 +8,8 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   toolsSummary?: string[];
-  fallbackReason?: 'gemini_busy' | 'no_key' | 'model_error';
+  fallbackReason?: 'gemini_busy' | 'no_key' | 'model_error' | 'daily_quota_exhausted';
+  dailyQuotaResetTime?: string;
 }
 
 interface ChatMessageListProps {
@@ -51,7 +52,7 @@ export function ChatMessageList({
           )}
           {msg.fallbackReason === 'gemini_busy' && (
             <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between gap-2 flex-wrap text-xs text-[var(--ink-2)]">
-              <span>Gemini was busy, so this answer was built by our rules. Try again in a minute.</span>
+              <span>Gemini is busy right now, so this answer was built by our rules. Try again in a minute.</span>
               {onRetryMessage && (
                 <button
                   type="button"
@@ -62,6 +63,11 @@ export function ChatMessageList({
                   Retry
                 </button>
               )}
+            </div>
+          )}
+          {msg.fallbackReason === 'daily_quota_exhausted' && (
+            <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between gap-2 flex-wrap text-xs text-[var(--ink-2)]">
+              <span>Today&apos;s free Gemini limit is used up, so answers are built by our rules until {msg.dailyQuotaResetTime || 'tomorrow'}.</span>
             </div>
           )}
           {msg.toolsSummary && msg.toolsSummary.length > 0 && (

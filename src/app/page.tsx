@@ -156,6 +156,7 @@ export default function HomePage() {
         isOpen={isAdvisoryModalOpen}
         onClose={() => setIsAdvisoryModalOpen(false)}
         place={lookupPlace || currentPlaceName}
+        displayPlace={currentPlaceName}
       />
     </div>
   );

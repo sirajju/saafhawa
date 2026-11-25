@@ -3,12 +3,16 @@ import {
   generateHouseholdPlan,
   getRuleBasedFallbackActions,
 } from '@/lib/plan';
+import { clearGeminiCache } from '@/lib/gemini-cache';
 import { POST } from '@/app/api/plan/route';
 import { planRateLimiter } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { MOCK_AIR_QUALITY, MOCK_PROFILE, MOCK_GEMINI_OUTPUT } from './plan-fixtures';
 
 describe('Plan Module - Gemini Generation & Fallback', () => {
+  beforeEach(() => {
+    clearGeminiCache();
+  });
   it('processes Gemini structured output, drops unknown IDs, and attaches calculator impact figures', async () => {
     const mockGenerator = vi.fn().mockResolvedValue(MOCK_GEMINI_OUTPUT);
     const mockAirQualityFetcher = vi.fn().mockResolvedValue(MOCK_AIR_QUALITY);
@@ -77,6 +81,7 @@ describe('Plan Module - Gemini Generation & Fallback', () => {
 describe('Plan Module - POST /api/plan Route Handler', () => {
   beforeEach(() => {
     planRateLimiter.reset();
+    clearGeminiCache();
   });
 
   it('generates complete rule-based plan when Gemini key is not configured', async () => {
