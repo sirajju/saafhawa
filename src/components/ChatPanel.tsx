@@ -6,10 +6,13 @@ import { ChatMessage, ChatMessageList } from './ChatMessageList';
 import { HouseholdProfile } from '@/lib/impact/types';
 import { SendIcon, InfoIcon } from './ui/Icons';
 
-interface ChatPanelProps {
+export interface ChatPanelProps {
   place: string;
   householdProfile?: HouseholdProfile;
   isSampleData?: boolean;
+  dataSource?: string;
+  measuredTime?: string;
+  timeZone?: string;
   onClose?: () => void;
   className?: string;
 }
@@ -25,6 +28,9 @@ export function ChatPanel({
   place,
   householdProfile,
   isSampleData = false,
+  dataSource,
+  measuredTime,
+  timeZone,
   onClose,
   className = '',
 }: ChatPanelProps) {
@@ -126,7 +132,13 @@ export function ChatPanel({
       aria-labelledby="chat-heading"
       className={`flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 ${className}`}
     >
-      <ChatHeader isSampleData={isSampleData} onClose={onClose} />
+      <ChatHeader
+        isSampleData={isSampleData}
+        dataSource={dataSource}
+        measuredTime={measuredTime}
+        timeZone={timeZone}
+        onClose={onClose}
+      />
 
       <ChatMessageList
         messages={messages}

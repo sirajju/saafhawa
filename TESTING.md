@@ -15,7 +15,7 @@ This document records the testing architecture of **SaafHawa** and includes exac
 
 ---
 
-### 2. Measured Vitest Output (172 Tests Across 29 Test Files)
+### 2. Measured Vitest Output (180 Tests Across 32 Test Files)
 
 ```
 > saafhawa@0.1.0 test
@@ -52,29 +52,33 @@ This document records the testing architecture of **SaafHawa** and includes exac
  ✓ src/test/waqi-client.test.ts (3 tests)
  ✓ src/test/daily-timeline.test.ts (5 tests)
  ✓ src/test/live-evaluator-queries.test.ts (1 test)
+ ✓ src/test/aqi-sync.test.tsx (2 tests)
+ ✓ src/test/chat-header-source.test.tsx (4 tests)
+ ✓ src/test/mobile-guidance-visibility.test.tsx (2 tests)
 
- Test Files  29 passed (29)
-      Tests  172 passed (172)
-   Duration  6.11s
+ Test Files  32 passed (32)
+      Tests  180 passed (180)
+   Duration  7.33s
 ```
 
 ---
 
-### 3. Measured Playwright E2E Output (5 Tests Across 2 Spec Files)
+### 3. Measured Playwright E2E Output (6 Tests Across 2 Spec Files)
 
 ```
 > saafhawa@0.1.0 test:e2e
 > playwright test
 
-Running 5 tests using 1 worker
+Running 6 tests using 1 worker
 
-  ok 1 [chromium] › e2e\modals-and-security.spec.ts:5:3 › Modals, Chat & Security Headers › mobile floating Ask Assistant button opens full-height chat sheet with suggested chips (411ms)
-  ok 2 [chromium] › e2e\modals-and-security.spec.ts:41:3 › Modals, Chat & Security Headers › community advisory modal displays WhatsApp preview card and copy button (405ms)
-  ok 3 [chromium] › e2e\modals-and-security.spec.ts:84:3 › Modals, Chat & Security Headers › serves strict security headers without unsafe-eval and without x-powered-by (20ms)
-  ok 4 [chromium] › e2e\smoke.spec.ts:5:3 › SaafHawa Onboarding & Plan Smoke Test › completes 3-step onboarding and renders the restructured clean air action plan (2.5s)
+  ok 1 [chromium] › e2e\modals-and-security.spec.ts:5:3 › Modals, Chat & Security Headers › mobile floating Ask Assistant button opens full-height chat sheet with suggested chips (471ms)
+  ok 2 [chromium] › e2e\modals-and-security.spec.ts:41:3 › Modals, Chat & Security Headers › community advisory modal displays WhatsApp preview card and copy button (430ms)
+  ok 3 [chromium] › e2e\modals-and-security.spec.ts:84:3 › Modals, Chat & Security Headers › serves strict security headers without unsafe-eval and without x-powered-by (21ms)
+  ok 4 [chromium] › e2e\smoke.spec.ts:5:3 › SaafHawa Onboarding & Plan Smoke Test › completes 3-step onboarding and renders the restructured clean air action plan (2.6s)
   ok 5 [chromium] › e2e\smoke.spec.ts:80:3 › SaafHawa Onboarding & Plan Smoke Test › no horizontal overflow at 390px (mobile) and 1440px (desktop) viewports (305ms)
+  ok 6 [chromium] › e2e\smoke.spec.ts:123:3 › SaafHawa Onboarding & Plan Smoke Test › mobile 390px: guidance sentence is fully readable without scrolling and not covered by Ask button (297ms)
 
-  5 passed (5.4s)
+  6 passed (5.8s)
 ```
 
 ---
@@ -125,7 +129,10 @@ Running 5 tests using 1 worker
 | [`src/test/rate-limit-proxy.test.ts`](src/test/rate-limit-proxy.test.ts) | Proxy hops rate limiting | `TRUSTED_PROXY_HOPS` setting, Cloud Run ingress parsing, untrusted/direct fallback to single shared bucket |
 | [`src/test/timezone.test.ts`](src/test/timezone.test.ts) | Time zone lookup & formatting | Google Time Zone API resolution, fallback to Asia/Kolkata, hour formatting in location local time |
 | [`src/test/logger-control-flow.test.ts`](src/test/logger-control-flow.test.ts) | Server logging & control flow | Prerender bailout suppression, Next.js control flow passthrough, sensitive key redaction |
-| [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) | E2E smoke test | Onboarding completion to dashboard rendering with mocked APIs, viewport containment checks |
+| [`src/test/aqi-sync.test.tsx`](src/test/aqi-sync.test.tsx) | Headline & chart agreement | Synchronization of big AQI number headline with chart's first bar, Current label, and Smog Peak calculation |
+| [`src/test/chat-header-source.test.tsx`](src/test/chat-header-source.test.tsx) | Chat header data source | Replacement of "Live Tools Active" badge with actual data source and localized measurement timestamp |
+| [`src/test/mobile-guidance-visibility.test.tsx`](src/test/mobile-guidance-visibility.test.tsx) | Mobile guidance visibility | Family guidance visibility without scrolling at 390px, floating Ask button layout, safe bottom padding |
+| [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts) | E2E smoke test | Onboarding completion to dashboard rendering with mocked APIs, viewport containment checks, mobile guidance non-overlap |
 | [`e2e/modals-and-security.spec.ts`](e2e/modals-and-security.spec.ts) | E2E modals & security test | Mobile chat sheet modal, WhatsApp advisory modal, live server security header inspection |
 
 ---

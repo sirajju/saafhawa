@@ -28,6 +28,21 @@ function resolveWaqiToken(providedToken?: string): string | null {
   return token.trim();
 }
 
+function syncFirstForecastHour(report: AirQualityReport): AirQualityReport {
+  if (
+    report.current &&
+    typeof report.current.aqi === 'number' &&
+    report.hourlyForecast &&
+    report.hourlyForecast.length > 0
+  ) {
+    const updatedForecast = report.hourlyForecast.map((pt, idx) =>
+      idx === 0 ? { ...pt, aqi: report.current.aqi, category: report.current.category } : pt
+    );
+    return { ...report, hourlyForecast: updatedForecast };
+  }
+  return report;
+}
+
 /**
  * Fetches real-time air quality report using free Open-Meteo APIs (keyless default).
  */
@@ -39,7 +54,7 @@ async function fetchViaOpenMeteo(
   const location = preResolvedLocation || (await geocodeOpenMeteoPlace(place, options));
   const aqData = await fetchOpenMeteoAirQuality(location.latitude, location.longitude, location.timeZone, options);
 
-  const report: AirQualityReport = {
+  const rawReport: AirQualityReport = {
     location: {
       name: location.formattedAddress,
       latitude: location.latitude,
@@ -59,6 +74,7 @@ async function fetchViaOpenMeteo(
     attribution: 'Air quality data provided by Open-Meteo under CC BY 4.0 (Copernicus CAMS model)',
   };
 
+  const report = syncFirstForecastHour(rawReport);
   return AirQualityReportSchema.parse(report);
 }
 
@@ -115,7 +131,7 @@ export async function getAirQualityByLocation(
           attribution: waqiStation.current.attribution,
         };
 
-        const parsedReport = AirQualityReportSchema.parse(report);
+        const parsedReport = AirQualityReportSchema.parse(syncFirstForecastHour(report));
         airQualityCache.set(cacheKey, parsedReport);
         return parsedReport;
       }
@@ -129,7 +145,7 @@ export async function getAirQualityByLocation(
   // 2. If Google API key is configured, try Google as an optional upgrade
   if (googleApiKey) {
     try {
-      const googleReport = await fetchViaGoogle(place, googleApiKey, options);
+      const googleReport = syncFirstForecastHour(await fetchViaGoogle(place, googleApiKey, options));
       airQualityCache.set(cacheKey, googleReport);
       return googleReport;
     } catch (googleError) {

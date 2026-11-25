@@ -22,9 +22,16 @@ describe('Wording - Strict Neutrality and Absence of "Live" During Sample Data M
     expect(screen.queryByText(/Live Tools Active/i)).toBeNull();
     expect(screen.queryByText(/Connected to live AQI sensors/i)).toBeNull();
 
-    // In live mode (isSampleData: false), it can say "Live Tools Active"
-    rerender(<ChatHeader isSampleData={false} />);
-    expect(screen.getByText(/Live Tools Active/i)).toBeTruthy();
+    // In real-time mode (isSampleData: false), shows data source instead of "Live Tools Active"
+    rerender(
+      <ChatHeader
+        isSampleData={false}
+        dataSource="Open-Meteo (CAMS model)"
+        measuredTime="2026-11-25T10:00:00Z"
+      />
+    );
+    expect(screen.queryByText(/Live Tools Active/i)).toBeNull();
+    expect(screen.getByText(/Open-Meteo \(CAMS model\)/i)).toBeTruthy();
   });
 
   it('renders neutral loading message in ChatMessageList when isSampleData is true', () => {

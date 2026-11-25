@@ -67,7 +67,7 @@ export function PlanDashboard({
   const progressPercent = totalActions > 0 ? Math.round((doneCount / totalActions) * 100) : 0;
 
   return (
-    <div className="mx-auto max-w-6xl w-full min-w-0 px-4 pt-4 sm:px-6 sm:pt-6">
+    <div className="mx-auto max-w-6xl w-full min-w-0 px-3 pt-2 sm:px-6 sm:pt-6">
       <DashboardHeader
         headingRef={headingRef}
         plan={plan}
@@ -79,9 +79,9 @@ export function PlanDashboard({
       />
 
       {/* Main Layout: Plan on Left, Side Panel Chat on Desktop */}
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="mt-2.5 sm:mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
         {/* Left Column: Air Quality, Impact Summary & Daily Timeline */}
-        <div className="lg:col-span-7 xl:col-span-8 space-y-8">
+        <div className="lg:col-span-7 xl:col-span-8 space-y-4 sm:space-y-8">
           <AirQualityCard
             location={plan.location}
             current={plan.currentAirQuality}
@@ -111,6 +111,9 @@ export function PlanDashboard({
             householdProfile={profile || undefined}
             place={currentPlaceName}
             isSampleData={plan.isSampleData}
+            dataSource={plan.currentAirQuality?.dataSource}
+            measuredTime={plan.currentAirQuality?.dateTime}
+            timeZone={plan.location.timeZone}
           />
         </div>
       </div>
@@ -140,6 +143,9 @@ export function PlanDashboard({
             householdProfile={profile || undefined}
             place={currentPlaceName}
             isSampleData={plan.isSampleData}
+            dataSource={plan.currentAirQuality?.dataSource}
+            measuredTime={plan.currentAirQuality?.dateTime}
+            timeZone={plan.location.timeZone}
             onClose={() => setIsMobileChatOpen(false)}
           />
         </div>

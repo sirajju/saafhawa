@@ -3,6 +3,7 @@
 import React from 'react';
 import { CleanLocation, CurrentAirQuality } from '@/lib/air-quality/types';
 import { getAqiCategoryDetails } from '@/lib/impact/comparisons';
+import { getAqiTextColorClass } from '@/lib/design-system';
 import { ForecastChart, ForecastPoint } from './ForecastChart';
 import { buildForecastAdvice, ForecastAdviceHousehold } from '@/lib/air-quality/forecast-advice';
 import { formatMeasurementTime } from '@/lib/air-quality/cpcb-aqi';
@@ -16,23 +17,6 @@ interface AirQualityCardProps {
   householdProfile?: ForecastAdviceHousehold | null;
 }
 
-function getAqiTextColorClass(category: string | null | undefined, aqi: number | null | undefined): string {
-  const normCategory = (category || '').toLowerCase();
-  if (normCategory.includes('severe') || normCategory.includes('hazardous') || (typeof aqi === 'number' && aqi > 400)) {
-    return 'text-rose-700 dark:text-rose-400';
-  }
-  if (normCategory.includes('very poor') || normCategory.includes('very unhealthy') || (typeof aqi === 'number' && aqi > 300)) {
-    return 'text-purple-700 dark:text-purple-400';
-  }
-  if (normCategory.includes('poor') || normCategory.includes('unhealthy') || (typeof aqi === 'number' && aqi > 200)) {
-    return 'text-orange-600 dark:text-orange-400';
-  }
-  if (normCategory.includes('moderate') || (typeof aqi === 'number' && aqi > 100)) {
-    return 'text-amber-600 dark:text-amber-400';
-  }
-  return 'text-emerald-600 dark:text-emerald-400';
-}
-
 export function AirQualityCard({
   location,
   current,
@@ -41,9 +25,16 @@ export function AirQualityCard({
 }: AirQualityCardProps) {
   const categoryInfo = getAqiCategoryDetails(current.category, current.aqi);
   const aqiTextColor = getAqiTextColorClass(current.category, current.aqi);
+
+  const syncedForecast = React.useMemo(() => {
+    if (!hourlyForecast || hourlyForecast.length === 0) return [];
+    if (typeof current.aqi !== 'number') return hourlyForecast;
+    return hourlyForecast.map((pt, idx) => (idx === 0 ? { ...pt, aqi: current.aqi } : pt));
+  }, [hourlyForecast, current.aqi]);
+
   const advice = buildForecastAdvice(
     current.aqi ?? 300,
-    hourlyForecast,
+    syncedForecast,
     householdProfile,
     location.timeZone
   );
@@ -51,18 +42,18 @@ export function AirQualityCard({
   return (
     <section
       aria-labelledby="air-quality-heading"
-      className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-xs dark:border-slate-800 dark:bg-slate-900"
+      className="rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-7 shadow-xs dark:border-slate-800 dark:bg-slate-900"
     >
       {/* Location Subtitle & Heading */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 border-b border-slate-100 pb-2 sm:pb-4 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            <LocationIcon className="h-3.5 w-3.5 text-teal-700 dark:text-teal-400" />
-            <span>{location.name}</span>
+            <LocationIcon className="h-3.5 w-3.5 text-teal-700 dark:text-teal-400 shrink-0" />
+            <span className="truncate max-w-[220px] sm:max-w-none">{location.name}</span>
           </div>
           <h2
             id="air-quality-heading"
-            className="mt-1 text-lg font-bold text-slate-900 sm:text-xl dark:text-slate-50"
+            className="mt-0.5 text-sm font-bold text-slate-900 sm:text-xl dark:text-slate-50"
           >
             Today&apos;s Air Quality &amp; Family Guidance
           </h2>
@@ -70,43 +61,43 @@ export function AirQualityCard({
 
         {/* Category Pill with strictly AQI-governed styling */}
         <div
-          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-bold shadow-2xs ${categoryInfo.badgeClass}`}
+          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 sm:px-3 sm:py-1 font-bold shadow-2xs ${categoryInfo.badgeClass}`}
           role="status"
           aria-label={`Air quality category: ${categoryInfo.categoryText}`}
         >
-          <ShieldIcon className="h-4 w-4" />
-          <span className="text-sm font-extrabold">
+          <ShieldIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="text-xs sm:text-sm font-extrabold">
             {categoryInfo.categoryText}
           </span>
         </div>
       </div>
 
       {/* Large AQI Number & Category Name (Only 1 large number per section) */}
-      <div className="mt-6 flex flex-wrap items-baseline gap-4">
+      <div className="mt-2.5 sm:mt-6 flex flex-wrap items-baseline gap-2.5 sm:gap-4">
         <span
-          className={`text-6xl font-black tracking-tight sm:text-7xl ${aqiTextColor}`}
+          className={`text-4xl font-black tracking-tight sm:text-7xl ${aqiTextColor}`}
         >
           {current.aqi !== null ? current.aqi : 'N/A'}
         </span>
         <div>
-          <div className="text-xl font-extrabold text-slate-900 sm:text-2xl dark:text-slate-50">
+          <div className="text-base font-extrabold text-slate-900 sm:text-2xl dark:text-slate-50">
             AQI · {categoryInfo.categoryText}
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="text-[11px] text-slate-500 sm:text-xs dark:text-slate-400">
             {current.indexDisplayName || current.indexCode || 'India National AQI'}
           </div>
         </div>
       </div>
 
       {/* Reassuring Plain Guidance Sentence (No nested bordered box) */}
-      <div className="mt-5 rounded-xl bg-teal-50/60 p-4 dark:bg-teal-950/30">
-        <div className="flex items-start gap-3">
-          <LightbulbIcon className="h-5 w-5 text-teal-700 mt-0.5 shrink-0 dark:text-teal-300" />
+      <div className="mt-2.5 sm:mt-5 rounded-xl bg-teal-50/60 p-2.5 sm:p-4 dark:bg-teal-950/30">
+        <div className="flex items-start gap-2 sm:gap-3">
+          <LightbulbIcon className="h-4 w-4 sm:h-5 sm:w-5 text-teal-700 mt-0.5 shrink-0 dark:text-teal-300" />
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-teal-900 dark:text-teal-200">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-teal-900 dark:text-teal-200">
               Today&apos;s Family Guidance:
             </span>
-            <p className="mt-0.5 text-base font-medium text-teal-950 dark:text-teal-100 leading-relaxed">
+            <p className="mt-0.5 text-xs sm:text-base font-medium text-teal-950 dark:text-teal-100 leading-snug sm:leading-relaxed">
               {advice.plainAdvice}
             </p>
           </div>
@@ -126,7 +117,8 @@ export function AirQualityCard({
 
       {/* 24-Hour Forecast Chart with Cleanest Window & Current Hour Indicator */}
       <ForecastChart
-        hourlyForecast={hourlyForecast}
+        hourlyForecast={syncedForecast}
+        currentAqi={current.aqi}
         timeZone={location.timeZone}
         cleanestWindowStart={advice.cleanestWindowStart}
         cleanestWindowEnd={advice.cleanestWindowEnd}

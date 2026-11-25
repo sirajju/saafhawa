@@ -119,4 +119,53 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     const editBtn = page.getByRole('button', { name: /Edit household profile/i });
     await expect(editBtn).toBeVisible();
   });
+
+  test('mobile 390px: guidance sentence is fully readable without scrolling and not covered by Ask button', async ({
+    page,
+  }) => {
+    await page.route('**/api/plan', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(MOCK_PLAN),
+      });
+    });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.evaluate((plan) => {
+      localStorage.setItem('saafhawa_profile', JSON.stringify(plan.householdProfile));
+    }, MOCK_PLAN);
+    await page.reload();
+
+    // Guidance heading and text must be visible without scrolling
+    const guidanceSection = page.getByText(/Today's Family Guidance:/i);
+    await expect(guidanceSection).toBeVisible();
+
+    const guidanceBox = await guidanceSection.boundingBox();
+    expect(guidanceBox).not.toBeNull();
+    // Bounding box of guidance must sit comfortably in top half of 844px viewport (< 600px from top)
+    expect(guidanceBox!.y + guidanceBox!.height).toBeLessThan(600);
+
+    // Floating Ask Assistant button is present at the bottom
+    const askButton = page.getByRole('button', { name: /Ask SaafHawa Assistant/i });
+    await expect(askButton).toBeVisible();
+    const askButtonBox = await askButton.boundingBox();
+    expect(askButtonBox).not.toBeNull();
+
+    // Ensure the floating button does not overlap the guidance sentence
+    const hasOverlap =
+      guidanceBox!.x < askButtonBox!.x + askButtonBox!.width &&
+      guidanceBox!.x + guidanceBox!.width > askButtonBox!.x &&
+      guidanceBox!.y < askButtonBox!.y + askButtonBox!.height &&
+      guidanceBox!.y + guidanceBox!.height > askButtonBox!.y;
+    expect(hasOverlap).toBe(false);
+
+    // Ensure main container has sufficient bottom padding (at least 100px) so button never obscures content
+    const bottomPadding = await page.evaluate(() => {
+      const main = document.getElementById('main-content');
+      return main ? parseFloat(window.getComputedStyle(main).paddingBottom) : 0;
+    });
+    expect(bottomPadding).toBeGreaterThanOrEqual(100);
+  });
 });

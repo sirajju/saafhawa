@@ -72,3 +72,20 @@ export const DESIGN_SYSTEM = {
       'inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800',
   },
 } as const;
+
+export function getAqiTextColorClass(category: string | null | undefined, aqi: number | null | undefined): string {
+  const normCategory = (category || '').toLowerCase();
+  if (normCategory.includes('severe') || normCategory.includes('hazardous') || (typeof aqi === 'number' && aqi > 400)) {
+    return 'text-rose-700 dark:text-rose-400';
+  }
+  if (normCategory.includes('very poor') || normCategory.includes('very unhealthy') || (typeof aqi === 'number' && aqi > 300)) {
+    return 'text-purple-700 dark:text-purple-400';
+  }
+  if (normCategory.includes('poor') || normCategory.includes('unhealthy') || (typeof aqi === 'number' && aqi > 200)) {
+    return 'text-orange-600 dark:text-orange-400';
+  }
+  if (normCategory.includes('moderate') || (typeof aqi === 'number' && aqi > 100)) {
+    return 'text-amber-600 dark:text-amber-400';
+  }
+  return 'text-emerald-600 dark:text-emerald-400';
+}

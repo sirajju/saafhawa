@@ -108,7 +108,7 @@ export default function HomePage() {
         isLoading={isLoading}
       />
 
-      <main id="main-content" className="flex-1 w-full max-w-full overflow-x-hidden min-w-0 pb-12">
+      <main id="main-content" className="flex-1 w-full max-w-full overflow-x-hidden min-w-0 pb-32 sm:pb-16">
         <div
           role="status"
           aria-live="polite"

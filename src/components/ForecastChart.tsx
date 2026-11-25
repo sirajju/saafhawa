@@ -18,6 +18,7 @@ interface ForecastChartProps {
   timeZone?: string;
   cleanestWindowStart?: string;
   cleanestWindowEnd?: string;
+  currentAqi?: number | null;
 }
 
 function getAqiBarColor(aqi: number | null): string {
@@ -35,10 +36,17 @@ export function ForecastChart({
   timeZone = 'Asia/Kolkata',
   cleanestWindowStart,
   cleanestWindowEnd,
+  currentAqi,
 }: ForecastChartProps) {
   if (!hourlyForecast || hourlyForecast.length === 0) return null;
 
-  const points = hourlyForecast.slice(0, 24);
+  const rawPoints = hourlyForecast.slice(0, 24);
+  const points = rawPoints.map((p, idx) => {
+    if (idx === 0 && typeof currentAqi === 'number') {
+      return { ...p, aqi: currentAqi };
+    }
+    return p;
+  });
   const aqiValues = points.map((p) => (typeof p.aqi === 'number' ? p.aqi : 0));
   const maxAqi = Math.max(400, ...aqiValues);
   const minAqi = Math.min(...aqiValues.filter((v) => v > 0));

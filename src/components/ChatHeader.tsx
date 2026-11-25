@@ -1,12 +1,22 @@
 import React from 'react';
 import { ChatIcon, CloseIcon } from './ui/Icons';
+import { formatMeasurementTime } from '@/lib/air-quality/cpcb-aqi';
 
-interface ChatHeaderProps {
+export interface ChatHeaderProps {
   isSampleData?: boolean;
+  dataSource?: string;
+  measuredTime?: string;
+  timeZone?: string;
   onClose?: () => void;
 }
 
-export function ChatHeader({ isSampleData = false, onClose }: ChatHeaderProps) {
+export function ChatHeader({
+  isSampleData = false,
+  dataSource,
+  measuredTime,
+  timeZone = 'Asia/Kolkata',
+  onClose,
+}: ChatHeaderProps) {
   return (
     <div className="border-b border-slate-200 bg-white p-4 sm:px-5 sm:py-3.5 dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center justify-between">
@@ -40,10 +50,16 @@ export function ChatHeader({ isSampleData = false, onClose }: ChatHeaderProps) {
               <span>Sample Data Mode</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-semibold text-teal-800 dark:bg-teal-950 dark:text-teal-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-600 dark:bg-teal-400 animate-pulse" />
-              <span>Live Tools Active</span>
-            </span>
+            <div className="flex flex-col items-end text-right text-xs">
+              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                {dataSource || 'Open-Meteo (CAMS model)'}
+              </span>
+              {measuredTime && (
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                  Measured {formatMeasurementTime(measuredTime, timeZone)}
+                </span>
+              )}
+            </div>
           )}
 
           {onClose && (
