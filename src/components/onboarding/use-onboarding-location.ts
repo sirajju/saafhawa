@@ -1,6 +1,5 @@
 import { useState, RefObject } from 'react';
 import { PlanRequest } from '@/lib/plan/types';
-import { reverseGeocodeCoordinates } from '@/lib/air-quality/reverse-geocoder';
 
 export function useOnboardingLocation(
   setFormData: React.Dispatch<React.SetStateAction<PlanRequest>>,
@@ -27,14 +26,31 @@ export function useOnboardingLocation(
         setFormData((prev) => ({ ...prev, place: coordsStr, coordinates: coordsStr }));
         setAreaNote('Looking up your locality…');
 
-        void reverseGeocodeCoordinates(latitude, longitude)
-          .then((rev) => {
-            if (rev?.formattedAddress) {
-              setFormData((prev) => ({ ...prev, place: rev.formattedAddress, coordinates: coordsStr }));
-              setAreaNote(`Found your location near ${rev.formattedAddress}.`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        fetch(`/api/reverse-geocode?lat=${latitude}&lon=${longitude}`, {
+          signal: controller.signal,
+          headers: { Accept: 'application/json' },
+        })
+          .then(async (res) => {
+            clearTimeout(timeoutId);
+            if (!res.ok) throw new Error('Reverse geocode failed');
+            const data = await res.json();
+            if (data?.formattedAddress) {
+              setFormData((prev) => ({ ...prev, place: data.formattedAddress, coordinates: coordsStr }));
+              setAreaNote(`Found your location near ${data.formattedAddress}.`);
+              setAreaError(null);
+            } else {
+              throw new Error('No locality found');
             }
           })
-          .catch(() => {})
+          .catch(() => {
+            clearTimeout(timeoutId);
+            setFormData((prev) => ({ ...prev, place: prev.place || coordsStr, coordinates: coordsStr }));
+            setAreaNote("Location found. Couldn't get the area name, but your plan will use your exact position.");
+            setAreaError(null);
+          })
           .finally(() => {
             setIsLocating(false);
           });

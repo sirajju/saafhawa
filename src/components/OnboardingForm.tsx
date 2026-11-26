@@ -88,19 +88,19 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
   };
 
   return (
-    <div id="onb" className="onboarding-flow wrap">
-      <div className="onboarding-col">
+    <main id="onb" className="wrap">
+      <div className="onb">
         <div
-          className="step-progress"
+          className="steps"
           role="progressbar"
           aria-valuenow={currentStep}
           aria-valuemin={1}
           aria-valuemax={3}
           aria-label={`Step ${currentStep} of 3`}
         >
-          <div className={`step-bar ${currentStep >= 1 ? 'active' : ''}`} />
-          <div className={`step-bar ${currentStep >= 2 ? 'active' : ''}`} />
-          <div className={`step-bar ${currentStep >= 3 ? 'active' : ''}`} />
+          <i className={currentStep >= 1 ? 'on' : ''} />
+          <i className={currentStep >= 2 ? 'on' : ''} />
+          <i className={currentStep >= 3 ? 'on' : ''} />
         </div>
 
         {currentStep === 1 && (
@@ -154,29 +154,33 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
             }}
           />
         )}
+      </div>
 
-        <div className="form-actions">
-          {currentStep > 1 && (
-            <button
-              type="button"
-              onClick={handleBack}
-              className="btn btn-secondary"
-              aria-label="Back to previous step"
-            >
-              Back
-            </button>
-          )}
+      <div className="onb-bar">
+        <div className="inner">
           <button
-            id="onb-next"
             type="button"
-            onClick={handleNext}
+            className="btn btn-ghost"
+            id="onb-back"
+            onClick={handleBack}
+            style={{ visibility: currentStep === 1 ? 'hidden' : 'visible' }}
+            aria-label="Back to previous step"
+          >
+            Back
+          </button>
+          <span className="step-count" id="onb-count">
+            Step {currentStep} of 3
+          </span>
+          <button
+            type="button"
             className="btn btn-primary"
-            style={{ minWidth: '160px' }}
+            id="onb-next"
+            onClick={handleNext}
           >
             {currentStep === 3 ? 'See my plan' : 'Continue'}
           </button>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

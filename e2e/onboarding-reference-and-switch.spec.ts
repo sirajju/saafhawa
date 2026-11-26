@@ -130,4 +130,49 @@ test.describe('Onboarding Reference Alignment & Floating Switch', () => {
       }
     }
   });
+
+  test('onboarding column is at most 600px wide, action bar is fixed to bottom, and >=24px gap after scroll', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+
+    // 1. Column is at most 600px wide on desktop
+    const onbCol = page.locator('.onb');
+    await expect(onbCol).toBeVisible();
+    const colBox = await onbCol.boundingBox();
+    expect(colBox).not.toBeNull();
+    expect(colBox!.width).toBeLessThanOrEqual(600);
+
+    // 2. Action bar is fixed to the bottom of the screen
+    const actionBar = page.locator('.onb-bar');
+    await expect(actionBar).toBeVisible();
+    const isFixed = await actionBar.evaluate((el) => {
+      const style = window.getComputedStyle(el);
+      return style.position === 'fixed' && (style.bottom === '0px' || parseFloat(style.bottom) === 0);
+    });
+    expect(isFixed).toBe(true);
+
+    const barBox = await actionBar.boundingBox();
+    expect(barBox).not.toBeNull();
+    expect(Math.round(barBox!.y + barBox!.height)).toBe(800);
+
+    // 3. Scroll to the bottom of the page
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(100);
+
+    // Measure the last option / question on step 1
+    const lastQuestion = page.locator('.onb .q').last();
+    await expect(lastQuestion).toBeVisible();
+    const lastQuestionBox = await lastQuestion.boundingBox();
+    expect(lastQuestionBox).not.toBeNull();
+
+    // Bar is still fixed at the bottom after scrolling
+    const barBoxAfterScroll = await actionBar.boundingBox();
+    expect(barBoxAfterScroll).not.toBeNull();
+
+    // Distance between bottom of last option and top of action bar is at least 24px
+    const gap = barBoxAfterScroll!.y - (lastQuestionBox!.y + lastQuestionBox!.height);
+    expect(gap).toBeGreaterThanOrEqual(24);
+  });
 });

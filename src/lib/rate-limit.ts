@@ -186,3 +186,4 @@ export const airQualityRateLimiter = new SlidingWindowRateLimiter(60, 60);
 export const planRateLimiter = new SlidingWindowRateLimiter(30, 60);
 export const chatRateLimiter = new SlidingWindowRateLimiter(15, 60);
 export const advisoryRateLimiter = new SlidingWindowRateLimiter(20, 60);
+export const reverseGeocodeRateLimiter = new SlidingWindowRateLimiter(30, 60);
