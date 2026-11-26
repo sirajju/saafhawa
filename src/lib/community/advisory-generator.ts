@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { createGeminiClient } from '../gemini-client';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
@@ -63,7 +63,7 @@ export async function generateCommunityAdvisory(
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = createGeminiClient(apiKey);
     const prompt = `You are a public health and air quality communication specialist in India.
 Write a concise, impactful WhatsApp broadcast advisory in ${request.language === 'hi' ? 'Hindi (Devanagari script)' : 'English'} for a ${request.audience === 'school_group' ? 'School / Parent Teacher Group' : 'Housing Society / Resident Welfare Association (RWA)'}.
 

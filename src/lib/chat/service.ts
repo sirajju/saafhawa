@@ -1,4 +1,5 @@
-import { GoogleGenAI, type Content, type Part } from '@google/genai';
+import type { GoogleGenAI, Content, Part } from '@google/genai';
+import { createGeminiClient } from '../gemini-client';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { capTextLength, withTimeout } from '../gemini-utils';
@@ -108,7 +109,7 @@ export async function handleChatQuery(
 
   const systemInstruction = buildChatSystemInstruction(request.householdProfile, request.place, isSampleData);
   const toolsExecuted: ExecutedToolRecord[] = [];
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = createGeminiClient(apiKey);
 
   const execResult = await executeWithGeminiRetry<string>({
     primaryModel: model,

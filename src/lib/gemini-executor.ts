@@ -4,6 +4,7 @@ import {
   clearModelExhaustion,
   sanitizeErrorMessage,
   isFatalGeminiError,
+  isGeminiConfigError,
   parseGeminiQuotaError,
   isTransientGeminiError,
 } from './gemini-quota';
@@ -13,6 +14,7 @@ export {
   clearModelExhaustion,
   sanitizeErrorMessage,
   isFatalGeminiError,
+  isGeminiConfigError,
   parseGeminiQuotaError,
   isTransientGeminiError,
 };
@@ -52,7 +54,12 @@ export async function executeWithGeminiRetry<T>(
   let failedDueToDailyQuota = false;
   let latestDailyResetAt: number | undefined;
 
-  for (const model of models) {
+  let hadConfigErrorOnPrimary = false;
+
+  for (let modelIdx = 0; modelIdx < models.length; modelIdx++) {
+    const model = models[modelIdx];
+    const isFallbackModel = modelIdx > 0;
+
     const exhaustedUntil = modelExhaustionMap.get(model);
     if (exhaustedUntil && Date.now() < exhaustedUntil) {
       console.warn(`[${label}] Model ${model} is exhausted until ${new Date(exhaustedUntil).toLocaleTimeString()} (skipping).`);
@@ -61,7 +68,7 @@ export async function executeWithGeminiRetry<T>(
       continue;
     }
 
-    const maxRetries = options.maxRetriesPerModel ?? 2;
+    const maxRetries = isFallbackModel && hadConfigErrorOnPrimary ? 0 : (options.maxRetriesPerModel ?? 2);
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const remainingMs = deadline - Date.now();
       if (remainingMs < 1000) break;
@@ -77,7 +84,18 @@ export async function executeWithGeminiRetry<T>(
         sanitizeErrorMessage(err, options.apiKey);
 
         if (isFatalGeminiError(err)) {
+          console.warn(`[${label}] Fatal auth error: ${sanitizeErrorMessage(err, options.apiKey)}`);
           return { data: null, error: err, failedDueToBusy: false };
+        }
+
+        if (isGeminiConfigError(err)) {
+          if (!isFallbackModel) {
+            hadConfigErrorOnPrimary = true;
+          }
+          console.warn(
+            `[${label}] Configuration error on model ${model} (404/400): ${sanitizeErrorMessage(err, options.apiKey)}. Skipping retries${!isFallbackModel && models.length > 1 ? ' and trying fallback model once.' : '.'}`
+          );
+          break;
         }
 
         const quota = parseGeminiQuotaError(err);

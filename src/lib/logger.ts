@@ -37,12 +37,15 @@ export function isNextControlFlowError(error: unknown): boolean {
  * Safe server-side error logger that redacts API keys and secrets.
  * Next.js internal control-flow errors are ignored to prevent noisy build prerender logs.
  */
-export function logServerError(context: string, error: unknown): void {
+export function logServerError(context: string, error: unknown, apiKey?: string): void {
   if (isNextControlFlowError(error)) {
     return;
   }
 
-  const rawMsg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  let rawMsg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  if (apiKey && apiKey.length > 5) {
+    rawMsg = rawMsg.replaceAll(apiKey, '[REDACTED_API_KEY]');
+  }
   // Redact any query param keys, bearer tokens, or Google API keys (AIza...)
   const sanitized = rawMsg
     .replace(/(key|token|apiKey|secret)=([^&\s]+)/gi, '$1=[REDACTED]')

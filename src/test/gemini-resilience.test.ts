@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import {
   executeWithGeminiRetry,
   isFatalGeminiError,
+  isGeminiConfigError,
   isTransientGeminiError,
   sanitizeErrorMessage,
 } from '@/lib/gemini-executor';
@@ -13,16 +14,22 @@ describe('Gemini Resilience & Retry Logic', () => {
     vi.clearAllMocks();
   });
 
-  it('detects fatal 400, 401, 403 errors and transient 429, 503 errors', () => {
-    expect(isFatalGeminiError(new Error('400 Bad Request: Invalid argument'))).toBe(true);
+  it('detects fatal auth errors (401, 403), config errors (404, 400), and transient errors (429, 503)', () => {
     expect(isFatalGeminiError(new Error('401 Unauthorized: Invalid API key'))).toBe(true);
     expect(isFatalGeminiError(new Error('403 Forbidden: Permission denied'))).toBe(true);
+    expect(isFatalGeminiError(new Error('400 Bad Request: Invalid argument'))).toBe(false);
     expect(isFatalGeminiError(new Error('503 Service Unavailable'))).toBe(false);
+
+    expect(isGeminiConfigError(new Error('404 Not Found: models/gemini-flash-lite-latest not found for API version v1'))).toBe(true);
+    expect(isGeminiConfigError(new Error('400 Developer instruction is not enabled for api version v1'))).toBe(true);
+    expect(isGeminiConfigError(new Error('503 Service Unavailable'))).toBe(false);
 
     expect(isTransientGeminiError(new Error('503 Service Unavailable: High demand'))).toBe(true);
     expect(isTransientGeminiError(new Error('429 Resource Exhausted'))).toBe(true);
     expect(isTransientGeminiError(new Error('Model is overloaded'))).toBe(true);
     expect(isTransientGeminiError(new Error('401 Unauthorized'))).toBe(false);
+    expect(isTransientGeminiError(new Error('404 Not Found'))).toBe(false);
+    expect(isTransientGeminiError(new Error('400 Bad Request'))).toBe(false);
   });
 
   it('sanitizes API keys and sensitive tokens from error messages', () => {
@@ -109,6 +116,34 @@ describe('Gemini Resilience & Retry Logic', () => {
     expect(res.failedDueToBusy).toBe(false);
     expect(fn).toHaveBeenCalledWith('gemini-3.8-flash', expect.any(Number));
     expect(fn).toHaveBeenCalledWith('gemini-2.5-flash', expect.any(Number));
+  });
+
+  it('treats 404 and 400 as configuration errors: does not retry, tries fallback model once, and logs clearly', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fn = vi.fn().mockImplementation((model: string) => {
+      if (model === 'gemini-flash-lite-latest') {
+        return Promise.reject(new Error('404 Not Found: models/gemini-flash-lite-latest is not found for API version v1'));
+      }
+      return Promise.resolve('fallback-model-worked');
+    });
+
+    const res = await executeWithGeminiRetry({
+      label: 'test-config-404',
+      primaryModel: 'gemini-flash-lite-latest',
+      fallbackModel: 'gemini-2.5-flash-lite',
+      fn,
+      maxRetriesPerModel: 2,
+    });
+
+    expect(res.data).toBe('fallback-model-worked');
+    expect(res.modelUsed).toBe('gemini-2.5-flash-lite');
+    expect(fn).toHaveBeenCalledTimes(2);
+    expect(fn).toHaveBeenNthCalledWith(1, 'gemini-flash-lite-latest', expect.any(Number));
+    expect(fn).toHaveBeenNthCalledWith(2, 'gemini-2.5-flash-lite', expect.any(Number));
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[test-config-404] Configuration error on model gemini-flash-lite-latest (404/400)')
+    );
+    warnSpy.mockRestore();
   });
 
   it('marks failedDueToBusy: true when all retries and fallback models fail on 429/503', async () => {

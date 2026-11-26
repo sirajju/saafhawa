@@ -26,14 +26,31 @@ export function isFatalGeminiError(error: unknown): boolean {
   const msg = error instanceof Error ? error.message : String(error);
   const errObj = error as { status?: number; code?: number | string; statusCode?: number };
   const status = errObj.status ?? errObj.statusCode;
-  if (status === 400 || status === 401 || status === 403) return true;
-  if (errObj.code === 400 || errObj.code === 401 || errObj.code === 403) return true;
+  if (status === 401 || status === 403) return true;
+  if (errObj.code === 401 || errObj.code === 403) return true;
   return (
-    msg.includes('400') ||
     msg.includes('401') ||
     msg.includes('403') ||
     msg.includes('API_KEY_INVALID') ||
     msg.includes('PERMISSION_DENIED')
+  );
+}
+
+export function isGeminiConfigError(error: unknown): boolean {
+  if (!error) return false;
+  const msg = error instanceof Error ? error.message : String(error);
+  const lower = msg.toLowerCase();
+  const errObj = error as { status?: number; code?: number | string; statusCode?: number };
+  const status = errObj.status ?? errObj.statusCode;
+  if (status === 404 || status === 400) return true;
+  if (errObj.code === 404 || errObj.code === 400) return true;
+  return (
+    lower.includes('404') ||
+    lower.includes('not found') ||
+    lower.includes('400') ||
+    lower.includes('developer instruction') ||
+    lower.includes('bad request') ||
+    lower.includes('invalid argument')
   );
 }
 
@@ -118,7 +135,7 @@ export function parseGeminiQuotaError(error: unknown): QuotaAnalysis {
 }
 
 export function isTransientGeminiError(error: unknown): boolean {
-  if (!error || isFatalGeminiError(error)) return false;
+  if (!error || isFatalGeminiError(error) || isGeminiConfigError(error)) return false;
   const msg = error instanceof Error ? error.message : String(error);
   const lower = msg.toLowerCase();
   const errObj = error as { status?: number; code?: number | string };

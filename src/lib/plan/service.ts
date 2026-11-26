@@ -1,7 +1,4 @@
 import { ACTION_CATALOGUE, ActionDefinition } from '../impact/catalogue';
-import { calculateActionImpact } from '../impact/calculator';
-import { calculateDeduplicatedTotals } from '../impact/deduplication';
-import { ActionImpactResult } from '../impact/types';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { buildPlanPrompt } from './prompt-builder';
@@ -9,18 +6,17 @@ import { getRuleBasedFallbackActions } from './fallback';
 import { defaultGeminiGenerator } from './gemini-client';
 import { resolvePlanConsistency } from './consistency';
 import { pruneCleanAirActions } from './consistency-scoring';
-import { generateBasisExplanation } from './basis-generator';
+import { buildPlannedActionsAndSummary } from './plan-impact-summary';
 import { buildForecastAdvice } from '../air-quality/forecast-advice';
 import { executeWithGeminiRetry } from '../gemini-executor';
 import { buildPlanCacheKey, getCachedPlan, setCachedPlan } from '../gemini-cache';
+import { logServerError } from '../logger';
 import {
   GeminiPlanOutputSchema,
   GeminiSelectedAction,
-  PlannedAction,
   PlanRequest,
   PlanRequestSchema,
   PlanResponse,
-  PlanSummary,
 } from './types';
 
 export interface GeneratePlanOptions {
@@ -106,10 +102,16 @@ export async function generateHouseholdPlan(
           selectedActions = validActions.slice(0, 8);
           modelUsed = execResult.modelUsed;
         } else {
+          logServerError(
+            'PlanService',
+            new Error(`Gemini plan output contained fewer than 4 valid actions (found ${validActions.length})`),
+            apiKey
+          );
           generationMethod = 'rule_based_fallback';
           fallbackReason = 'model_error';
         }
-      } catch {
+      } catch (err: unknown) {
+        logServerError('PlanService', err, apiKey);
         generationMethod = 'rule_based_fallback';
         fallbackReason = 'model_error';
       }
@@ -118,8 +120,11 @@ export async function generateHouseholdPlan(
       if (execResult.failedDueToDailyQuota) {
         fallbackReason = 'daily_quota_exhausted';
         dailyQuotaResetTime = execResult.dailyQuotaResetTime;
+      } else if (execResult.failedDueToBusy) {
+        fallbackReason = 'gemini_busy';
       } else {
-        fallbackReason = execResult.failedDueToBusy ? 'gemini_busy' : 'model_error';
+        fallbackReason = 'model_error';
+        logServerError('PlanService', execResult.error || new Error('Gemini plan execution failed without output'), apiKey);
       }
     }
   } else {
@@ -147,54 +152,15 @@ export async function generateHouseholdPlan(
   selectedActions = resolvePlanConsistency(selectedActions, profile, airQualityContext);
   selectedActions = pruneCleanAirActions(selectedActions, isCleanAir, catalogueMap);
 
-  const actionImpacts: ActionImpactResult[] = [];
-  const plannedActions: PlannedAction[] = selectedActions.map((selected) => {
-    const actionDef = catalogueMap.get(selected.actionId)!;
-    const impact = calculateActionImpact(actionDef, profile, airQualityContext);
-    actionImpacts.push(impact);
-
-    const basisExplanation = generateBasisExplanation(actionDef.id, profile, airQuality.current.aqi, cleanestWindowSpan);
-    let timeOfDay = selected.suggestedTimeOfDay;
-    if (actionDef.id === 'wear_n95_mask_outside' && profile.commutersCount === 0) {
-      timeOfDay = 'Any outdoor walks or errands';
-    } else if (
-      (actionDef.id === 'ventilate_at_cleanest_afternoon_hour' ||
-        actionDef.id === 'shift_outdoor_exercise_to_cleanest_hour' ||
-        actionDef.id === 'senior_indoor_morning_walk') &&
-      (!timeOfDay || timeOfDay.toLowerCase().includes('midday'))
-    ) {
-      timeOfDay = `Cleanest window (${cleanestWindowSpan})`;
-    }
-
-    return {
-      actionId: actionDef.id,
-      title: actionDef.title,
-      description: actionDef.description,
-      category: actionDef.category,
-      suggestedTimeOfDay: timeOfDay,
-      reason: isCleanAir
-        ? selected.reason.replace(/severe smog/gi, 'outdoor pollution').replace(/ground-level temperature inversion concentrates severe smog outdoors/gi, 'routine respiratory hygiene')
-        : selected.reason,
-      basisExplanation,
-      costRupees: actionDef.costRupees ?? 0,
-      costLabel: actionDef.costLabel ?? 'Free (₹0)',
-      exposureReduction: impact.exposureReduction,
-      emissionReduction: impact.emissionReduction,
-      methodologyNotes: impact.methodologyNotes,
-    };
-  });
-
-  plannedActions.sort((a, b) => ((a.costRupees ?? 0) > 0 ? 1 : 0) - ((b.costRupees ?? 0) > 0 ? 1 : 0));
-  const deduped = calculateDeduplicatedTotals(actionImpacts, profile, airQualityContext.currentPm25);
-
-  const summary: PlanSummary = {
-    totalActionsCount: plannedActions.length,
-    totalPm25InhaledDoseAvoidedUg: deduped.totalPm25InhaledDoseAvoidedUg,
-    isExposureUnknown: deduped.isExposureUnknown,
-    totalPm25EmissionsSavedGrams: deduped.totalPm25EmissionsSavedGrams,
-    totalCo2EmissionsSavedGrams: deduped.totalCo2EmissionsSavedGrams,
-    totalCo2EmissionsSavedKg: Number((deduped.totalCo2EmissionsSavedGrams / 1000).toFixed(2)),
-  };
+  const { plannedActions, summary } = buildPlannedActionsAndSummary(
+    selectedActions,
+    profile,
+    airQuality.current.aqi,
+    airQualityContext,
+    catalogueMap,
+    cleanestWindowSpan,
+    isCleanAir
+  );
 
   const planResult: PlanResponse = {
     location: airQuality.location,
