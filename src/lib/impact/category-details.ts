@@ -1,3 +1,5 @@
+import { AQI_UNAVAILABLE } from '../constants';
+
 /**
  * Returns color and text description for AQI and action categories.
  */
@@ -90,7 +92,7 @@ export function getAqiCategoryDetails(category: string | null | undefined, aqi: 
 
   if ((aqi === null || aqi === undefined) && (!category || category.trim() === '')) {
     return {
-      categoryText: 'unavailable',
+      categoryText: AQI_UNAVAILABLE,
       icon: '🌫️',
       badgeClass: 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600',
       healthSummary: 'Air quality data is currently unavailable for this location.',

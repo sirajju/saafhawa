@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { BrandIcon } from './ui/Icons';
+import { TIMERS } from '@/lib/constants';
 
 const LOADING_MESSAGES = [
   'Connecting to air quality sensors...',
@@ -18,7 +19,7 @@ export function LoadingState() {
   useEffect(() => {
     const interval = setInterval(() => {
       setStepIndex((prev) => (prev < LOADING_MESSAGES.length - 1 ? prev + 1 : prev));
-    }, 1800);
+    }, TIMERS.LOADING_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, []);

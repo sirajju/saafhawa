@@ -141,7 +141,8 @@ describe('Gemini Resilience & Retry Logic', () => {
     expect(fn).toHaveBeenNthCalledWith(1, 'gemini-flash-lite-latest', expect.any(Number));
     expect(fn).toHaveBeenNthCalledWith(2, 'gemini-2.5-flash-lite', expect.any(Number));
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[test-config-404] Configuration error on model gemini-flash-lite-latest (404/400)')
+      '[test-config-404]',
+      expect.stringContaining('Configuration error on model gemini-flash-lite-latest (404/400)')
     );
     warnSpy.mockRestore();
   });
@@ -167,34 +168,23 @@ describe('Vercel Rate Limiter Client IP Resolution', () => {
   const origVercel = process.env.VERCEL;
 
   afterEach(() => {
-    if (origVercel !== undefined) {
-      process.env.VERCEL = origVercel;
-    } else {
-      delete process.env.VERCEL;
-    }
+    if (origVercel !== undefined) process.env.VERCEL = origVercel;
+    else delete process.env.VERCEL;
   });
 
   it('extracts first IP in x-forwarded-for when running on Vercel', () => {
     process.env.VERCEL = '1';
     const req = new NextRequest('http://localhost:3000/api/chat', {
-      headers: {
-        'x-forwarded-for': '203.0.113.195, 10.0.0.1, 10.0.0.2',
-      },
+      headers: { 'x-forwarded-for': '203.0.113.195, 10.0.0.1, 10.0.0.2' },
     });
-
-    const ip = getClientIp(req);
-    expect(ip).toBe('203.0.113.195');
+    expect(getClientIp(req)).toBe('203.0.113.195');
   });
 
   it('extracts x-real-ip when on Vercel and x-forwarded-for is missing', () => {
     process.env.VERCEL = '1';
     const req = new NextRequest('http://localhost:3000/api/chat', {
-      headers: {
-        'x-real-ip': '198.51.100.42',
-      },
+      headers: { 'x-real-ip': '198.51.100.42' },
     });
-
-    const ip = getClientIp(req);
-    expect(ip).toBe('198.51.100.42');
+    expect(getClientIp(req)).toBe('198.51.100.42');
   });
 });

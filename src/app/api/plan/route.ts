@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateHouseholdPlan } from '@/lib/plan/service';
 import { PlanRequestSchema } from '@/lib/plan/types';
+import { VALIDATION_MESSAGES } from '@/lib/constants';
 import { AirQualityError } from '@/lib/air-quality/types';
 import { getClientIp, planRateLimiter } from '@/lib/rate-limit';
 import { readJsonBodyWithLimit } from '@/lib/security';
@@ -42,8 +43,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Invalid Household Profile',
-          message:
-            'Please provide a valid household profile including a place (between 2 and 120 characters) and at least 1 adult.',
+          message: VALIDATION_MESSAGES.INVALID_PROFILE,
         },
         { status: 400 }
       );

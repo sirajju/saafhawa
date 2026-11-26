@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleChatQuery } from '@/lib/chat/service';
 import { ChatRequestSchema } from '@/lib/chat/types';
+import { VALIDATION_MESSAGES } from '@/lib/constants';
 import { chatRateLimiter, getClientIp } from '@/lib/rate-limit';
 import { readJsonBodyWithLimit } from '@/lib/security';
 import { logServerError, isNextControlFlowError } from '@/lib/logger';
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Validation Error',
-          message: 'Please provide a valid question under 500 characters.',
+          message: VALIDATION_MESSAGES.INVALID_CHAT_QUERY,
         },
         { status: 400 }
       );

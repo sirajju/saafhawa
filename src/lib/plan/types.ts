@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ActionCategory, ExposureReduction, EmissionReduction } from '../impact/types';
 import { CleanLocation, CurrentAirQuality, HourlyForecastPoint } from '../air-quality/types';
+import { VALIDATION_LIMITS, VALIDATION_MESSAGES } from '../constants';
 
 // ============================================================================
 // Plan Request Schema
@@ -10,12 +11,12 @@ export const PlanRequestSchema = z.object({
   place: z
     .string()
     .trim()
-    .min(2, 'Place name or pincode must be at least 2 characters')
-    .max(120, 'Place name or pincode cannot exceed 120 characters'),
+    .min(VALIDATION_LIMITS.PLACE_MIN_LENGTH, VALIDATION_MESSAGES.PLACE_LENGTH)
+    .max(VALIDATION_LIMITS.PLACE_MAX_LENGTH, VALIDATION_MESSAGES.PLACE_LENGTH),
   coordinates: z
     .string()
     .trim()
-    .max(50, 'Coordinates cannot exceed 50 characters')
+    .max(VALIDATION_LIMITS.COORDINATES_MAX_LENGTH, 'Coordinates cannot exceed 50 characters')
     .regex(/^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/, 'Coordinates must be in "lat, lon" format')
     .optional(),
   adultsCount: z.number().int().min(1, 'At least 1 adult is required').max(30, 'Cannot exceed 30 adults').default(2),

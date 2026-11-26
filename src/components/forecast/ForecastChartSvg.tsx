@@ -3,6 +3,7 @@
 import React from 'react';
 import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
 import { getAqiCategoryCssVar } from '@/lib/design-system';
+import { CHART_SVG_DIMENSIONS } from '@/lib/constants';
 
 export interface ChartPoint {
   dateTime: string;
@@ -22,8 +23,8 @@ interface ForecastChartSvgProps {
 export function ForecastChartSvg({
   points,
   timeZone,
-  chartWidth = 720,
-  maxAqi = 400,
+  chartWidth = CHART_SVG_DIMENSIONS.DEFAULT_WIDTH,
+  maxAqi = CHART_SVG_DIMENSIONS.MAX_AQI_SCALE,
   cleanestIndex = 0,
   cleanestWindowLength = 3,
   srSummary,
@@ -61,9 +62,9 @@ export function ForecastChartSvg({
   const isSmallScreen = width < 520;
   const labelStep = isSmallScreen ? 6 : 3;
 
-  const top = 10;
-  const base = 138;
-  const totalHeight = 200;
+  const top = CHART_SVG_DIMENSIONS.TOP_OFFSET;
+  const base = CHART_SVG_DIMENSIONS.BASE_Y;
+  const totalHeight = CHART_SVG_DIMENSIONS.TOTAL_HEIGHT;
   const count = Math.max(1, points.length);
   const bw = width / count;
   const barWidth = Math.max(4, bw - (isSmallScreen ? 3 : 5));
