@@ -21,8 +21,11 @@ export const SECURITY_HEADERS_LIST = [
       "style-src 'self' 'unsafe-inline';",
       "img-src 'self' data: https:;",
       "font-src 'self';",
-      "connect-src 'self' https://maps.googleapis.com;",
+      "connect-src 'self';",
       "frame-ancestors 'none';",
+      "object-src 'none';",
+      "base-uri 'self';",
+      "form-action 'self';",
     ].join(' '),
   },
 ] as const;

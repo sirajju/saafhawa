@@ -6,10 +6,7 @@ import {
   readJsonBodyWithLimit,
 } from '@/lib/security';
 import {
-  airQualityRateLimiter,
-  planRateLimiter,
-  chatRateLimiter,
-  advisoryRateLimiter,
+  airQualityRateLimiter, planRateLimiter, chatRateLimiter, advisoryRateLimiter,
 } from '@/lib/rate-limit';
 import { GET as airQualityHandler } from '@/app/api/air-quality/route';
 import { POST as planHandler } from '@/app/api/plan/route';
@@ -95,6 +92,11 @@ describe('Security - Request Body Size Limiting', () => {
 describe('Security - Mandatory Security Headers', () => {
   it('defines comprehensive security headers including CSP, HSTS, X-Frame and nosniff', () => {
     expect(SECURITY_HEADERS['Content-Security-Policy']).toContain("default-src 'self'");
+    expect(SECURITY_HEADERS['Content-Security-Policy']).toContain("connect-src 'self'");
+    expect(SECURITY_HEADERS['Content-Security-Policy']).not.toContain('maps.googleapis.com');
+    expect(SECURITY_HEADERS['Content-Security-Policy']).toContain("object-src 'none'");
+    expect(SECURITY_HEADERS['Content-Security-Policy']).toContain("base-uri 'self'");
+    expect(SECURITY_HEADERS['Content-Security-Policy']).toContain("form-action 'self'");
     expect(SECURITY_HEADERS['Strict-Transport-Security']).toContain('max-age=');
     expect(SECURITY_HEADERS['X-Frame-Options']).toBe('DENY');
     expect(SECURITY_HEADERS['X-Content-Type-Options']).toBe('nosniff');

@@ -24,6 +24,11 @@ describe('Security - Configuration & Header Realization', () => {
     expect(csp).toBeDefined();
     expect(csp).not.toContain("'unsafe-eval'");
     expect(csp).toContain("script-src 'self' 'unsafe-inline'");
+    expect(csp).toContain("connect-src 'self'");
+    expect(csp).not.toContain('maps.googleapis.com');
+    expect(csp).toContain("object-src 'none'");
+    expect(csp).toContain("base-uri 'self'");
+    expect(csp).toContain("form-action 'self'");
   });
 });
 
