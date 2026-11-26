@@ -96,7 +96,6 @@ describe('Mobile Guidance Visibility and Safe Bottom Padding', () => {
       totalCo2EmissionsSavedGrams: 0,
       totalCo2EmissionsSavedKg: 0,
     },
-    isSampleData: false,
   };
 
   it('renders family guidance prominently with reassuring plain advice', () => {

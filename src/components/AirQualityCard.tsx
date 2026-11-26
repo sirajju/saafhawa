@@ -16,7 +16,6 @@ import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
 interface AirQualityCardProps {
   location: CleanLocation;
   current: CurrentAirQuality;
-  isSampleData?: boolean;
   hourlyForecast?: ForecastPoint[];
   householdProfile?: ForecastAdviceHousehold | null;
 }

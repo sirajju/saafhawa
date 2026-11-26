@@ -43,7 +43,6 @@ export interface AirQualityToolResult {
   locationName: string;
   dataSource?: string;
   measuredAtLocalTime?: string;
-  isSampleData?: boolean;
   currentAqi: number | null;
   category: string | null;
   dominantPollutant: string | null;
@@ -77,7 +76,6 @@ export async function executeGetAirQualityTool(
     locationName: report.location.name,
     dataSource: report.current.dataSource || 'Open-Meteo (CAMS model)',
     measuredAtLocalTime: formatMeasurementTime(report.current.dateTime, timeZone),
-    isSampleData: Boolean(report.isSampleData || report.current.isSampleData),
     currentAqi: report.current.aqi,
     category: report.current.category,
     dominantPollutant: report.current.dominantPollutant,

@@ -80,13 +80,11 @@ export async function fetchViaGoogle(
       indexDisplayName: primaryIndex.indexDisplayName,
       pm25,
       pm10,
-      isSampleData: false,
       dataSource: 'Google Air Quality',
       attribution: 'Air quality data provided by Google Air Quality API',
     },
     hourlyForecast,
     cachedAt: new Date().toISOString(),
-    isSampleData: false,
     dataSource: 'Google Air Quality',
     attribution: 'Air quality data provided by Google Air Quality API',
   };

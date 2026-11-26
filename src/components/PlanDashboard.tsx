@@ -86,7 +86,6 @@ export function PlanDashboard({
         <AirQualityCard
           location={plan.location}
           current={plan.currentAirQuality}
-          isSampleData={plan.isSampleData}
           hourlyForecast={plan.hourlyForecast}
           householdProfile={profile}
         />
@@ -115,7 +114,6 @@ export function PlanDashboard({
           householdProfile={profile || undefined}
           place={lookupQuery}
           displayPlace={currentPlaceName}
-          isSampleData={plan.isSampleData}
           dataSource={plan.currentAirQuality?.dataSource}
           measuredTime={plan.currentAirQuality?.dateTime}
           timeZone={plan.location.timeZone}
@@ -174,7 +172,6 @@ export function PlanDashboard({
             householdProfile={profile || undefined}
             place={lookupQuery}
             displayPlace={currentPlaceName}
-            isSampleData={plan.isSampleData}
             dataSource={plan.currentAirQuality?.dataSource}
             measuredTime={plan.currentAirQuality?.dateTime}
             timeZone={plan.location.timeZone}

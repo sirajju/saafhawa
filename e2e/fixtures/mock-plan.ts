@@ -128,5 +128,4 @@ export const MOCK_PLAN = {
     totalCo2EmissionsSavedGrams: 3400,
     totalCo2EmissionsSavedKg: 3.4,
   },
-  isSampleData: true,
 };

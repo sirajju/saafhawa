@@ -1,16 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { BrandIcon, AlertTriangleIcon } from './ui/Icons';
+import { BrandIcon } from './ui/Icons';
 
-interface LoadingStateProps {
-  isSampleData?: boolean;
-}
-
-const getLoadingMessages = (isSample: boolean) => [
-  isSample
-    ? 'Connecting to reference air quality data...'
-    : 'Connecting to air quality sensors...',
+const LOADING_MESSAGES = [
+  'Connecting to air quality sensors...',
   'Analyzing PM2.5, PM10, and diurnal temperature inversion...',
   'Evaluating 21 mitigation strategies for your family...',
   'Consulting Gemini AI for customized routine optimizations...',
@@ -18,17 +12,16 @@ const getLoadingMessages = (isSample: boolean) => [
   'Finalizing your customized clean air plan...',
 ];
 
-export function LoadingState({ isSampleData = false }: LoadingStateProps) {
+export function LoadingState() {
   const [stepIndex, setStepIndex] = useState(0);
-  const loadingMessages = getLoadingMessages(isSampleData);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setStepIndex((prev) => (prev < loadingMessages.length - 1 ? prev + 1 : prev));
+      setStepIndex((prev) => (prev < LOADING_MESSAGES.length - 1 ? prev + 1 : prev));
     }, 1800);
 
     return () => clearInterval(interval);
-  }, [loadingMessages.length]);
+  }, []);
 
   return (
     <div aria-hidden="true" className="wrap" style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -55,17 +48,10 @@ export function LoadingState({ isSampleData = false }: LoadingStateProps) {
                 Crafting Your Winter Smog Action Plan
               </h2>
               <p className="caption" style={{ color: 'var(--ink-2)', margin: '4px 0 0' }}>
-                {loadingMessages[stepIndex]}
+                {LOADING_MESSAGES[stepIndex]}
               </p>
             </div>
           </div>
-
-          {isSampleData && (
-            <div className="pill" style={{ color: 'var(--aqi-poor)', background: 'var(--aqi-poor-soft)', border: '1px solid var(--aqi-poor)' }}>
-              <AlertTriangleIcon className="h-4 w-4" />
-              <span>Sample Data Mode</span>
-            </div>
-          )}
         </div>
 
         {/* Pulse Bar */}
@@ -76,7 +62,7 @@ export function LoadingState({ isSampleData = false }: LoadingStateProps) {
               background: 'var(--brand)',
               borderRadius: 999,
               transition: 'width 0.5s ease-out',
-              width: `${Math.min(100, Math.round(((stepIndex + 1) / loadingMessages.length) * 100))}%`,
+              width: `${Math.min(100, Math.round(((stepIndex + 1) / LOADING_MESSAGES.length) * 100))}%`,
             }}
           />
         </div>

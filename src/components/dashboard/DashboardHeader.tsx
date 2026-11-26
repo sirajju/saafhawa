@@ -56,17 +56,6 @@ export function DashboardHeader({
         )}
       </div>
 
-      {plan.isSampleData && (
-        <div
-          role="status"
-          aria-label="Sample data mode active notice"
-          className="mb-6 inline-flex items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-[13px] text-[var(--ink-2)]"
-        >
-          <AlertTriangleIcon className="icon" />
-          <span>Sample Data: Using built-in reference air quality data.</span>
-        </div>
-      )}
-
       {plan.generationMethod === 'rule_based_fallback' && plan.fallbackReason === 'gemini_busy' && (
         <div
           role="status"

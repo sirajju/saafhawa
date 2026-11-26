@@ -173,7 +173,6 @@ export async function generateHouseholdPlan(
     fallbackReason,
     dailyQuotaResetTime,
     modelUsed,
-    isSampleData: Boolean(airQuality.isSampleData || airQuality.current.isSampleData),
   };
 
   if (generationMethod === 'gemini') {

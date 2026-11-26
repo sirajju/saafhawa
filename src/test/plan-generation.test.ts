@@ -111,7 +111,6 @@ describe('Plan Module - POST /api/plan Route Handler', () => {
           dataSource: 'Open-Meteo (CAMS model)',
         },
         hourlyForecast: [],
-        isSampleData: false,
       }),
     });
 

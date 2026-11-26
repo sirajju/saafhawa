@@ -59,7 +59,6 @@ describe('Layout and Interaction Polish Fixes', () => {
     const { container } = render(
       <ChatPanel
         place="Delhi"
-        isSampleData={false}
         dataSource="CPCB Real-time"
         measuredTime="2026-11-25T10:00:00Z"
         timeZone="Asia/Kolkata"

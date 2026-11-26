@@ -48,10 +48,7 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     // 9. Verify plain advice sentence from forecast
     await expect(page.getByText(/For your family today/i)).toBeVisible();
 
-    // 10. Verify single small sample data notice
-    await expect(page.getByRole('status', { name: /Sample data mode active notice/i })).toBeVisible();
-
-    // 11. Verify total daily household impact summary and adjusted overlapping actions note
+    // 10. Verify total daily household impact summary and adjusted overlapping actions note
     await expect(page.getByText(/If you follow today's plan/i)).toBeVisible();
     await expect(
       page.getByText('Overlapping actions are adjusted, so the total can be less than the cards added together.')

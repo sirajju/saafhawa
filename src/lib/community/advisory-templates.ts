@@ -18,9 +18,8 @@ export function generateTemplateAdvisory(
   const source = report.current.dataSource || 'Open-Meteo (CAMS model)';
   const measuredTime = formatMeasurementTime(report.current.dateTime, report.location.timeZone);
 
-  const isSample = Boolean(report.isSampleData || report.current.isSampleData);
-  const aqiLabelHi = isSample ? '⚠️ *वायु गुणवत्ता (नमूना संदर्भ डेटा):*' : '⚠️ *वायु गुणवत्ता:*';
-  const aqiLabelEn = isSample ? '⚠️ *Air Quality (Reference Sample Data):*' : '⚠️ *Air Quality:*';
+  const aqiLabelHi = '⚠️ *वायु गुणवत्ता:*';
+  const aqiLabelEn = '⚠️ *Air Quality:*';
 
   if (language === 'hi') {
     if (audience === 'school_group') {

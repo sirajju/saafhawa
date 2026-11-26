@@ -124,7 +124,6 @@ export const CurrentAirQualitySchema = z.object({
   indexDisplayName: z.string().nullable(),
   pm25: PollutantMeasurementSchema.nullable(),
   pm10: PollutantMeasurementSchema.nullable(),
-  isSampleData: z.boolean().optional(),
   dataSource: z.string().optional(),
   attribution: z.string().optional(),
 });
@@ -150,7 +149,6 @@ export const AirQualityReportSchema = z.object({
   hourlyForecast: z.array(HourlyForecastPointSchema),
   cachedAt: z.string().optional(),
   expiresAt: z.string().optional(),
-  isSampleData: z.boolean().optional(),
   dataSource: z.string().optional(),
   attribution: z.string().optional(),
 });

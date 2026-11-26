@@ -12,7 +12,6 @@ export interface ChatPanelProps {
   place: string;
   displayPlace?: string;
   householdProfile?: HouseholdProfile;
-  isSampleData?: boolean;
   dataSource?: string;
   measuredTime?: string;
   timeZone?: string;
@@ -30,7 +29,6 @@ export function ChatPanel({
   place,
   displayPlace,
   householdProfile,
-  isSampleData = false,
   dataSource,
   measuredTime,
   timeZone,
@@ -139,7 +137,6 @@ export function ChatPanel({
     <section aria-labelledby="chat-heading" className={`card ${className}`}>
       <ChatHeader
         place={shortPlace}
-        isSampleData={isSampleData}
         dataSource={dataSource}
         measuredTime={measuredTime}
         timeZone={timeZone}
@@ -150,7 +147,6 @@ export function ChatPanel({
         messages={messages}
         isLoading={isLoading}
         messagesEndRef={messagesEndRef}
-        isSampleData={isSampleData}
         suggestedPrompts={SAMPLE_PROMPTS}
         onSelectPrompt={handleSendMessage}
         onRetryMessage={handleRetryMessage}

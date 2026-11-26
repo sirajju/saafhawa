@@ -101,7 +101,6 @@ describe('Time Zone - Location-Aware Hourly Forecast Formatting', () => {
         indexDisplayName: 'US EPA AQI',
         pm25: { value: 10.5, units: 'MICROGRAMS_PER_CUBIC_METER' },
         pm10: { value: 20.0, units: 'MICROGRAMS_PER_CUBIC_METER' },
-        isSampleData: false,
       },
       hourlyForecast: [
         {
@@ -115,7 +114,6 @@ describe('Time Zone - Location-Aware Hourly Forecast Formatting', () => {
           pm10: { value: 20.0, units: 'MICROGRAMS_PER_CUBIC_METER' },
         },
       ],
-      isSampleData: false,
     };
 
     const result = await executeGetAirQualityTool(

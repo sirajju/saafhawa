@@ -113,7 +113,6 @@ export async function fetchWaqiNearestStation(
     indexDisplayName: 'India National AQI (CPCB)',
     pm25: pm25Val !== null ? { value: pm25Val, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
     pm10: pm10Val !== null ? { value: pm10Val, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
-    isSampleData: false,
     dataSource: `CPCB Ground Station (${stationName})`,
     attribution: `Ground sensor data from ${stationName} via World Air Quality Index Project (waqi.info) under acceptable use terms`,
   };

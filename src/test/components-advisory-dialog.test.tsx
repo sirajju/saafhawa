@@ -36,7 +36,6 @@ describe('Accessibility - CommunityAdvisoryModal (Focus Trap & Return Focus)', (
           language: 'en',
           generatedAt: new Date().toISOString(),
           advisoryText: 'Mock community advisory text for testing.',
-          isSampleData: true,
         }),
       })
     );

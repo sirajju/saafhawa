@@ -37,7 +37,6 @@ describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () =>
       expect(report.current.pm25?.value).toBeGreaterThanOrEqual(0);
       expect(report.current.pm10?.value).toBeGreaterThanOrEqual(0);
       expect(report.hourlyForecast.length).toBeGreaterThan(0);
-      expect(report.isSampleData).toBeFalsy();
 
       results.push({
         city: p.city,

@@ -118,7 +118,7 @@ export default function HomePage() {
           />
         )}
 
-        {isLoading && <LoadingState isSampleData={plan?.isSampleData} />}
+        {isLoading && <LoadingState />}
 
         {errorMessage && !isLoading && (
           <ErrorState

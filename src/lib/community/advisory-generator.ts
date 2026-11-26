@@ -48,8 +48,6 @@ export async function generateCommunityAdvisory(
     pm25UgM3: report.current.pm25 ? report.current.pm25.value : null,
   };
 
-  const isSample = Boolean(report.isSampleData || report.current.isSampleData);
-
   if (!apiKey) {
     const template = generateTemplateAdvisory(report, request.audience, request.language);
     return {
@@ -57,7 +55,6 @@ export async function generateCommunityAdvisory(
       advisoryText: template.advisoryText,
       audience: request.audience,
       language: request.language,
-      isSampleData: isSample,
       airQualitySnapshot: snapshot,
       generationMethod: 'template',
       fallbackReason: 'no_key',
@@ -76,7 +73,6 @@ LOCATION & AIR QUALITY:
 - Air Quality: AQI ${report.current.aqi ?? 'unavailable'} (${report.current.category ?? 'unavailable'})
 - PM2.5 Level: ${report.current.pm25?.value !== null && report.current.pm25?.value !== undefined ? `${report.current.pm25.value} µg/m³` : 'unavailable'}
 - Dominant Pollutant: ${report.current.dominantPollutant ?? 'unavailable'}
-${isSample ? '- DATA NOTE: This advisory is based on sample reference conditions for New Delhi, not live sensor data. State clearly that this is sample reference data for planning, and do NOT use words like "live" or "real-time".' : ''}
 
 REQUIREMENTS:
 1. Format for WhatsApp: use bold headers (*Title*), numbered points (1️⃣, 2️⃣), and clean bullet points with relevant emojis.
@@ -109,7 +105,6 @@ REQUIREMENTS:
         advisoryText: execResult.data,
         audience: request.audience,
         language: request.language,
-        isSampleData: isSample,
         airQualitySnapshot: snapshot,
         modelUsed: execResult.modelUsed,
         generationMethod: 'gemini',
@@ -129,7 +124,6 @@ REQUIREMENTS:
       ...generateTemplateAdvisory(report, request.audience, request.language),
       audience: request.audience,
       language: request.language,
-      isSampleData: isSample,
       airQualitySnapshot: snapshot,
       generationMethod: 'template',
       fallbackReason,
@@ -140,7 +134,6 @@ REQUIREMENTS:
       ...generateTemplateAdvisory(report, request.audience, request.language),
       audience: request.audience,
       language: request.language,
-      isSampleData: isSample,
       airQualitySnapshot: snapshot,
       generationMethod: 'template',
       fallbackReason: 'model_error',

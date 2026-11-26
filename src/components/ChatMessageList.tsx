@@ -18,7 +18,6 @@ interface ChatMessageListProps {
   messages: ChatMessage[];
   isLoading: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
-  isSampleData?: boolean;
   suggestedPrompts?: string[];
   onSelectPrompt?: (prompt: string) => void;
   onRetryMessage?: (msgIndex: number) => void;
@@ -28,7 +27,6 @@ export function ChatMessageList({
   messages,
   isLoading,
   messagesEndRef,
-  isSampleData = false,
   suggestedPrompts = [],
   onSelectPrompt,
   onRetryMessage,
@@ -85,9 +83,7 @@ export function ChatMessageList({
       {isLoading && (
         <div className="bubble flex items-center gap-2">
           <RefreshIcon className="icon animate-spin text-[var(--brand)]" />
-          <span>
-            {isSampleData ? 'Checking forecast & calculating guidance...' : 'Thinking & checking forecast...'}
-          </span>
+          <span>Thinking &amp; checking forecast...</span>
         </div>
       )}
 

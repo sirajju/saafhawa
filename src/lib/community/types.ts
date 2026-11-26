@@ -17,7 +17,6 @@ export interface AdvisoryResponse {
   advisoryText: string;
   audience: 'housing_society' | 'school_group';
   language: 'en' | 'hi';
-  isSampleData?: boolean;
   airQualitySnapshot: {
     locationName: string;
     aqi: number | null;

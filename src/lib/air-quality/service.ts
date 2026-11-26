@@ -65,11 +65,9 @@ async function fetchViaOpenMeteo(
       ...aqData.current,
       dataSource: 'Open-Meteo (CAMS model)',
       attribution: 'Air quality data provided by Open-Meteo under CC BY 4.0 (Copernicus CAMS model)',
-      isSampleData: false,
     },
     hourlyForecast: aqData.hourlyForecast,
     cachedAt: new Date().toISOString(),
-    isSampleData: false,
     dataSource: 'Open-Meteo (CAMS model)',
     attribution: 'Air quality data provided by Open-Meteo under CC BY 4.0 (Copernicus CAMS model)',
   };
@@ -126,7 +124,6 @@ export async function getAirQualityByLocation(
           current: waqiStation.current,
           hourlyForecast: openMeteoData?.hourlyForecast || [],
           cachedAt: new Date().toISOString(),
-          isSampleData: false,
           dataSource: waqiStation.current.dataSource,
           attribution: waqiStation.current.attribution,
         };

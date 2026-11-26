@@ -7,7 +7,6 @@ import { formatMeasurementTime } from '@/lib/air-quality/cpcb-aqi';
 
 export interface ChatHeaderProps {
   place?: string;
-  isSampleData?: boolean;
   dataSource?: string;
   measuredTime?: string;
   timeZone?: string;
@@ -16,7 +15,6 @@ export interface ChatHeaderProps {
 
 export function ChatHeader({
   place,
-  isSampleData = false,
   dataSource,
   measuredTime,
   timeZone = 'Asia/Kolkata',
@@ -37,16 +35,10 @@ export function ChatHeader({
           Answers use today&apos;s {shortPlace} data
         </p>
         <div className="caption" style={{ fontSize: 13, color: 'var(--ink-3)', marginTop: 2 }}>
-          {isSampleData ? (
-            <span role="status" className="pill" style={{ fontSize: 13, padding: '2px 8px', background: 'var(--surface-2)', border: '1px solid var(--line)' }}>
-              Connected to reference AQI data · Sample Data Mode
-            </span>
-          ) : (
-            <span>
-              <span>{activeSource}</span>
-              {formattedTime && <span> · Measured at: {formattedTime}</span>}
-            </span>
-          )}
+          <span>
+            <span>{activeSource}</span>
+            {formattedTime && <span> · Measured at: {formattedTime}</span>}
+          </span>
         </div>
       </div>
 

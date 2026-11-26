@@ -19,13 +19,10 @@ export async function executeSingleToolCall(
         ? fc.args.place.trim()
         : request.place;
     const airResult = await executeGetAirQualityTool({ place: placeArg }, request.place, fetcher);
-    const isSample = Boolean(airResult.isSampleData);
     toolsExecuted.push({
       toolName: fc.name,
       args: (fc.args as Record<string, unknown>) || {},
-      resultSummary: isSample
-        ? `Retrieved reference sample AQI ${airResult.currentAqi} (${airResult.category}) for ${airResult.locationName}`
-        : `Retrieved AQI ${airResult.currentAqi} (${airResult.category}) for ${airResult.locationName}`,
+      resultSummary: `Retrieved AQI ${airResult.currentAqi} (${airResult.category}) for ${airResult.locationName}`,
     });
     return airResult as unknown as Record<string, unknown>;
   }
@@ -37,12 +34,10 @@ export async function executeSingleToolCall(
         : 'wear_n95_mask_outside';
     const targetPlace = request.place || request.householdProfile?.place;
     let currentPm25: number | null = null;
-    let isSample = false;
     if (targetPlace) {
       try {
         const airReport = await fetcher(targetPlace);
         currentPm25 = airReport.current.pm25?.value ?? null;
-        isSample = Boolean(airReport.isSampleData || airReport.current.isSampleData);
       } catch {
         currentPm25 = null;
       }
@@ -55,7 +50,7 @@ export async function executeSingleToolCall(
     toolsExecuted.push({
       toolName: fc.name,
       args: (fc.args as Record<string, unknown>) || {},
-      resultSummary: `Calculated impact for ${impactResult.actionTitle} (${isSample ? 'sample data' : 'measured data'}, PM2.5: ${currentPm25 ?? 'unknown'} µg/m³): ${impactResult.pm25InhaledDoseAvoidedUg ?? 'unknown'} µg dose avoided`,
+      resultSummary: `Calculated impact for ${impactResult.actionTitle} (PM2.5: ${currentPm25 ?? 'unknown'} µg/m³): ${impactResult.pm25InhaledDoseAvoidedUg ?? 'unknown'} µg dose avoided`,
     });
     return impactResult as unknown as Record<string, unknown>;
   }

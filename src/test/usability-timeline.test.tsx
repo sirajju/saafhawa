@@ -103,7 +103,7 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
     expect(screen.getByText(/0 of 3 done \(0%\)/i)).toBeDefined();
   });
 
-  it('shows sample data once as a single small notice without polluting place name', () => {
+  it('renders clean place name without polluting with sample strings', () => {
     render(
       <PlanDashboard
         plan={MOCK_PLAN}
@@ -118,9 +118,8 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
     expect(heading.textContent).toContain('Connaught Place, New Delhi');
     expect(heading.textContent).not.toContain('(Sample Data');
 
-    // Single small sample data notice
-    const sampleNotice = screen.getByRole('status', { name: /Sample data mode active notice/i });
-    expect(sampleNotice).toBeDefined();
-    expect(sampleNotice.textContent).toContain('Sample Data: Using built-in reference air quality data.');
+    // Confirm no sample data notice is present
+    const sampleNotice = screen.queryByRole('status', { name: /Sample data mode active notice/i });
+    expect(sampleNotice).toBeNull();
   });
 });

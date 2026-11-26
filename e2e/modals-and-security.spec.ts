@@ -52,7 +52,6 @@ test.describe('Modals, Chat & Security Headers', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           advisoryText: '🚨 Community Clean Air Advisory: Connaught Place\nAQI: 342 (Very Poor)\n• Wear N95 masks\n• Avoid morning exercise\n• Keep windows closed',
-          isSampleData: true,
           audience: 'housing_society',
           language: 'en',
         }),

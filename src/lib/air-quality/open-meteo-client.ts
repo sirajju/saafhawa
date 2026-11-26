@@ -155,7 +155,6 @@ export async function fetchOpenMeteoAirQuality(
     indexDisplayName: 'India National AQI (CPCB)',
     pm25: currentPm25 !== null ? { value: currentPm25, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
     pm10: currentPm10 !== null ? { value: currentPm10, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
-    isSampleData: false,
     dataSource: 'Open-Meteo (CAMS model)',
     attribution: 'Air quality data provided by Open-Meteo under CC BY 4.0 (Copernicus CAMS model)',
   };

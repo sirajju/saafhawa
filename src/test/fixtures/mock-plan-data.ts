@@ -16,7 +16,6 @@ export const MOCK_PLAN: PlanResponse = {
     indexDisplayName: 'India National AQI (CPCB)',
     pm25: { value: 185.5, units: 'MICROGRAMS_PER_CUBIC_METER' },
     pm10: { value: 320.0, units: 'MICROGRAMS_PER_CUBIC_METER' },
-    isSampleData: true,
   },
   hourlyForecast: [
     {
@@ -128,5 +127,4 @@ export const MOCK_PLAN: PlanResponse = {
     totalCo2EmissionsSavedKg: 3.4,
   },
   generationMethod: 'gemini',
-  isSampleData: true,
 };
