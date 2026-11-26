@@ -23,6 +23,9 @@ interface ForecastChartProps {
   currentAqi?: number | null;
 }
 
+/**
+ * 24-hour interactive forecast chart showing AQI diurnal curve and safest outdoor ventilation window.
+ */
 export function ForecastChart({
   hourlyForecast,
   timeZone = 'Asia/Kolkata',

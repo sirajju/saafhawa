@@ -12,6 +12,10 @@ interface TotalSavingsBannerProps {
   onRetry?: () => void;
 }
 
+/**
+ * Summary banner showcasing total inhaled PM2.5 dose avoided, equivalent cigarettes not smoked,
+ * and household carbon emissions prevented.
+ */
 export function TotalSavingsBanner({
   summary,
   generationMethod = 'rule_based_fallback',

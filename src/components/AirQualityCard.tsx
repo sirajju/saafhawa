@@ -20,6 +20,9 @@ interface AirQualityCardProps {
   householdProfile?: ForecastAdviceHousehold | null;
 }
 
+/**
+ * Visual card displaying live AQI metric, pollutant concentrations, and personalized timing advice.
+ */
 export function AirQualityCard({
   location,
   current,

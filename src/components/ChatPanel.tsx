@@ -25,6 +25,10 @@ const SAMPLE_PROMPTS = [
   'Metro or car for tomorrow’s commute?',
 ];
 
+/**
+ * Interactive conversational assistant for real-time air quality questions,
+ * integrating local sensor readings and personalized household guidance.
+ */
 export function ChatPanel({
   place,
   displayPlace,
@@ -36,13 +40,11 @@ export function ChatPanel({
   className = '',
 }: ChatPanelProps) {
   const shortPlace = getShortPlaceName(displayPlace || place);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      content: 'Ask me about timing, masks, purifiers or your commute. I\'ll check the forecast first.',
-      isGreeting: true,
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([{
+    role: 'assistant',
+    content: "Ask me about timing, masks, purifiers or your commute. I'll check the forecast first.",
+    isGreeting: true,
+  }]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -160,10 +162,7 @@ export function ChatPanel({
 
       <div className="composer">
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSendMessage();
-          }}
+          onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
           className="composer-form"
           style={{ display: 'flex', width: '100%', gap: '8px', alignItems: 'center' }}
         >

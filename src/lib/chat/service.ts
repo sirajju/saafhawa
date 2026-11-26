@@ -92,6 +92,9 @@ async function runGeminiConversation(
   return capTextLength(currentResponse.text?.trim(), 3000) || 'I am ready to help with your clean air questions.';
 }
 
+/**
+ * Handles conversational queries using Gemini model chain with tool execution and fallback logic.
+ */
 export async function handleChatQuery(
   rawRequest: z.input<typeof ChatRequestSchema>,
   options: ChatServiceOptions = {}

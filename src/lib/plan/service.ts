@@ -39,6 +39,10 @@ function resolveGeminiApiKey(custom?: string): string | undefined {
   return custom || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
 }
 
+/**
+ * Generates an actionable, personalized 24-hour clean air plan for a household profile,
+ * combining real-time local air quality data with AI action selection and deterministic physical impact math.
+ */
 export async function generateHouseholdPlan(
   rawInput: unknown,
   options: GeneratePlanOptions = {}

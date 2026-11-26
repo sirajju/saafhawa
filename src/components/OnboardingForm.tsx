@@ -13,6 +13,9 @@ interface OnboardingFormProps {
   onSubmit: (profile: PlanRequest) => void;
 }
 
+/**
+ * Three-step household onboarding form collecting location, family demographics, and daily habits.
+ */
 export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps) {
   const [formData, setFormData] = useState<PlanRequest>(() => ({
     ...DEFAULT_PROFILE,

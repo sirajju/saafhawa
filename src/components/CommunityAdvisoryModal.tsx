@@ -15,6 +15,9 @@ interface CommunityAdvisoryModalProps {
   displayPlace?: string;
 }
 
+/**
+ * Accessible modal dialog generating and previewing WhatsApp/community air quality advisories.
+ */
 export function CommunityAdvisoryModal({
   isOpen,
   onClose,

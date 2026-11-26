@@ -23,6 +23,9 @@ function resolveApiKey(customApiKey?: string): string | undefined {
   return customApiKey || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
 }
 
+/**
+ * Generates tailored community air quality advisories for WhatsApp groups, RWAs, schools, and outdoor workers.
+ */
 export async function generateCommunityAdvisory(
   request: AdvisoryRequest,
   options: AdvisoryGeneratorOptions = {}

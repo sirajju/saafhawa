@@ -23,6 +23,9 @@ function getTodayStorageKey(): string {
   return `saafhawa_done_${today}`;
 }
 
+/**
+ * Main dashboard displaying current air quality, 24-hour timeline of planned actions, and cumulative impact.
+ */
 export function PlanDashboard({
   plan,
   profile,
