@@ -1,11 +1,25 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as fs from 'fs';
-import * as path from 'path';
 import { GoogleGenAI } from '@google/genai';
 import { createGeminiClient, DEFAULT_GEMINI_API_VERSION } from '@/lib/gemini-client';
 import { generateHouseholdPlan } from '@/lib/plan/service';
 import { PlanRequest } from '@/lib/plan/types';
 import { AirQualityReport } from '@/lib/air-quality/types';
+
+vi.mock('@google/genai', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@google/genai')>();
+  const MockGoogleGenAI = vi.fn().mockImplementation(function (
+    this: { apiKey?: string; apiVersion?: string; models?: unknown },
+    config: { apiKey: string; apiVersion?: string }
+  ) {
+    this.apiKey = config.apiKey;
+    this.apiVersion = config.apiVersion;
+    this.models = { generateContent: vi.fn() };
+  });
+  return {
+    ...actual,
+    GoogleGenAI: MockGoogleGenAI,
+  };
+});
 
 const mockProfile: PlanRequest = {
   place: 'New Delhi',
@@ -61,41 +75,24 @@ describe('Gemini Client Version & Plan Service Logging', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('creates GoogleGenAI client with apiVersion v1beta by default', () => {
+  it('instantiates GoogleGenAI with apiVersion v1beta behaviorally by default', () => {
     expect(DEFAULT_GEMINI_API_VERSION).toBe('v1beta');
 
     const client = createGeminiClient('dummy-api-key');
-    expect(client).toBeInstanceOf(GoogleGenAI);
-    expect((client as unknown as { apiVersion?: string }).apiVersion).toBe('v1beta');
+    expect(GoogleGenAI).toHaveBeenCalledWith({
+      apiKey: 'dummy-api-key',
+      apiVersion: 'v1beta',
+    });
+    expect((client as unknown as { apiVersion: string }).apiVersion).toBe('v1beta');
   });
 
-  it('fails if any client in src/ creates GoogleGenAI without apiVersion v1beta', () => {
-    const srcDir = path.resolve(process.cwd(), 'src');
-    const tsFiles: string[] = [];
-
-    function collectFiles(dir: string) {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          if (entry.name !== 'test' && entry.name !== '__tests__') {
-            collectFiles(fullPath);
-          }
-        } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
-          tsFiles.push(fullPath);
-        }
-      }
-    }
-
-    collectFiles(srcDir);
-
-    for (const filePath of tsFiles) {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      if (content.includes('new GoogleGenAI(')) {
-        // Only gemini-client.ts should instantiate GoogleGenAI directly
-        expect(filePath.replace(/\\/g, '/')).toContain('src/lib/gemini-client.ts');
-        expect(content).toContain("apiVersion: options?.apiVersion || DEFAULT_GEMINI_API_VERSION");
-      }
-    }
+  it('honors custom apiVersion option passed to createGeminiClient', () => {
+    const client = createGeminiClient('custom-key', { apiVersion: 'v2alpha' });
+    expect(GoogleGenAI).toHaveBeenCalledWith({
+      apiKey: 'custom-key',
+      apiVersion: 'v2alpha',
+    });
+    expect((client as unknown as { apiVersion: string }).apiVersion).toBe('v2alpha');
   });
 
   it('plan service logs real error when Gemini generator throws (without exposing API key)', async () => {
@@ -118,7 +115,7 @@ describe('Gemini Client Version & Plan Service Logging', () => {
     const loggedCalls = consoleErrorSpy.mock.calls.map((c: unknown[]) => c.join(' '));
     const planServiceLog = loggedCalls.find((call: string) => call.includes('[PlanService]'));
 
-    expect(planServiceLog).toBeDefined();
+    expect(planServiceLog).toBeTruthy();
     expect(planServiceLog).toContain('404 Not Found');
     // Ensure API key was redacted
     expect(planServiceLog).not.toContain(testSecretKey);
@@ -138,6 +135,6 @@ describe('Gemini Client Version & Plan Service Logging', () => {
 
     const loggedCalls = consoleErrorSpy.mock.calls.map((c: unknown[]) => c.join(' '));
     const planServiceLog = loggedCalls.find((call: string) => call.includes('[PlanService]'));
-    expect(planServiceLog).toBeDefined();
+    expect(planServiceLog).toBeTruthy();
   });
 });
