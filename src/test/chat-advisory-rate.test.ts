@@ -58,10 +58,10 @@ describe('Rate Limiter', () => {
   });
 
   it('exports singleton rate limiters for all API endpoints', () => {
-    expect(chatRateLimiter).toBeDefined();
-    expect(advisoryRateLimiter).toBeDefined();
-    expect(airQualityRateLimiter).toBeDefined();
-    expect(planRateLimiter).toBeDefined();
+    expect(chatRateLimiter.check('ip-test').limit).toBe(15);
+    expect(advisoryRateLimiter.check('ip-test').limit).toBe(20);
+    expect(airQualityRateLimiter.check('ip-test').limit).toBe(60);
+    expect(planRateLimiter.check('ip-test').limit).toBe(30);
   });
 });
 

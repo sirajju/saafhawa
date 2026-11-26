@@ -14,11 +14,11 @@ describe('Layout and Interaction Polish Fixes', () => {
   it('1. Onboarding container has wrap class for 16px side padding and location button hides text on small screens', () => {
     const { container } = render(<OnboardingForm onSubmit={() => {}} />);
     const mainOnb = container.querySelector('#onb');
-    expect(mainOnb).toBeDefined();
+    expect(mainOnb).toBeInTheDocument();
     expect(mainOnb?.classList.contains('wrap')).toBe(true);
 
     const locateBtn = screen.getByRole('button', { name: /Use my location/i });
-    expect(locateBtn).toBeDefined();
+    expect(locateBtn).toBeInTheDocument();
     expect(locateBtn.classList.contains('icon-btn')).toBe(true);
   });
 
@@ -66,12 +66,12 @@ describe('Layout and Interaction Polish Fixes', () => {
     );
 
     const form = container.querySelector('form.composer-form') as HTMLFormElement;
-    expect(form).toBeDefined();
+    expect(form).toBeInTheDocument();
     expect(form.style.width).toBe('100%');
     expect(form.style.display).toBe('flex');
 
     const input = container.querySelector('form.composer-form input') as HTMLInputElement;
-    expect(input).toBeDefined();
+    expect(input).toBeInTheDocument();
     expect(input.style.width).toBe('100%');
   });
 
@@ -95,7 +95,7 @@ describe('Layout and Interaction Polish Fixes', () => {
     // The shaded rect in the SVG
     const rects = Array.from(container.querySelectorAll('rect'));
     const highlightRect = rects.find((r) => r.getAttribute('fill') === 'var(--brand-soft)');
-    expect(highlightRect).toBeDefined();
+    expect(highlightRect).toBeInTheDocument();
 
     // 1 PM is index 13 in UTC mockPoints, 4 PM is index 16. Difference is 3 hours.
     const bw = 720 / 24;
@@ -117,7 +117,7 @@ describe('Layout and Interaction Polish Fixes', () => {
     );
 
     const h1 = container.querySelector('h1');
-    expect(h1).toBeDefined();
+    expect(h1).toBeInTheDocument();
     expect(h1?.getAttribute('tabindex')).toBe('-1');
     expect(h1?.style.outlineStyle).toBe('none');
   });

@@ -34,7 +34,7 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
       level: 1,
       name: /Clean Air Action Plan for Connaught Place/i,
     });
-    expect(heading).toBeDefined();
+    expect(heading).toBeInTheDocument();
     expect(document.activeElement).toBe(heading);
   });
 
@@ -49,22 +49,22 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
     );
 
     // Timeline heading
-    expect(screen.getByText(/Today's Action Timeline/i)).toBeDefined();
+    expect(screen.getByText(/Today's Action Timeline/i)).toBeInTheDocument();
 
     // Morning slot
-    expect(screen.getByText('Morning')).toBeDefined();
-    expect(screen.getByText('Wear Certified N95 Mask During Outdoor Commutes')).toBeDefined();
+    expect(screen.getByText('Morning')).toBeInTheDocument();
+    expect(screen.getByText('Wear Certified N95 Mask During Outdoor Commutes')).toBeInTheDocument();
 
     // Night slot
-    expect(screen.getByText('Night')).toBeDefined();
-    expect(screen.getByText('Run HEPA Air Purifier in Sleeping Area')).toBeDefined();
+    expect(screen.getByText('Night')).toBeInTheDocument();
+    expect(screen.getByText('Run HEPA Air Purifier in Sleeping Area')).toBeInTheDocument();
 
     // Details toggle
     const detailsButtons = screen.getAllByText('Details');
     expect(detailsButtons.length).toBeGreaterThanOrEqual(2);
 
     // Reason line is visible
-    expect(screen.getByText(/Reduces toxic fine particulate inhalation during transit/i)).toBeDefined();
+    expect(screen.getByText(/Reduces toxic fine particulate inhalation during transit/i)).toBeInTheDocument();
   });
 
   it('marks an action as done, persists in localStorage per day, and updates progress counter', async () => {
@@ -79,7 +79,7 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
     );
 
     // Initial progress
-    expect(screen.getByText(/0 of 3 done \(0%\)/i)).toBeDefined();
+    expect(screen.getByText(/0 of 3 done \(0%\)/i)).toBeInTheDocument();
 
     // Click "Mark as done" on mask action
     const maskDoneBtn = screen.getByRole('button', {
@@ -88,7 +88,7 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
     await user.click(maskDoneBtn);
 
     // Progress updates to 1 of 3 done (33%)
-    expect(screen.getByText(/1 of 3 done \(33%\)/i)).toBeDefined();
+    expect(screen.getByText(/1 of 3 done \(33%\)/i)).toBeInTheDocument();
     expect(maskDoneBtn.getAttribute('aria-pressed')).toBe('true');
 
     // Verify saved in localStorage under today's date key
@@ -100,7 +100,7 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
 
     // Click again to unmark
     await user.click(maskDoneBtn);
-    expect(screen.getByText(/0 of 3 done \(0%\)/i)).toBeDefined();
+    expect(screen.getByText(/0 of 3 done \(0%\)/i)).toBeInTheDocument();
   });
 
   it('renders clean place name without polluting with sample strings', () => {

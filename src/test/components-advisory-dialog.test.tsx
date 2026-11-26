@@ -53,7 +53,7 @@ describe('Accessibility - CommunityAdvisoryModal (Focus Trap & Return Focus)', (
     await user.click(trigger);
 
     const dialog = screen.getByRole('dialog', { name: /Share Smog Advisory/i });
-    expect(dialog).toBeDefined();
+    expect(dialog).toBeInTheDocument();
 
     // Verify focus entered dialog
     await waitFor(() => {
@@ -87,7 +87,7 @@ describe('Accessibility - CommunityAdvisoryModal (Focus Trap & Return Focus)', (
     await user.click(screen.getByRole('button', { name: /Open Advisory/i }));
 
     const hindiLabel = screen.getByText(/हिंदी/i).closest('[lang="hi"]');
-    expect(hindiLabel).toBeDefined();
+    expect(hindiLabel).toBeInTheDocument();
     expect(hindiLabel?.getAttribute('lang')).toBe('hi');
   });
 });

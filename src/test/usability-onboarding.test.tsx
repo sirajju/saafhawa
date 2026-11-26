@@ -27,11 +27,11 @@ describe('Usability Overhaul - Three-Step Onboarding & Habit Defaults', () => {
     render(<OnboardingForm onSubmit={() => {}} />);
 
     // Step 1: Your home
-    expect(screen.getByText(/Step 1 of 3 · Your home/i)).toBeDefined();
+    expect(screen.getByText(/Step 1 of 3 · Your home/i)).toBeInTheDocument();
 
     // Place input is top field with label "Your area"
     const placeInput = screen.getByLabelText(/Your area/i) as HTMLInputElement;
-    expect(placeInput).toBeDefined();
+    expect(placeInput).toBeInTheDocument();
 
     // Browser location button
     const locationBtn = screen.getByRole('button', { name: /Use my location/i });
@@ -76,15 +76,15 @@ describe('Usability Overhaul - Three-Step Onboarding & Habit Defaults', () => {
     // Advance to Step 2
     const continueBtn = screen.getByRole('button', { name: /Continue/i });
     await user.click(continueBtn);
-    expect(screen.getByText(/Step 2 of 3 · Getting around/i)).toBeDefined();
+    expect(screen.getByText(/Step 2 of 3 · Getting around/i)).toBeInTheDocument();
 
     // Advance to Step 3
     await user.click(continueBtn);
-    expect(screen.getByText(/Step 3 of 3 · Inside your home/i)).toBeDefined();
+    expect(screen.getByText(/Step 3 of 3 · Inside your home/i)).toBeInTheDocument();
 
     // Incense question options: all must have aria-checked="false" initially
     const incenseGroup = screen.getByRole('radiogroup', { name: /Incense/i });
-    expect(incenseGroup).toBeDefined();
+    expect(incenseGroup).toBeInTheDocument();
     const incenseRadios = screen.getAllByRole('radio', { name: /Yes, often|Sometimes|No/i });
     for (const radio of incenseRadios) {
       expect(radio.getAttribute('aria-checked')).toBe('false');
@@ -108,7 +108,7 @@ describe('Usability Overhaul - Three-Step Onboarding & Habit Defaults', () => {
 
     expect(
       screen.getByText(/Location access was blocked\. Type your area or pincode instead\./i)
-    ).toBeDefined();
+    ).toBeInTheDocument();
 
     const placeInput = screen.getByLabelText(/Your area/i) as HTMLInputElement;
     expect(document.activeElement).toBe(placeInput);
