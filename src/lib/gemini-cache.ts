@@ -19,29 +19,19 @@ function normalizePlace(place: string): string {
   return place.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
+function stableProfileString(profile: PlanRequest): string {
+  const sortedKeys = Object.keys(profile).sort() as Array<keyof PlanRequest>;
+  const ordered: Record<string, unknown> = {};
+  for (const k of sortedKeys) {
+    ordered[k] = profile[k];
+  }
+  return JSON.stringify(ordered);
+}
+
 export function buildPlanCacheKey(place: string, profile: PlanRequest): string {
   const normPlace = normalizePlace(place);
   const hour = getHourKey();
-  const profileKey = [
-    profile.adultsCount,
-    profile.childrenCount,
-    profile.elderlyCount,
-    profile.commutersCount,
-    profile.primaryCommuteMode,
-    profile.dailyCommuteDistanceKm,
-    profile.cookingFuel,
-    profile.heatingFuel,
-    profile.hasAirPurifier,
-    profile.hasKitchenChimneyOrExhaust,
-    profile.usesIncenseOrMosquitoCoils,
-    profile.hasGardenOrOpenWasteBurning,
-    profile.windowSealingQuality,
-    profile.doesOutdoorExercise,
-    profile.canWorkFromHome,
-    profile.budget,
-    profile.hasAsthmaOrRespiratoryCondition,
-  ].join(':');
-
+  const profileKey = stableProfileString(profile);
   return `plan:${normPlace}:${hour}:${profileKey}`;
 }
 
