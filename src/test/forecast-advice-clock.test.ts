@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { buildForecastAdvice, ForecastAdvicePoint } from '@/lib/air-quality/forecast-advice';
 
 // Generate 48 hours of synthetic points starting from 2026-11-25T00:00:00Z
@@ -26,6 +26,15 @@ function generateSynthetic48HourForecast(): ForecastAdvicePoint[] {
 }
 
 describe('Forecast Advice - Future Waking Hours & Fixed Clock Tests', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-25T08:00:00+05:30'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   const points = generateSynthetic48HourForecast();
   const timeZone = 'Asia/Kolkata';
 

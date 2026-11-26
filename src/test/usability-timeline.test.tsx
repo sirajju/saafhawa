@@ -9,6 +9,12 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2026-11-26T10:00:00.000Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('keeps top of dashboard in view and moves focus to plan heading on load', () => {

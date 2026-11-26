@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { MOCK_PLAN } from './fixtures/mock-plan';
 
-test.describe('Real Chat Integration without Mocked Chat API', () => {
+test.describe('Real Chat Integration without Mocked Chat API @live', () => {
   test('submits a real question through UI to unmocked /api/chat and displays the answer', async ({ page }) => {
     // 1. Mock plan API for fast deterministic dashboard hydration
     await page.route('**/api/plan', async (route) => {

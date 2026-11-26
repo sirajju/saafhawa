@@ -16,9 +16,12 @@ describe('Measurement Time Parsing & Formatting in UTC Runtime Environment', () 
     // Set process timezone to UTC to mirror Vercel production server environment
     process.env.TZ = 'UTC';
     vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-25T17:30:00.000Z'));
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     if (origTz !== undefined) {
       process.env.TZ = origTz;
     } else {

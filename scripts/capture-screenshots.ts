@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { MOCK_PLAN } from './fixtures/mock-plan';
+import { MOCK_PLAN } from '../e2e/fixtures/mock-plan';
 import fs from 'fs';
 import path from 'path';
 
