@@ -25,4 +25,6 @@ export interface AdvisoryResponse {
     pm25UgM3: number | null;
   };
   modelUsed?: string;
+  generationMethod?: 'gemini' | 'template';
+  fallbackReason?: 'no_key' | 'gemini_busy' | 'daily_quota_exhausted' | 'model_error';
 }

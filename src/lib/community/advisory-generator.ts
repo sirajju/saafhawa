@@ -59,6 +59,8 @@ export async function generateCommunityAdvisory(
       language: request.language,
       isSampleData: isSample,
       airQualitySnapshot: snapshot,
+      generationMethod: 'template',
+      fallbackReason: 'no_key',
     };
   }
 
@@ -97,13 +99,12 @@ REQUIREMENTS:
       },
     });
 
-    let responseToReturn: AdvisoryResponse;
     if (execResult.data && execResult.data.length > 50) {
       const headline = request.language === 'hi'
         ? (request.audience === 'school_group' ? `🏫 स्कूल परामर्श: ${report.location.name}` : `🏘️ सोसायटी परामर्श: ${report.location.name}`)
         : (request.audience === 'school_group' ? `🏫 School Smog Advisory: ${report.location.name}` : `🏘️ Community Clean Air Advisory: ${report.location.name}`);
 
-      responseToReturn = {
+      const responseToReturn: AdvisoryResponse = {
         headline,
         advisoryText: execResult.data,
         audience: request.audience,
@@ -111,27 +112,38 @@ REQUIREMENTS:
         isSampleData: isSample,
         airQualitySnapshot: snapshot,
         modelUsed: execResult.modelUsed,
+        generationMethod: 'gemini',
       };
-    } else {
-      responseToReturn = {
-        ...generateTemplateAdvisory(report, request.audience, request.language),
-        audience: request.audience,
-        language: request.language,
-        isSampleData: isSample,
-        airQualitySnapshot: snapshot,
-      };
+      setCachedAdvisory(cacheKey, responseToReturn);
+      return responseToReturn;
     }
-    setCachedAdvisory(cacheKey, responseToReturn);
-    return responseToReturn;
-  } catch (err: unknown) {
-    logServerError('AdvisoryGenerator', err);
-    const fallbackResponse: AdvisoryResponse = {
+
+    let fallbackReason: AdvisoryResponse['fallbackReason'] = 'model_error';
+    if (execResult.failedDueToDailyQuota) {
+      fallbackReason = 'daily_quota_exhausted';
+    } else if (execResult.failedDueToBusy) {
+      fallbackReason = 'gemini_busy';
+    }
+
+    return {
       ...generateTemplateAdvisory(report, request.audience, request.language),
       audience: request.audience,
       language: request.language,
       isSampleData: isSample,
       airQualitySnapshot: snapshot,
+      generationMethod: 'template',
+      fallbackReason,
     };
-    return fallbackResponse;
+  } catch (err: unknown) {
+    logServerError('AdvisoryGenerator', err);
+    return {
+      ...generateTemplateAdvisory(report, request.audience, request.language),
+      audience: request.audience,
+      language: request.language,
+      isSampleData: isSample,
+      airQualitySnapshot: snapshot,
+      generationMethod: 'template',
+      fallbackReason: 'model_error',
+    };
   }
 }
