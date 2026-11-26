@@ -164,4 +164,17 @@ describe('Code Quality & Bug Fixes 1-4', () => {
     const cacheKey = buildAdvisoryCacheKey('Kozhikode', 'housing_society', 'en');
     expect(getCachedAdvisory(cacheKey)).toBeNull();
   });
+
+  it('Fix 10: OnboardingForm renders section tag instead of nested main landmark', async () => {
+    const React = await import('react');
+    const { render } = await import('@testing-library/react');
+    const { OnboardingForm } = await import('../components/OnboardingForm');
+
+    const { container } = render(React.createElement(OnboardingForm, { onSubmit: () => {} }));
+    const section = container.querySelector('section#onb');
+    const main = container.querySelector('main#onb');
+
+    expect(section).not.toBeNull();
+    expect(main).toBeNull();
+  });
 });

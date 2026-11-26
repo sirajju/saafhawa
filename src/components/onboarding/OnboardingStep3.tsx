@@ -9,11 +9,10 @@ interface OnboardingStep3Props {
   cookingFuel: PlanRequest['cookingFuel'];
   hasAirPurifier: boolean;
   hasKitchenChimneyOrExhaust: boolean;
-  hasAirConditioner: boolean;
   incenseChoice: 'often' | 'sometimes' | 'no' | null;
   budget: PlanRequest['budget'];
   onFieldChange: (field: string, val: unknown) => void;
-  onToggleEquipment: (field: 'hasAirPurifier' | 'hasKitchenChimneyOrExhaust' | 'hasAirConditioner') => void;
+  onToggleEquipment: (field: 'hasAirPurifier' | 'hasKitchenChimneyOrExhaust') => void;
   onIncenseChange: (choice: 'often' | 'sometimes' | 'no') => void;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
 }
@@ -23,7 +22,6 @@ export function OnboardingStep3({
   cookingFuel,
   hasAirPurifier,
   hasKitchenChimneyOrExhaust,
-  hasAirConditioner,
   incenseChoice,
   budget,
   onFieldChange,
@@ -98,14 +96,6 @@ export function OnboardingStep3({
             onClick={() => onToggleEquipment('hasKitchenChimneyOrExhaust')}
           >
             Kitchen chimney or exhaust
-          </button>
-          <button
-            type="button"
-            className="opt"
-            aria-pressed={hasAirConditioner}
-            onClick={() => onToggleEquipment('hasAirConditioner')}
-          >
-            Air conditioner
           </button>
         </div>
       </div>

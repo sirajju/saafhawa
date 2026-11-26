@@ -20,7 +20,6 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
   }));
 
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [hasAirConditioner, setHasAirConditioner] = useState<boolean>(false);
   const [incenseChoice, setIncenseChoice] = useState<'often' | 'sometimes' | 'no' | null>(() => {
     if (initialProfile?.usesIncenseOrMosquitoCoils === true) return 'sometimes';
     if (initialProfile?.usesIncenseOrMosquitoCoils === false) return 'no';
@@ -54,13 +53,9 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
   };
 
   const handleToggleEquipment = (
-    field: 'hasAirPurifier' | 'hasKitchenChimneyOrExhaust' | 'hasAirConditioner'
+    field: 'hasAirPurifier' | 'hasKitchenChimneyOrExhaust'
   ) => {
-    if (field === 'hasAirConditioner') {
-      setHasAirConditioner((prev) => !prev);
-    } else {
-      setFormData((prev) => ({ ...prev, [field]: !prev[field] }));
-    }
+    setFormData((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
   const handleNext = () => {
@@ -88,7 +83,11 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
   };
 
   return (
-    <main id="onb" className="wrap">
+    <section
+      id="onb"
+      className="wrap"
+      aria-labelledby={currentStep === 1 ? 's1h' : currentStep === 2 ? 's2h' : 's3h'}
+    >
       <div className="onb">
         <div
           className="steps"
@@ -139,7 +138,6 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
             cookingFuel={formData.cookingFuel}
             hasAirPurifier={formData.hasAirPurifier}
             hasKitchenChimneyOrExhaust={formData.hasKitchenChimneyOrExhaust}
-            hasAirConditioner={hasAirConditioner}
             incenseChoice={incenseChoice}
             budget={formData.budget}
             headingRef={headingRef}
@@ -181,6 +179,6 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
           </button>
         </div>
       </div>
-    </main>
+    </section>
   );
 }
