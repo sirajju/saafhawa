@@ -21,6 +21,7 @@ describe('Chat Tool Runner Dispatcher', () => {
     message: 'What actions can I take?',
     place: 'Delhi',
     householdProfile: MOCK_PROFILE,
+    conversationHistory: [],
   };
 
   it('executes getAirQualityAndForecast and records execution', async () => {

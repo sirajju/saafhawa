@@ -11,6 +11,8 @@ describe('Plan Prompt Builder', () => {
       aqi: 220,
       category: 'Poor',
       dominantPollutant: 'pm25',
+      indexCode: 'cpcb',
+      indexDisplayName: 'CPCB AQI',
       pm25: { value: 95, units: 'µg/m³' },
       pm10: { value: 160, units: 'µg/m³' },
     },

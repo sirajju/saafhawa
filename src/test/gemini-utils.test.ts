@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { withTimeout, capTextLength, DEFAULT_GEMINI_TIMEOUT_MS, MAX_GEMINI_RESPONSE_CHARS } from '@/lib/gemini-utils';
+import { withTimeout, capTextLength, MAX_GEMINI_RESPONSE_CHARS } from '@/lib/gemini-utils';
 
 describe('Gemini Timeout and Bounding Utilities', () => {
   it('resolves value when wrapped promise finishes within timeout', async () => {

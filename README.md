@@ -353,7 +353,7 @@ npm run lint
 # 2. Run TypeScript compiler check
 npx tsc --noEmit
 
-# 3. Run all unit and component tests (258 tests across 42 test files)
+# 3. Run all unit and component tests (294 tests across 73 test files)
 npm test
 
 # 4. Run real live network queries test across 5 Indian evaluator cities
@@ -362,7 +362,7 @@ npm run test:live
 # 5. Run production build
 npm run build
 
-# 6. Run Playwright E2E browser tests (18 tests across 7 spec files)
+# 6. Run Playwright E2E browser tests (19 tests across 6 spec files)
 npm run test:e2e
 ```
 
@@ -429,7 +429,7 @@ vercel --prod
 
 ### Division of Labor: Human Author vs. Generative AI
 - **Human Author:** Conceived the hyper-local smog mitigation vision, established calm health UX principles, selected environmental health literature and CPCB standards, performed manual testing across Indian cities, audited security headers, and directed architectural trade-offs.
-- **Generative AI:** Implemented TypeScript business logic and Next.js React components, authored CSS custom property design tokens, generated 260 Vitest unit tests and 22 Playwright end-to-end scenarios, verified WCAG AA compliance, and formatted bilingual community advisories.
+- **Generative AI:** Implemented TypeScript business logic and Next.js React components, authored CSS custom property design tokens, generated 294 Vitest unit tests and 19 Playwright end-to-end scenarios, verified WCAG AA compliance, and formatted bilingual community advisories.
 
 ---
 
@@ -438,7 +438,7 @@ vercel --prod
 For in-depth audits of each scoring criterion, see the dedicated documentation files:
 - 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64KB body caps, rate limiters, credential hygiene, trusted proxy hops (`TRUSTED_PROXY_HOPS`).
 - ♿ [`ACCESSIBILITY.md`](ACCESSIBILITY.md) — Semantic landmarks, fieldsets, live regions, text equivalents, keyboard tests, timeline passed states.
-- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (260 Vitest tests, 1 live network test, 22 Playwright E2E tests, 0 ESLint warnings, 0 TypeScript errors).
+- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (294 Vitest tests, 1 live network test, 19 Playwright E2E tests, 0 ESLint warnings, 0 TypeScript errors).
 - ⚡ [`EFFICIENCY.md`](EFFICIENCY.md) — Measured build assets, Next.js standalone containerization, TTL cache bounding, strict <= 200 lines per file.
 - 📐 [`docs/DECISIONS.md`](docs/DECISIONS.md) — 5 architectural design decision records with trade-off analysis.
 
