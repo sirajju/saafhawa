@@ -1,7 +1,7 @@
 import { PlanRequest } from '@/lib/plan/types';
 
 export const DEFAULT_PROFILE: PlanRequest = {
-  place: '110001',
+  place: '',
   adultsCount: 2,
   childrenCount: 0,
   elderlyCount: 0,

@@ -10,24 +10,26 @@ export async function generateFallbackChatResponse(
   request: ChatRequest,
   airQualityFetcher: (place: string) => Promise<AirQualityReport>
 ): Promise<ChatResponse> {
-  const place = request.place || request.householdProfile?.place || '110001';
+  const place = request.place || request.householdProfile?.place;
   let report: AirQualityReport | null = null;
   const toolsExecuted: ExecutedToolRecord[] = [];
 
-  try {
-    report = await airQualityFetcher(place);
-    const isSample = Boolean(report.isSampleData || report.current.isSampleData);
-    if (typeof report.current.aqi === 'number') {
-      toolsExecuted.push({
-        toolName: 'getAirQualityAndForecast',
-        args: { place },
-        resultSummary: isSample
-          ? `Fetched sample reference AQI: ${report.current.aqi} (${report.current.category}), PM2.5: ${report.current.pm25?.value} µg/m³`
-          : `Fetched AQI: ${report.current.aqi} (${report.current.category}), PM2.5: ${report.current.pm25?.value} µg/m³`,
-      });
+  if (place) {
+    try {
+      report = await airQualityFetcher(place);
+      const isSample = Boolean(report.isSampleData || report.current.isSampleData);
+      if (typeof report.current.aqi === 'number') {
+        toolsExecuted.push({
+          toolName: 'getAirQualityAndForecast',
+          args: { place },
+          resultSummary: isSample
+            ? `Fetched sample reference AQI: ${report.current.aqi} (${report.current.category}), PM2.5: ${report.current.pm25?.value} µg/m³`
+            : `Fetched AQI: ${report.current.aqi} (${report.current.category}), PM2.5: ${report.current.pm25?.value} µg/m³`,
+        });
+      }
+    } catch {
+      // Lookup failed - report remains null
     }
-  } catch {
-    // Lookup failed - report remains null
   }
 
   const query = request.message.toLowerCase();

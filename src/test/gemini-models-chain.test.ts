@@ -148,7 +148,7 @@ describe('GEMINI_MODELS chain resolution & ordered fallback', () => {
   it('reports which model answered in handleChatQuery', async () => {
     const mockReport = makeMockReport('Delhi', 200);
     const res = await handleChatQuery(
-      { message: 'What is the AQI?' },
+      { message: 'What is the AQI?', place: 'Delhi' },
       { apiKey: 'test-key', models: ['primary-chat', 'backup-chat'], airQualityFetcher: async () => mockReport }
     );
     expect(res).toBeDefined();

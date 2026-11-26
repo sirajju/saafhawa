@@ -101,7 +101,7 @@ export async function handleChatQuery(
 
   let isSampleData = false;
   try {
-    const checkReport = await fetcher(request.place || '110001');
+    const checkReport = await fetcher(request.place);
     isSampleData = Boolean(checkReport.isSampleData || checkReport.current.isSampleData);
   } catch {
     isSampleData = false;

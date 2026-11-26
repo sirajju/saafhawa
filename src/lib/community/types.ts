@@ -5,8 +5,7 @@ export const AdvisoryRequestSchema = z.object({
     .string()
     .trim()
     .min(2, 'Place must be at least 2 characters')
-    .max(120, 'Place cannot exceed 120 characters')
-    .default('110001'),
+    .max(120, 'Place cannot exceed 120 characters'),
   audience: z.enum(['housing_society', 'school_group']).default('housing_society'),
   language: z.enum(['en', 'hi']).default('en'),
 });

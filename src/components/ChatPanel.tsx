@@ -75,7 +75,7 @@ export function ChatPanel({
         conversationHistory: messages
           .slice(-6)
           .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) })),
-        place: place || '110001',
+        place: place.trim(),
         householdProfile: householdProfile as ChatRequest['householdProfile'],
       };
 

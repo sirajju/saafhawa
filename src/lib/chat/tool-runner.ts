@@ -17,7 +17,7 @@ export async function executeSingleToolCall(
     const placeArg =
       typeof fc.args?.place === 'string' && fc.args.place.trim()
         ? fc.args.place.trim()
-        : request.place || '110001';
+        : request.place;
     const airResult = await executeGetAirQualityTool({ place: placeArg }, request.place, fetcher);
     const isSample = Boolean(airResult.isSampleData);
     toolsExecuted.push({
@@ -35,15 +35,17 @@ export async function executeSingleToolCall(
       typeof fc.args?.actionId === 'string' && fc.args.actionId.trim()
         ? fc.args.actionId.trim()
         : 'wear_n95_mask_outside';
-    const targetPlace = request.place || request.householdProfile?.place || '110001';
+    const targetPlace = request.place || request.householdProfile?.place;
     let currentPm25: number | null = null;
     let isSample = false;
-    try {
-      const airReport = await fetcher(targetPlace);
-      currentPm25 = airReport.current.pm25?.value ?? null;
-      isSample = Boolean(airReport.isSampleData || airReport.current.isSampleData);
-    } catch {
-      currentPm25 = null;
+    if (targetPlace) {
+      try {
+        const airReport = await fetcher(targetPlace);
+        currentPm25 = airReport.current.pm25?.value ?? null;
+        isSample = Boolean(airReport.isSampleData || airReport.current.isSampleData);
+      } catch {
+        currentPm25 = null;
+      }
     }
     const impactResult = executeCalculateImpactTool(
       { actionId },

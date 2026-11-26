@@ -38,8 +38,7 @@ export const ChatRequestSchema = z.preprocess(
       .string()
       .trim()
       .min(2, 'Place name or pincode must be at least 2 characters')
-      .max(120, 'Place cannot exceed 120 characters')
-      .default('110001'),
+      .max(120, 'Place cannot exceed 120 characters'),
     householdProfile: PlanRequestSchema.optional(),
     conversationHistory: z.array(ChatMessageSchema).max(12).optional().default([]),
   })
