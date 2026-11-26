@@ -1,4 +1,4 @@
-import { createGeminiClient } from '../gemini-client';
+import { createGeminiClient, resolveGeminiModels } from '../gemini-client';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
@@ -12,14 +12,11 @@ import { buildAdvisoryCacheKey, getCachedAdvisory, setCachedAdvisory } from '../
 export { generateTemplateAdvisory } from './advisory-templates';
 
 export interface AdvisoryGeneratorOptions {
+  models?: string[];
   model?: string;
   fallbackModel?: string;
   apiKey?: string;
   airQualityFetcher?: (place: string) => Promise<AirQualityReport>;
-}
-
-function resolveModel(customModel?: string): string {
-  return customModel || process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
 }
 
 function resolveApiKey(customApiKey?: string): string | undefined {
@@ -37,8 +34,11 @@ export async function generateCommunityAdvisory(
   const fetcher = options.airQualityFetcher ?? getAirQualityByLocation;
   const report = await fetcher(request.place);
 
-  const model = resolveModel(options.model);
-  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite';
+  const models = resolveGeminiModels({
+    models: options.models,
+    model: options.model,
+    fallbackModel: options.fallbackModel,
+  });
   const apiKey = resolveApiKey(options.apiKey);
 
   const snapshot = {
@@ -84,8 +84,7 @@ REQUIREMENTS:
 5. Output ONLY the raw WhatsApp text with no conversational preamble or markdown code fences.`;
 
     const execResult = await executeWithGeminiRetry<string>({
-      primaryModel: model,
-      fallbackModel,
+      models,
       apiKey,
       label: 'AdvisoryGenerator',
       fn: async (activeModel, timeoutMs) => {
@@ -111,6 +110,7 @@ REQUIREMENTS:
         language: request.language,
         isSampleData: isSample,
         airQualitySnapshot: snapshot,
+        modelUsed: execResult.modelUsed,
       };
     } else {
       responseToReturn = {

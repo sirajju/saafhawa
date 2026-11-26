@@ -20,7 +20,8 @@ export {
 };
 
 export interface GeminiRetryOptions<T> {
-  primaryModel: string;
+  models?: string[];
+  primaryModel?: string;
   fallbackModel?: string;
   apiKey?: string;
   label?: string;
@@ -44,21 +45,18 @@ export async function executeWithGeminiRetry<T>(
 ): Promise<GeminiExecutionResult<T>> {
   const label = options.label || 'Gemini';
   const deadline = Date.now() + Math.min(24000, options.totalTimeoutMs ?? 24000);
-  const models: string[] = [options.primaryModel];
-  if (options.fallbackModel && options.fallbackModel !== options.primaryModel) {
-    models.push(options.fallbackModel);
-  }
+  const candidateModels: string[] = options.models && options.models.length > 0
+    ? options.models.map((m) => m.trim()).filter(Boolean)
+    : [options.primaryModel, options.fallbackModel].filter((m): m is string => Boolean(m && m.trim()));
+  const models = Array.from(new Set(candidateModels.length > 0 ? candidateModels : ['gemini-flash-lite-latest']));
 
   let lastError: unknown = null;
   let failedDueToBusy = false;
   let failedDueToDailyQuota = false;
   let latestDailyResetAt: number | undefined;
 
-  let hadConfigErrorOnPrimary = false;
-
   for (let modelIdx = 0; modelIdx < models.length; modelIdx++) {
     const model = models[modelIdx];
-    const isFallbackModel = modelIdx > 0;
 
     const exhaustedUntil = modelExhaustionMap.get(model);
     if (exhaustedUntil && Date.now() < exhaustedUntil) {
@@ -68,7 +66,7 @@ export async function executeWithGeminiRetry<T>(
       continue;
     }
 
-    const maxRetries = isFallbackModel && hadConfigErrorOnPrimary ? 0 : (options.maxRetriesPerModel ?? 2);
+    const maxRetries = options.maxRetriesPerModel ?? 2;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const remainingMs = deadline - Date.now();
       if (remainingMs < 1000) break;
@@ -89,11 +87,8 @@ export async function executeWithGeminiRetry<T>(
         }
 
         if (isGeminiConfigError(err)) {
-          if (!isFallbackModel) {
-            hadConfigErrorOnPrimary = true;
-          }
           console.warn(
-            `[${label}] Configuration error on model ${model} (404/400): ${sanitizeErrorMessage(err, options.apiKey)}. Skipping retries${!isFallbackModel && models.length > 1 ? ' and trying fallback model once.' : '.'}`
+            `[${label}] Configuration error on model ${model} (404/400): ${sanitizeErrorMessage(err, options.apiKey)}. Skipping retries and trying next model.`
           );
           break;
         }
@@ -105,7 +100,7 @@ export async function executeWithGeminiRetry<T>(
           latestDailyResetAt = Math.max(latestDailyResetAt || 0, reset);
           modelExhaustionMap.set(model, reset);
           console.warn(`[${label}] Daily quota exhausted on ${model} until ${new Date(reset).toLocaleTimeString()}. Switching model immediately.`);
-          break; // Switch to fallback model without retrying this model
+          break;
         }
 
         if (quota.isQuota && !quota.isDailyQuota) {
@@ -116,7 +111,7 @@ export async function executeWithGeminiRetry<T>(
             continue;
           }
           console.warn(`[${label}] Per-minute rate limit on ${model} (delay > 5s or retried). Switching model.`);
-          break; // Move on to next model
+          break;
         }
 
         if (isTransientGeminiError(err)) {

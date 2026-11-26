@@ -1,5 +1,5 @@
 import type { GoogleGenAI, Content, Part } from '@google/genai';
-import { createGeminiClient } from '../gemini-client';
+import { createGeminiClient, resolveGeminiModels } from '../gemini-client';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { capTextLength, withTimeout } from '../gemini-utils';
@@ -15,14 +15,11 @@ import { z } from 'zod';
 export { buildChatSystemInstruction, generateFallbackChatResponse };
 
 export interface ChatServiceOptions {
+  models?: string[];
   model?: string;
   fallbackModel?: string;
   apiKey?: string;
   airQualityFetcher?: (place: string) => Promise<AirQualityReport>;
-}
-
-function resolveModel(customModel?: string): string {
-  return customModel || process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
 }
 
 function resolveApiKey(customApiKey?: string): string | undefined {
@@ -89,8 +86,11 @@ export async function handleChatQuery(
   options: ChatServiceOptions = {}
 ): Promise<ChatResponse> {
   const request = ChatRequestSchema.parse(rawRequest);
-  const model = resolveModel(options.model);
-  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite';
+  const models = resolveGeminiModels({
+    models: options.models,
+    model: options.model,
+    fallbackModel: options.fallbackModel,
+  });
   const apiKey = resolveApiKey(options.apiKey);
   const fetcher = options.airQualityFetcher ?? getAirQualityByLocation;
 
@@ -112,8 +112,7 @@ export async function handleChatQuery(
   const ai = createGeminiClient(apiKey);
 
   const execResult = await executeWithGeminiRetry<string>({
-    primaryModel: model,
-    fallbackModel,
+    models,
     apiKey,
     label: 'ChatService',
     fn: async (activeModel, timeoutMs) => {

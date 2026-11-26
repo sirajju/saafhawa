@@ -25,4 +25,5 @@ export interface AdvisoryResponse {
     category: string;
     pm25UgM3: number | null;
   };
+  modelUsed?: string;
 }

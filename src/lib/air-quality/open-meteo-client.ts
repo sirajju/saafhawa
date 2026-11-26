@@ -178,13 +178,11 @@ export async function fetchOpenMeteoAirQuality(
 
   const hourlyForecast: HourlyForecastPoint[] = [];
   const endIndex = Math.min(startIndex + 24, hourlyTimes.length);
-
   for (let i = startIndex; i < endIndex; i++) {
     const rawTime = hourlyTimes[i];
     const pm25Val = typeof hourlyPm25List[i] === 'number' ? (hourlyPm25List[i] as number) : null;
     const pm10Val = typeof hourlyPm10List[i] === 'number' ? (hourlyPm10List[i] as number) : null;
     const pointCpcb = calculateCpcbAqi(pm25Val, pm10Val);
-
     const pointIso = parseDateTimeToIso(rawTime, effectiveOffsetSec);
     hourlyForecast.push({
       dateTime: pointIso,

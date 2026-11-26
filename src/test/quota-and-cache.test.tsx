@@ -191,7 +191,6 @@ describe('Gemini Quota Handling & Caching', () => {
         displayPlace="Kozhikode, Kerala"
       />
     );
-
     await waitFor(() => {
       const el = screen.queryByText(/Kozhikode, Kerala/i);
       expect(Boolean(el)).toBe(true);

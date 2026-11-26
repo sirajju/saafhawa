@@ -302,6 +302,8 @@ If configuring live API keys, edit `.env.local`:
 GOOGLE_MAPS_API_KEY=your_google_maps_platform_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 # AI_API_KEY is also supported as an alternate fallback
+GEMINI_MODELS=gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash
+# Legacy single model overrides (GEMINI_MODELS takes precedence if set):
 GEMINI_MODEL=gemini-flash-lite-latest
 GEMINI_FALLBACK_MODEL=gemini-2.5-flash-lite
 ```
@@ -310,8 +312,11 @@ GEMINI_FALLBACK_MODEL=gemini-2.5-flash-lite
 | Model ID | Free Tier RPM | Free Tier RPD | Structured JSON & Tools | Role in SaafHawa |
 |---|---|---|---|---|
 | `gemini-flash-lite-latest` | **15 RPM** | **1,500 RPD** | Fully Supported | **Default Primary Model** |
-| `gemini-2.5-flash-lite` | **15 RPM** | **1,500 RPD** | Fully Supported | **Default Fallback Model** |
-| `gemini-3.8-flash` | 5 RPM | 20 RPD | Fully Supported | High demand, rapid free-tier exhaustion |
+| `gemini-2.5-flash-lite` | **15 RPM** | **1,500 RPD** | Fully Supported | **Default Secondary Model** |
+| `gemini-3.8-flash` | 5 RPM | 20 RPD | Fully Supported | **Tertiary Candidate Model** (high demand) |
+
+> [!TIP]
+> When `GEMINI_MODELS` is provided as a comma-separated list (e.g. `gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash`), SaafHawa attempts each candidate in sequence. Because each model on Google AI Studio's free tier has an independent daily request quota, exhausted models are immediately remembered and skipped for the rest of their quota window, maximizing uptime across free tier limits. Single-model `GEMINI_MODEL` and `GEMINI_FALLBACK_MODEL` remain fully supported for backwards compatibility.
 
 ### 4. Running Locally
 ```bash
@@ -372,8 +377,9 @@ SaafHawa is pre-configured for zero-friction deployment on [Vercel](https://verc
 | Variable | Required? | Default / Example | Purpose |
 |---|---|---|---|
 | `GEMINI_API_KEY` | **Required** | `AIzaSy...` | Powers Gemini action selection, live function-calling chat, and WhatsApp community advisories. |
-| `GEMINI_MODEL` | Optional | `gemini-flash-lite-latest` | Primary Gemini model ID (15 RPM / 1,500 RPD free allowance). |
-| `GEMINI_FALLBACK_MODEL` | Optional | `gemini-2.5-flash-lite` | Secondary model to try on 429 / 503 transient spikes (15 RPM / 1,500 RPD free allowance). |
+| `GEMINI_MODELS` | Optional | `gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash` | Ordered list of models tried in sequence, skipping exhausted daily quotas. |
+| `GEMINI_MODEL` | Optional | `gemini-flash-lite-latest` | Backwards-compatible primary model ID (used if `GEMINI_MODELS` is omitted). |
+| `GEMINI_FALLBACK_MODEL` | Optional | `gemini-2.5-flash-lite` | Backwards-compatible fallback model ID (used if `GEMINI_MODELS` is omitted). |
 | `GOOGLE_MAPS_API_KEY` | Optional | `AIzaSy...` | Upgrades telemetry to Tier 2 Google Air Quality ML model (falls back to Open-Meteo CAMS if omitted). |
 | `WAQI_TOKEN` | Optional | `your_waqi_token` | Upgrades telemetry to Tier 1 official CPCB continuous ambient ground station monitoring. |
 | `RATE_LIMIT_ENABLED` | Optional | `true` | In-memory token-bucket sliding rate limiter on sensitive API routes. |

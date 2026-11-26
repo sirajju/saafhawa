@@ -9,6 +9,7 @@ import { pruneCleanAirActions } from './consistency-scoring';
 import { buildPlannedActionsAndSummary } from './plan-impact-summary';
 import { buildForecastAdvice } from '../air-quality/forecast-advice';
 import { executeWithGeminiRetry } from '../gemini-executor';
+import { resolveGeminiModels } from '../gemini-client';
 import { buildPlanCacheKey, getCachedPlan, setCachedPlan } from '../gemini-cache';
 import { logServerError } from '../logger';
 import {
@@ -20,6 +21,7 @@ import {
 } from './types';
 
 export interface GeneratePlanOptions {
+  models?: string[];
   model?: string;
   fallbackModel?: string;
   apiKey?: string;
@@ -31,10 +33,6 @@ export interface GeneratePlanOptions {
     apiKey: string,
     timeoutMs?: number
   ) => Promise<string | null>;
-}
-
-function resolveGeminiModel(custom?: string): string {
-  return custom || process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
 }
 
 function resolveGeminiApiKey(custom?: string): string | undefined {
@@ -55,8 +53,11 @@ export async function generateHouseholdPlan(
 
   const airQuality = await fetchAirQuality(lookupKey);
 
-  const model = resolveGeminiModel(options.model);
-  const fallbackModel = options.fallbackModel || process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite';
+  const models = resolveGeminiModels({
+    models: options.models,
+    model: options.model,
+    fallbackModel: options.fallbackModel,
+  });
   const apiKey = resolveGeminiApiKey(options.apiKey);
   const catalogueMap = new Map<string, ActionDefinition>(ACTION_CATALOGUE.map((a) => [a.id, a]));
 
@@ -82,8 +83,7 @@ export async function generateHouseholdPlan(
     const generator = options.geminiGenerator ?? defaultGeminiGenerator;
 
     const execResult = await executeWithGeminiRetry<string>({
-      primaryModel: model,
-      fallbackModel,
+      models,
       apiKey,
       label: 'PlanService',
       fn: async (activeModel, timeoutMs) => {
