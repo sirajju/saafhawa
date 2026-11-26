@@ -19,12 +19,14 @@ describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () =>
 
     for (const p of places) {
       let report;
-      try {
-        report = await getAirQualityByLocation(p.query);
-      } catch {
-        // Retry once on transient CI runner network glitch or timeout
-        await new Promise((r) => setTimeout(r, 1000));
-        report = await getAirQualityByLocation(p.query);
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          report = await getAirQualityByLocation(p.query);
+          break;
+        } catch (err) {
+          if (attempt === 2) throw err;
+          await new Promise((r) => setTimeout(r, 1500));
+        }
       }
 
       expect(report.location.name).toBeTruthy();
