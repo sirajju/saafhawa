@@ -42,6 +42,7 @@ export function ChatPanel({
     {
       role: 'assistant',
       content: 'Ask me about timing, masks, purifiers or your commute. I\'ll check the forecast first.',
+      isGreeting: true,
     },
   ]);
   const [inputText, setInputText] = useState('');
@@ -58,23 +59,27 @@ export function ChatPanel({
     }
   }, [messages]);
 
-  const handleSendMessage = async (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string, baseMessages?: ChatMessage[]) => {
     const text = (textToSend || inputText).trim();
     if (!text || isLoading) return;
 
     hasUserInteractedRef.current = true;
-    const newMessages: ChatMessage[] = [...messages, { role: 'user', content: text }];
+    const currentList = baseMessages || messages;
+    const newMessages: ChatMessage[] = [...currentList, { role: 'user', content: text }];
     setMessages(newMessages);
     setInputText('');
     setErrorMessage(null);
     setIsLoading(true);
 
     try {
+      const conversationHistory = currentList
+        .filter((m) => !m.isGreeting && !m.isError)
+        .slice(-6)
+        .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }));
+
       const payload: ChatRequest = {
         message: text,
-        conversationHistory: messages
-          .slice(-6)
-          .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) })),
+        conversationHistory,
         place: place.trim(),
         householdProfile: householdProfile as ChatRequest['householdProfile'],
       };
@@ -91,12 +96,17 @@ export function ChatPanel({
       }
 
       const data = await response.json();
+      const rawTools: string[] = (data.toolsExecuted || [])
+        .map((t: { resultSummary?: string }) => t.resultSummary)
+        .filter((s: unknown): s is string => typeof s === 'string' && s.length > 0);
+      const toolsSummary: string[] = Array.from(new Set(rawTools));
+
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
           content: data.reply,
-          toolsSummary: data.toolsSummary,
+          toolsSummary: toolsSummary.length > 0 ? toolsSummary : undefined,
           fallbackReason: data.fallbackReason,
           dailyQuotaResetTime: data.dailyQuotaResetTime,
         },
@@ -106,7 +116,7 @@ export function ChatPanel({
       setErrorMessage(msg);
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: `${msg} Please try asking again.` },
+        { role: 'assistant', content: `${msg} Please try asking again.`, isError: true },
       ]);
     } finally {
       setIsLoading(false);
@@ -117,7 +127,9 @@ export function ChatPanel({
   const handleRetryMessage = (msgIdx: number) => {
     for (let i = msgIdx - 1; i >= 0; i--) {
       if (messages[i].role === 'user') {
-        handleSendMessage(messages[i].content);
+        const userText = messages[i].content;
+        const baseList = messages.filter((_, idx) => idx !== msgIdx && idx !== i);
+        handleSendMessage(userText, baseList);
         break;
       }
     }

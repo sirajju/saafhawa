@@ -10,6 +10,8 @@ export interface ChatMessage {
   toolsSummary?: string[];
   fallbackReason?: 'gemini_busy' | 'no_key' | 'model_error' | 'daily_quota_exhausted';
   dailyQuotaResetTime?: string;
+  isGreeting?: boolean;
+  isError?: boolean;
 }
 
 interface ChatMessageListProps {
