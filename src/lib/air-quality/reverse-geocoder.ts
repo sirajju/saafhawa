@@ -1,6 +1,7 @@
 /**
- * Free reverse geocoding using BigDataCloud Client API with Nominatim fallback.
+ * Free server-side reverse geocoding using OpenStreetMap Nominatim.
  * Resolves GPS coordinates into readable locality and city (e.g. "Kozhikode, Kerala").
+ * Strictly enforces 1 request per second and sets a distinct User-Agent header.
  */
 
 export interface ReverseGeocodeResult {
@@ -43,44 +44,6 @@ export async function reverseGeocodeCoordinates(
 
   const timeoutMs = options.timeoutMs ?? 4000;
 
-  // 1. Primary: BigDataCloud Free Client Reverse Geocoding API
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
-      const res = await fetch(url, {
-        signal: controller.signal,
-        headers: { Accept: 'application/json' },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const city = (data.city || data.locality || '').trim();
-        const state = (data.principalSubdivision || '').trim();
-        const country = (data.countryName || '').trim();
-
-        if (city) {
-          const formattedAddress = state ? `${city}, ${state}` : city;
-          const result: ReverseGeocodeResult = {
-            formattedAddress,
-            city,
-            locality: data.locality,
-            state,
-            country,
-          };
-          setCachedResult(cacheKey, result);
-          return result;
-        }
-      }
-    } finally {
-      clearTimeout(timeout);
-    }
-  } catch {
-    // Fall through to Nominatim fallback
-  }
-
-  // 2. Secondary Fallback: OpenStreetMap Nominatim (respecting 1 req/sec policy)
   try {
     await waitForNominatimRateLimit();
     const controller = new AbortController();
@@ -119,7 +82,7 @@ export async function reverseGeocodeCoordinates(
       clearTimeout(timeout);
     }
   } catch {
-    // Both providers failed
+    // Reverse geocoding failed
   }
 
   return null;

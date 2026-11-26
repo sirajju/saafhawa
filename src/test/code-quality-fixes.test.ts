@@ -137,7 +137,7 @@ describe('Code Quality & Bug Fixes 1-4', () => {
     const { reverseGeocodeCoordinates } = await import('../lib/air-quality/reverse-geocoder');
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ city: 'Kozhikode', principalSubdivision: 'Kerala', countryName: 'India' }),
+      json: async () => ({ address: { city: 'Kozhikode', state: 'Kerala', country: 'India' } }),
     } as Response);
 
     const geo1 = await reverseGeocodeCoordinates(11.2588, 75.7804);
