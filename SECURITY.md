@@ -1,64 +1,78 @@
 # Security Policy & Implementation
 
-This document details the security controls implemented in **SaafHawa**, linking each mechanism directly to the source code implementing and testing it.
+This document details the security architecture and controls implemented in **SaafHawa**, linking each mechanism directly to the source code implementing and testing it.
 
 ---
 
-### 1. Zero Browser Exposure of API Keys & Keyless Default Operation
-- All calls to Google Air Quality API, Google Geocoding API, Open-Meteo Air Quality and Geocoding APIs, and Google Gen AI (Gemini) are strictly executed on the server inside API route handlers.
-- Environment variables (`GOOGLE_MAPS_API_KEY`, `GEMINI_API_KEY`, and optional fallback `AI_API_KEY`) do not use the `NEXT_PUBLIC_` prefix, preventing Next.js from bundling them into client-side JavaScript.
-- **Keyless Default Operation:** When `GOOGLE_MAPS_API_KEY` is not provided, the application defaults to the free Open-Meteo Air Quality (Copernicus CAMS model) and Geocoding APIs requiring zero cloud credits or private keys. Attribution is strictly preserved per CC BY 4.0.
-- Implementation: [`src/lib/air-quality/open-meteo-client.ts`](src/lib/air-quality/open-meteo-client.ts), [`src/lib/air-quality/service.ts`](src/lib/air-quality/service.ts), [`src/lib/plan/service.ts`](src/lib/plan/service.ts), [`src/lib/chat/service.ts`](src/lib/chat/service.ts).
+### 1. Zero Browser Exposure of API Keys & Server-Side Delegation
 
-### 2. Request Body Size Limits (Anti-DoS)
-- All POST endpoints enforce a hard request body limit of 65,536 bytes (64 KB) via `readJsonBodyWithLimit`.
-- Payloads with an declared `Content-Length` header exceeding 64 KB are rejected upfront with HTTP 413 (Payload Too Large). The received body is verified via `TextEncoder` byte measurement.
-- Malformed or empty JSON payloads are caught and returned as HTTP 400 without leaking server stack traces.
-- Implementation: [`src/lib/security.ts`](src/lib/security.ts).
-- Verification: [`src/test/security.test.ts`](src/test/security.test.ts).
+- All external API calls (Open-Meteo, OpenStreetMap Nominatim, WAQI CPCB ground stations, Google Maps, and Google Gemini AI) are executed strictly on the server inside Next.js route handlers.
+- Environment variables (`GOOGLE_MAPS_API_KEY`, `WAQI_TOKEN`, `GEMINI_API_KEY`, `GEMINI_MODELS`) do not use the `NEXT_PUBLIC_` prefix, preventing Next.js from bundling credentials into client JavaScript.
+- **Keyless Default Operation:** The application defaults to keyless Open-Meteo (Copernicus CAMS model) and Nominatim reverse geocoding, operating with full real-time functionality without requiring API keys or payment.
+- Implementation: [`src/lib/air-quality/open-meteo-client.ts`](src/lib/air-quality/open-meteo-client.ts), [`src/lib/air-quality/reverse-geocoder.ts`](src/lib/air-quality/reverse-geocoder.ts), [`src/lib/plan/service.ts`](src/lib/plan/service.ts), [`src/lib/chat/service.ts`](src/lib/chat/service.ts).
 
-### 3. Per-IP Sliding Window Rate Limiting & Cloud Run Proxy Hop Assumptions
-- Every API endpoint is protected by an in-memory sliding window rate limiter:
-  - `GET /api/air-quality`: 60 requests per minute ([`src/app/api/air-quality/route.ts`](src/app/api/air-quality/route.ts))
-  - `POST /api/plan`: 30 requests per minute ([`src/app/api/plan/route.ts`](src/app/api/plan/route.ts))
-  - `POST /api/chat`: 15 requests per minute ([`src/app/api/chat/route.ts`](src/app/api/chat/route.ts))
-  - `POST /api/community-advisory`: 20 requests per minute ([`src/app/api/community-advisory/route.ts`](src/app/api/community-advisory/route.ts))
-- **Cloud Run Trusted Proxy Hops & Architecture Assumptions:**
-  - **Direct Cloud Run Ingress (`*.run.app`):** Cloud Run's Google Front End (GFE) appends the verified caller IP as the last entry in `X-Forwarded-For`: `client-supplied-values, Google-observed-client-IP`. The default setting is `TRUSTED_PROXY_HOPS=1` (1 hop from the right).
-  - **Behind Google Cloud Load Balancer (Serverless NEG):** The load balancer prepends the client IP and appends its own forwarding rule IP: `client-supplied-values, CLIENT_IP, LOAD_BALANCER_IP`. When running behind an external application load balancer, configure `TRUSTED_PROXY_HOPS=2`.
-  - **What Happens When Running Without a Proxy (or Unknown Setup):** If the application runs directly on a host or container without a trusted reverse proxy in front of it, or if `TRUSTED_PROXY_HOPS` is set to `0` or `'unknown'`, client-provided `X-Forwarded-For` or `X-Real-IP` headers can be arbitrarily forged. To prevent attackers from bypassing rate limits by rotating fake IP headers, the rate limiter falls back to a **single shared limit key** (`shared_untrusted_client`). All unproxied requests share this single quota bucket rather than trusting spoofable headers.
-  - If an incoming `X-Forwarded-For` header contains fewer hops than configured, it is treated as an unexpected proxy chain and also safely falls back to the single shared limit.
-- **Memory Bounding & Eviction:** The internal map is capped at 5,000 keys (`maxKeys`). Expired timestamps are pruned automatically on check, and the oldest entry is evicted if the cap is reached.
-- Exceeded limits return HTTP 429 with standard `Retry-After` headers.
-- Implementation: [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts).
-- Verification: [`src/test/security.test.ts`](src/test/security.test.ts), [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), [`src/test/chat-advisory-rate.test.ts`](src/test/chat-advisory-rate.test.ts).
+---
 
-### 4. Single Definition of Security Headers & Server Inspection
-- A single canonical list of security headers (`SECURITY_HEADERS_LIST`) is maintained in [`src/lib/security.ts`](src/lib/security.ts) and imported directly into [`next.config.ts`](next.config.ts):
-  - `Content-Security-Policy`: Strictly excludes `'unsafe-eval'`; restricts `script-src` to `'self' 'unsafe-inline'`, preventing arbitrary code execution.
-  - `X-Frame-Options: DENY`: Prevents clickjacking in iframes.
-  - `X-Content-Type-Options: nosniff`: Prevents MIME-type sniffing.
-  - `Referrer-Policy: origin-when-cross-origin`: Restricts referrer transmission.
-  - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`: Enforces HTTPS (HSTS).
-  - `Permissions-Policy: camera=(), microphone=(), geolocation=()`: Disables sensitive hardware APIs.
-  - `poweredByHeader: false`: Explicitly disables the `X-Powered-By: Next.js` fingerprint header in [`next.config.ts`](next.config.ts).
-- Verification: [`src/test/security-headers-real.test.ts`](src/test/security-headers-real.test.ts), and live server verification in [`e2e/smoke.spec.ts`](e2e/smoke.spec.ts).
+### 2. Request Body Size Limits & Timeouts
 
-### 5. Secret-Redacted Server Error Logging & Control-Flow Exception Handling
-- Server-side exceptions are logged via `logServerError(context, error)` ([`src/lib/logger.ts`](src/lib/logger.ts)), which strips sensitive API keys, auth tokens, and secret patterns from messages and stack traces. Errors are never swallowed silently.
-- **Next.js Internal Control-Flow Propagation:** Internal Next.js control-flow exceptions (such as dynamic prerender bailouts via `NEXT_PRERENDER_INTERRUPTED`, `DYNAMIC_SERVER_USAGE`, `NEXT_REDIRECT`, and `NEXT_NOT_FOUND`) are identified via `isNextControlFlowError` and allowed to propagate through route handlers unchanged. They are never logged to console or treated as application crashes, preserving clean production builds.
-- Implementation: [`src/lib/logger.ts`](src/lib/logger.ts), used across all API route handlers.
-- Verification: [`src/test/logger-control-flow.test.ts`](src/test/logger-control-flow.test.ts).
+- **64 KB Hard Payload Cap:** All POST endpoints enforce a 65,536-byte (64 KB) body size cap via `readJsonBodyWithLimit`. Declared `Content-Length` > 64 KB is rejected upfront with HTTP 413, and actual body bytes are measured with `TextEncoder` before JSON parsing: [`src/lib/security.ts`](src/lib/security.ts).
+- **Execution Timeouts:** Gemini API calls are bounded by 15-second timeouts with retries constrained to keep total attempt latency under 25 seconds: [`src/lib/gemini-utils.ts`](src/lib/gemini-utils.ts).
+- **Output Length Bounds:** Model output strings are strictly capped (2,500 characters for advisories, 3,000 characters for chat responses) to mitigate prompt injection buffer overflows.
 
-### 6. External Call Timeouts & Output Caps
-- All generative AI calls to Google Gemini are bounded by a 15-second abort timeout via `withTimeout` to prevent thread hanging on degraded upstream connections.
-- Output response strings are truncated to length limits (e.g. 2,500 characters for advisories, 3,000 for chat responses) via `capTextLength`.
-- Implementation: [`src/lib/gemini-utils.ts`](src/lib/gemini-utils.ts), integrated into [`src/lib/plan/gemini-client.ts`](src/lib/plan/gemini-client.ts), [`src/lib/community/advisory-generator.ts`](src/lib/community/advisory-generator.ts), and [`src/lib/chat/service.ts`](src/lib/chat/service.ts).
+---
 
-### 7. Input Validation & Strict Allow-Lists
-- All inputs are parsed and sanitized using strict Zod schemas before being passed to business logic:
-  - Location queries capped at 120 characters: [`src/lib/air-quality/types.ts`](src/lib/air-quality/types.ts)
-  - Chat messages capped at 500 characters: [`src/lib/chat/types.ts`](src/lib/chat/types.ts)
-  - Household profile demographics with realistic upper bounds (e.g., adults max 15, children max 10, distance max 300 km, area max 25,000 sq ft): [`src/lib/plan/types.ts`](src/lib/plan/types.ts)
-  - Single query parameter accepted (`place` only): [`src/app/api/air-quality/route.ts`](src/app/api/air-quality/route.ts)
-- Verification: [`src/test/plan-validation.test.ts`](src/test/plan-validation.test.ts).
+### 3. Server-Side Reverse Geocoding & Privacy
+
+- Browser GPS coordinates are reverse-geocoded entirely server-side via `GET /api/reverse-geocode?lat=...&lon=...`: [`src/app/api/reverse-geocode/route.ts`](src/app/api/reverse-geocode/route.ts).
+- **Nominatim Fair Use:** Queries OpenStreetMap Nominatim with an identifying User-Agent (`SaafHawa/0.1.0`), an in-memory queue enforcing Nominatim's 1 request/second policy, and a 50-entry bounded LRU cache: [`src/lib/air-quality/reverse-geocoder.ts`](src/lib/air-quality/reverse-geocoder.ts).
+- **No Third-Party Client Calls:** The browser never contacts third-party geocoding APIs directly.
+
+---
+
+### 4. Sliding Window Rate Limiting & Proxy Trust Model
+
+- Every endpoint enforces an in-memory sliding window rate limit per client IP:
+  - `GET /api/air-quality`: 60 requests/min
+  - `GET /api/reverse-geocode`: 30 requests/min
+  - `POST /api/plan`: 30 requests/min
+  - `POST /api/chat`: 15 requests/min
+  - `POST /api/community-advisory`: 20 requests/min
+- **Client IP Resolution on Vercel vs Docker / Google Cloud Run:**
+  - **Vercel:** Vercel edge infrastructure manages and provides verified client IPs via `x-forwarded-for` or `x-real-ip`.
+  - **Cloud Run / Docker (`TRUSTED_PROXY_HOPS`):** Cloud Run Google Front End (GFE) appends verified caller IPs to `X-Forwarded-For`. Setting `TRUSTED_PROXY_HOPS=1` (default) extracts the rightmost IP. When behind a Google Cloud Load Balancer (Serverless NEG), `TRUSTED_PROXY_HOPS=2` is used.
+  - **Untrusted / Direct Fallback:** If `TRUSTED_PROXY_HOPS=0` or incoming headers have fewer hops than expected, requests fall back to a single shared quota key (`shared_untrusted_client`), preventing attackers from spoofing IPs to bypass rate limits.
+- **Instance-Level State:** Rate limit maps and caches operate in-memory per serverless/container instance with automatic capacity caps (5,000 keys for rate limits, 100 entries for AQI cache, 50 entries for reverse geocode cache) and LRU/TTL eviction to prevent memory exhaustion: [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts).
+
+---
+
+### 5. Content Security Policy & Production Security Headers
+
+A canonical header configuration (`SECURITY_HEADERS_LIST`) in [`src/lib/security.ts`](src/lib/security.ts) is injected via [`next.config.ts`](next.config.ts):
+
+| Header | Production Directive / Value | Purpose |
+| :--- | :--- | :--- |
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self';` | Blocks arbitrary script execution, restricts connections strictly to `'self'`, and prohibits plugins, embedded frames, and form redirects. |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` | Enforces HTTPS with 2-year HSTS preload. |
+| `X-Frame-Options` | `DENY` | Prevents UI redressing and clickjacking. |
+| `X-Content-Type-Options` | `nosniff` | Disables MIME-type sniffing. |
+| `Referrer-Policy` | `origin-when-cross-origin` | Protects path privacy in referrer headers. |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(self)` | Restricts hardware APIs; allows geolocation for self origin only. |
+| `X-DNS-Prefetch-Control` | `on` | Optimizes safe DNS resolution. |
+| `poweredByHeader` | `false` | Strips Next.js server fingerprinting header. |
+
+---
+
+### 6. Secret Redaction & Safe Error Logging
+
+- Server exceptions are sanitized via `logServerError(context, error)` ([`src/lib/logger.ts`](src/lib/logger.ts)), stripping API keys, tokens, and query credentials from logs and stack traces.
+- Next.js dynamic control-flow exceptions (`NEXT_PRERENDER_INTERRUPTED`, `DYNAMIC_SERVER_USAGE`, `NEXT_REDIRECT`, `NEXT_NOT_FOUND`) propagate cleanly without console noise.
+
+---
+
+### 7. Input Validation & Bounds
+
+- Incoming payloads are validated with strict Zod schemas before processing:
+  - Query parameters: single `place` query, maximum 120 characters ([`src/lib/air-quality/types.ts`](src/lib/air-quality/types.ts)).
+  - Coordinates: strictly validated as `lat, lon` numeric strings with max length 40.
+  - Chat input: maximum 500 characters ([`src/lib/chat/types.ts`](src/lib/chat/types.ts)).
+  - Demographics: realistic bounds on adults, children, seniors, commute distance, and floor area ([`src/lib/plan/types.ts`](src/lib/plan/types.ts)).
