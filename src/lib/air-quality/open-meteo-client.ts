@@ -140,11 +140,9 @@ export async function fetchOpenMeteoAirQuality(
   const currentPm25 = typeof currentData.pm2_5 === 'number' ? currentData.pm2_5 : null;
   const currentPm10 = typeof currentData.pm10 === 'number' ? currentData.pm10 : null;
   const currentCpcb = calculateCpcbAqi(currentPm25, currentPm10);
-
-  let currentDateTimeIso = new Date().toISOString();
-  if (currentData.time) {
-    currentDateTimeIso = parseDateTimeToIso(currentData.time, effectiveOffsetSec);
-  }
+  const currentDateTimeIso = currentData.time
+    ? parseDateTimeToIso(currentData.time, effectiveOffsetSec)
+    : new Date().toISOString();
 
   const current: CurrentAirQuality = {
     dateTime: currentDateTimeIso,

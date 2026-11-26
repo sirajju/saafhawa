@@ -33,15 +33,8 @@ describe('Gemini Quota Handling & Caching', () => {
       message: 'Resource has been exhausted (e.g. check quota).',
       status: 429,
       errorDetails: [
-        {
-          '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
-          reason: 'QUOTA_EXCEEDED',
-          metadata: { quota_limit: 'GenerateRequestsPerDayPerProject' },
-        },
-        {
-          '@type': 'type.googleapis.com/google.rpc.RetryInfo',
-          retryDelay: '3600s',
-        },
+        { '@type': 'type.googleapis.com/google.rpc.ErrorInfo', reason: 'QUOTA_EXCEEDED', metadata: { quota_limit: 'GenerateRequestsPerDayPerProject' } },
+        { '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '3600s' },
       ],
     };
 
@@ -185,7 +178,7 @@ describe('Gemini Quota Handling & Caching', () => {
 
     render(
       <CommunityAdvisoryModal
-        isOpen={true}
+        isOpen
         onClose={() => {}}
         place="11.2551, 75.8287"
         displayPlace="Kozhikode, Kerala"

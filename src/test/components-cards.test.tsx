@@ -26,14 +26,7 @@ describe('Accessibility - AirQualityCard (Screen Reader Text & Visual Metrics)',
       <AirQualityCard
         location={MOCK_LOCATION}
         current={MOCK_CURRENT}
-        hourlyForecast={[
-          {
-            dateTime: '2026-11-24T11:00:00Z',
-            aqi: 350,
-            category: 'Very Poor',
-            dominantPollutant: 'pm25',
-          },
-        ]}
+        hourlyForecast={[{ dateTime: '2026-11-24T11:00:00Z', aqi: 350, category: 'Very Poor', dominantPollutant: 'pm25' }]}
       />
     );
 
@@ -84,14 +77,7 @@ describe('Accessibility - AirQualityCard (Screen Reader Text & Visual Metrics)',
       <AirQualityCard
         location={MOCK_LOCATION}
         current={MOCK_CURRENT}
-        hourlyForecast={[
-          {
-            dateTime: '2026-11-24T11:00:00Z',
-            aqi: 350,
-            category: 'Very Poor',
-            dominantPollutant: 'pm25',
-          },
-        ]}
+        hourlyForecast={[{ dateTime: '2026-11-24T11:00:00Z', aqi: 350, category: 'Very Poor', dominantPollutant: 'pm25' }]}
       />
     );
 
