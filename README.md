@@ -18,6 +18,7 @@
 
 - **Live App:** https://saafhawa-peach.vercel.app
 - **Demo Video:** [docs/demo/saafhawa-demo.webm](docs/demo/saafhawa-demo.webm)
+- **YouTube Video:** https://youtu.be/VTisLQ5f-no
 
 ---
 
@@ -413,7 +414,26 @@ vercel --prod
 
 ---
 
-## 8. Evidence Documentation Index
+## 8. How This Was Built with AI
+
+### AI Tools & Architecture Roles
+- **Google Antigravity:** Served as the primary autonomous agentic engineering environment, translating detailed domain specifications into executable TypeScript, enforcing modular boundaries (such as strict $< 200$ line limits across all files), and running iterative compilation and test sweeps.
+- **Google Gemini (In-App Runtime AI):** Integrated into the production application via `@google/genai` (v1beta API). Leverages a resilient fallback chain configured through `GEMINI_MODELS` (`gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash`) to generate structured JSON action selections and drive multi-turn function calling in the conversational assistant.
+- **Claude Code:** Used for rigorous external code reviews, adversarial security audits, end-to-end verification design, and test suite execution logs.
+
+### Prompt Evolution & Iterative Engineering
+1. **Feature Scaffolding:** Initial prompts established domain fundamentals: deterministic exposure math, Central Pollution Control Board (CPCB) piecewise linear breakpoints, and Zod schemas for household profiles.
+2. **Quality & Constraint Enforcement:** Follow-up prompts enforced architectural discipline: restricting Gemini from inventing numbers, enforcing a 64 KB request body cap, implementing sliding-window rate limiters with trusted proxy hop handling, and silencing Next.js prerender control-flow exceptions.
+3. **Calm Health UX & Design:** Subsequent prompts reshaped the interface from a dense 20-field form into an accessible 3-step wizard with large choice chips, an SVG 24-hour forecast curve, clean daily timeline groupings, and strict isolation of AQI palette colors.
+4. **Real-World Resilience:** Prompts incorporated findings from live API testing in Indian cities (Kozhikode, Delhi): reverse-geocoding browser GPS positions via server-side Nominatim, managing Gemini free-tier daily quotas with automatic model skipping, and providing transparent UI fallback notices when upstream models are busy.
+
+### Division of Labor: Human Author vs. Generative AI
+- **Human Author:** Conceived the hyper-local smog mitigation vision, established calm health UX principles, selected environmental health literature and CPCB standards, performed manual testing across Indian cities, audited security headers, and directed architectural trade-offs.
+- **Generative AI:** Implemented TypeScript business logic and Next.js React components, authored CSS custom property design tokens, generated 258 Vitest unit tests and 18 Playwright end-to-end scenarios, verified WCAG AA compliance, and formatted bilingual community advisories.
+
+---
+
+## 9. Evidence Documentation Index
 
 For in-depth audits of each scoring criterion, see the dedicated documentation files:
 - 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64KB body caps, rate limiters, credential hygiene, trusted proxy hops (`TRUSTED_PROXY_HOPS`).
