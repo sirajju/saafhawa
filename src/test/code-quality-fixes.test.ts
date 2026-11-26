@@ -89,4 +89,11 @@ describe('Code Quality & Bug Fixes 1-4', () => {
     expect(result.totalPm25EmissionsSavedGrams).toBe(20);
     expect(result.totalCo2EmissionsSavedGrams).toBe(200);
   });
+
+  it('Fix 6: exports maxDuration = 60 on chat and plan routes', async () => {
+    const chatRoute = await import('../app/api/chat/route');
+    const planRoute = await import('../app/api/plan/route');
+    expect(chatRoute.maxDuration).toBe(60);
+    expect(planRoute.maxDuration).toBe(60);
+  });
 });

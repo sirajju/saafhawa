@@ -33,7 +33,7 @@ async function runGeminiConversation(
   systemInstruction: string,
   fetcher: (place: string) => Promise<AirQualityReport>,
   toolsExecuted: ExecutedToolRecord[],
-  timeoutMs: number
+  totalBudgetMs: number = 20000
 ): Promise<string> {
   const contents: Content[] = [];
   const history = request.conversationHistory || [];
@@ -42,9 +42,20 @@ async function runGeminiConversation(
   }
   contents.push({ role: 'user', parts: [{ text: request.message }] });
 
+  const deadline = Date.now() + Math.min(20000, totalBudgetMs);
+
+  const getTimeoutForRound = (roundIndex: number, maxRounds: number) => {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 500) {
+      throw new Error('Chat timeout budget exceeded');
+    }
+    const roundsLeft = maxRounds - roundIndex;
+    return Math.min(remainingMs, Math.max(3000, Math.floor(remainingMs / roundsLeft)));
+  };
+
   let currentResponse = await withTimeout(
     ai.models.generateContent({ model: activeModel, contents, config: { systemInstruction, tools: CHAT_TOOLS } }),
-    timeoutMs,
+    getTimeoutForRound(0, 3),
     'Gemini Chat Initial'
   );
 
@@ -73,7 +84,7 @@ async function runGeminiConversation(
 
     currentResponse = await withTimeout(
       ai.models.generateContent({ model: activeModel, contents, config: { systemInstruction, tools: CHAT_TOOLS } }),
-      timeoutMs,
+      getTimeoutForRound(round + 1, 3),
       `Gemini Chat Round ${round + 2}`
     );
   }
@@ -99,15 +110,7 @@ export async function handleChatQuery(
     return { ...fallback, fallbackReason: 'no_key' };
   }
 
-  let isSampleData = false;
-  try {
-    const checkReport = await fetcher(request.place);
-    isSampleData = Boolean(checkReport.isSampleData || checkReport.current.isSampleData);
-  } catch {
-    isSampleData = false;
-  }
-
-  const systemInstruction = buildChatSystemInstruction(request.householdProfile, request.place, isSampleData);
+  const systemInstruction = buildChatSystemInstruction(request.householdProfile, request.place);
   const toolsExecuted: ExecutedToolRecord[] = [];
   const ai = createGeminiClient(apiKey);
 
@@ -115,6 +118,7 @@ export async function handleChatQuery(
     models,
     apiKey,
     label: 'ChatService',
+    totalTimeoutMs: 20000,
     fn: async (activeModel, timeoutMs) => {
       return runGeminiConversation(ai, activeModel, request, systemInstruction, fetcher, toolsExecuted, timeoutMs);
     },

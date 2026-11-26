@@ -7,7 +7,7 @@ import { readJsonBodyWithLimit } from '@/lib/security';
 import { logServerError, isNextControlFlowError } from '@/lib/logger';
 import { ZodError } from 'zod';
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
