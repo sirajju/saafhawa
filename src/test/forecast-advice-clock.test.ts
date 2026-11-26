@@ -8,7 +8,7 @@ function generateSynthetic48HourForecast(): ForecastAdvicePoint[] {
 
   for (let i = 0; i < 48; i++) {
     const ptDate = new Date(baseTime + i * 3600 * 1000);
-    const hour = ptDate.getHours();
+    const hour = i % 24;
     // Diurnal cycle: morning peak (8-10 AM) is 350 AQI, afternoon (1-4 PM) is 120 AQI, night is 280 AQI
     let aqi = 250;
     if (hour >= 7 && hour <= 10) aqi = 360;

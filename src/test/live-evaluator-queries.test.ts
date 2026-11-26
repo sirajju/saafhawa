@@ -18,7 +18,14 @@ describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () =>
     const results = [];
 
     for (const p of places) {
-      const report = await getAirQualityByLocation(p.query);
+      let report;
+      try {
+        report = await getAirQualityByLocation(p.query);
+      } catch {
+        // Retry once on transient CI runner network glitch or timeout
+        await new Promise((r) => setTimeout(r, 1000));
+        report = await getAirQualityByLocation(p.query);
+      }
 
       expect(report.location.name).toBeTruthy();
       expect(report.current.dataSource).toBe('Open-Meteo (CAMS model)');
