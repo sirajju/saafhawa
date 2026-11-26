@@ -53,3 +53,18 @@ export function logServerError(context: string, error: unknown, apiKey?: string)
 
   console.error(`[${context}]`, sanitized);
 }
+
+/**
+ * Safe server-side warning logger that redacts API keys and secrets.
+ */
+export function logServerWarning(context: string, message: string, apiKey?: string): void {
+  let rawMsg = message;
+  if (apiKey && apiKey.length > 5) {
+    rawMsg = rawMsg.replaceAll(apiKey, '[REDACTED_API_KEY]');
+  }
+  const sanitized = rawMsg
+    .replace(/(key|token|apiKey|secret)=([^&\s]+)/gi, '$1=[REDACTED]')
+    .replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED_KEY]');
+
+  console.warn(`[${context}]`, sanitized);
+}

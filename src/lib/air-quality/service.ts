@@ -5,6 +5,7 @@ import { geocodeOpenMeteoPlace, fetchOpenMeteoAirQuality, OpenMeteoLocationResul
 import { fetchWaqiNearestStation } from './waqi-client';
 import { AirQualityQuerySchema, AirQualityReport, AirQualityReportSchema } from './types';
 import { extractPrimaryIndex, extractPollutant, ExtractedIndex } from './index-extractor';
+import { logServerWarning } from '../logger';
 
 export { extractPrimaryIndex, extractPollutant };
 export type { ExtractedIndex };
@@ -133,8 +134,9 @@ export async function getAirQualityByLocation(
         return parsedReport;
       }
     } catch (waqiError) {
-      console.warn(
-        `[AirQualityService] WAQI lookup failed (${waqiError instanceof Error ? waqiError.message : 'Unknown error'}), falling back.`
+      logServerWarning(
+        'AirQualityService',
+        `WAQI lookup failed (${waqiError instanceof Error ? waqiError.message : 'Unknown error'}), falling back.`
       );
     }
   }
@@ -146,8 +148,9 @@ export async function getAirQualityByLocation(
       airQualityCache.set(cacheKey, googleReport);
       return googleReport;
     } catch (googleError) {
-      console.warn(
-        `[AirQualityService] Google API lookup failed (${googleError instanceof Error ? googleError.message : 'Unknown error'}), falling back to free Open-Meteo source.`
+      logServerWarning(
+        'AirQualityService',
+        `Google API lookup failed (${googleError instanceof Error ? googleError.message : 'Unknown error'}), falling back to free Open-Meteo source.`
       );
     }
   }

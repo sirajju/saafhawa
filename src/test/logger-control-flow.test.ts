@@ -1,15 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { isNextControlFlowError, logServerError } from '@/lib/logger';
+import { isNextControlFlowError, logServerError, logServerWarning } from '@/lib/logger';
 
 describe('Logger - Next.js Internal Control-Flow Error Handling', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   it('identifies Next.js prerender bailout errors as control-flow errors', () => {
@@ -76,5 +79,14 @@ describe('Logger - Next.js Internal Control-Flow Error Handling', () => {
     expect(loggedMessage).toContain('token=[REDACTED]');
     expect(loggedMessage).not.toContain('AIzaSyD-1234567890abcdefghijklmnopqrstuvw');
     expect(loggedMessage).not.toContain('secretToken123');
+  });
+
+  it('logs and sanitizes server warnings via logServerWarning with secrets redacted', () => {
+    logServerWarning('Executor', 'Model failed with key=secretApiKeyVal');
+    expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+    const logged = consoleWarnSpy.mock.calls[0].join(' ');
+    expect(logged).toContain('[Executor]');
+    expect(logged).toContain('key=[REDACTED]');
+    expect(logged).not.toContain('secretApiKeyVal');
   });
 });

@@ -8,6 +8,7 @@ import {
   parseGeminiQuotaError,
   isTransientGeminiError,
 } from './gemini-quota';
+import { logServerWarning } from './logger';
 
 export {
   type QuotaAnalysis,
@@ -60,7 +61,7 @@ export async function executeWithGeminiRetry<T>(
 
     const exhaustedUntil = modelExhaustionMap.get(model);
     if (exhaustedUntil && Date.now() < exhaustedUntil) {
-      console.warn(`[${label}] Model ${model} is exhausted until ${new Date(exhaustedUntil).toLocaleTimeString()} (skipping).`);
+      logServerWarning(label, `Model ${model} is exhausted until ${new Date(exhaustedUntil).toLocaleTimeString()} (skipping).`);
       failedDueToDailyQuota = true;
       latestDailyResetAt = Math.max(latestDailyResetAt || 0, exhaustedUntil);
       continue;
@@ -82,13 +83,14 @@ export async function executeWithGeminiRetry<T>(
         sanitizeErrorMessage(err, options.apiKey);
 
         if (isFatalGeminiError(err)) {
-          console.warn(`[${label}] Fatal auth error: ${sanitizeErrorMessage(err, options.apiKey)}`);
+          logServerWarning(label, `Fatal auth error: ${sanitizeErrorMessage(err, options.apiKey)}`);
           return { data: null, error: err, failedDueToBusy: false };
         }
 
         if (isGeminiConfigError(err)) {
-          console.warn(
-            `[${label}] Configuration error on model ${model} (404/400): ${sanitizeErrorMessage(err, options.apiKey)}. Skipping retries and trying next model.`
+          logServerWarning(
+            label,
+            `Configuration error on model ${model} (404/400): ${sanitizeErrorMessage(err, options.apiKey)}. Skipping retries and trying next model.`
           );
           break;
         }
@@ -99,18 +101,18 @@ export async function executeWithGeminiRetry<T>(
           const reset = quota.resetAt || Date.now() + 24 * 3600 * 1000;
           latestDailyResetAt = Math.max(latestDailyResetAt || 0, reset);
           modelExhaustionMap.set(model, reset);
-          console.warn(`[${label}] Daily quota exhausted on ${model} until ${new Date(reset).toLocaleTimeString()}. Switching model immediately.`);
+          logServerWarning(label, `Daily quota exhausted on ${model} until ${new Date(reset).toLocaleTimeString()}. Switching model immediately.`);
           break;
         }
 
         if (quota.isQuota && !quota.isDailyQuota) {
           failedDueToBusy = true;
           if (attempt === 0 && quota.retryDelayMs !== undefined && quota.retryDelayMs <= 5000) {
-            console.warn(`[${label}] Per-minute rate limit on ${model}, waiting ${quota.retryDelayMs}ms once.`);
+            logServerWarning(label, `Per-minute rate limit on ${model}, waiting ${quota.retryDelayMs}ms once.`);
             await new Promise((r) => setTimeout(r, quota.retryDelayMs));
             continue;
           }
-          console.warn(`[${label}] Per-minute rate limit on ${model} (delay > 5s or retried). Switching model.`);
+          logServerWarning(label, `Per-minute rate limit on ${model} (delay > 5s or retried). Switching model.`);
           break;
         }
 
