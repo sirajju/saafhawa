@@ -24,11 +24,23 @@ describe('Security - Configuration & Header Realization', () => {
     expect(csp).toBeDefined();
     expect(csp).not.toContain("'unsafe-eval'");
     expect(csp).toContain("script-src 'self' 'unsafe-inline'");
+    expect(csp).toContain("script-src-attr 'none'");
+    expect(csp).toContain("worker-src 'self'");
     expect(csp).toContain("connect-src 'self'");
     expect(csp).not.toContain('maps.googleapis.com');
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("base-uri 'self'");
     expect(csp).toContain("form-action 'self'");
+    expect(csp).toContain('upgrade-insecure-requests');
+  });
+
+  it('defines cross-origin policies and strict referrer without COEP', () => {
+    expect(SECURITY_HEADERS['Cross-Origin-Opener-Policy']).toBe('same-origin');
+    expect(SECURITY_HEADERS['Cross-Origin-Resource-Policy']).toBe('same-origin');
+    expect(SECURITY_HEADERS['X-Permitted-Cross-Domain-Policies']).toBe('none');
+    expect(SECURITY_HEADERS['Referrer-Policy']).toBe('strict-origin-when-cross-origin');
+    expect(SECURITY_HEADERS['X-DNS-Prefetch-Control']).toBe('off');
+    expect(SECURITY_HEADERS['Cross-Origin-Embedder-Policy']).toBeUndefined();
   });
 });
 

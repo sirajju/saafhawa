@@ -1,6 +1,7 @@
 import { calculateCpcbAqi } from './cpcb-aqi';
 import { CurrentAirQuality, AirQualityError } from './types';
 import { safeFetch } from './safe-fetch';
+import { logServerWarning } from '../logger';
 
 const WAQI_FEED_BASE_URL = 'https://api.waqi.info/feed';
 
@@ -71,25 +72,26 @@ export async function fetchWaqiNearestStation(
     );
   } catch (err: unknown) {
     if (err instanceof AirQualityError) throw err;
-    throw new AirQualityError(
-      `Unable to connect to WAQI ground station service: ${err instanceof Error ? err.message : 'Network error'}`,
-      503
-    );
+    logServerWarning('WaqiClient', `WAQI station connection error: ${err instanceof Error ? err.message : 'Network error'}`);
+    throw new AirQualityError('Unable to connect to air quality monitoring service. Please check your connection.', 503);
   }
 
   if (response.status === 429) {
-    throw new AirQualityError('WAQI API rate limit reached. Please wait a moment.', 429);
+    logServerWarning('WaqiClient', 'WAQI API rate limit reached (HTTP 429)');
+    throw new AirQualityError('Air quality service rate limit reached. Please wait a moment.', 429);
   }
 
   if (!response.ok) {
-    throw new AirQualityError(`WAQI API returned HTTP status ${response.status}.`, 502);
+    logServerWarning('WaqiClient', `WAQI API returned HTTP status ${response.status}`);
+    throw new AirQualityError('Air quality service temporarily unavailable. Please try again later.', 502);
   }
 
   let data: WaqiResponse;
   try {
     data = (await response.json()) as WaqiResponse;
   } catch {
-    throw new AirQualityError('Invalid JSON from WAQI ground station service.', 502);
+    logServerWarning('WaqiClient', 'Failed to parse JSON from WAQI station');
+    throw new AirQualityError('Invalid response received from air quality monitoring service.', 502);
   }
 
   if (data.status !== 'ok' || !data.data) {

@@ -87,7 +87,11 @@ test.describe('Modals, Chat & Security Headers', () => {
     const headers = response.headers();
     expect(headers['x-frame-options']).toBe('DENY');
     expect(headers['x-content-type-options']).toBe('nosniff');
-    expect(headers['referrer-policy']).toBe('origin-when-cross-origin');
+    expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
+    expect(headers['cross-origin-opener-policy']).toBe('same-origin');
+    expect(headers['cross-origin-resource-policy']).toBe('same-origin');
+    expect(headers['x-permitted-cross-domain-policies']).toBe('none');
+    expect(headers['x-dns-prefetch-control']).toBe('off');
     expect(headers['x-powered-by']).toBeUndefined();
 
     const csp = headers['content-security-policy'] || '';

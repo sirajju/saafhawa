@@ -10,6 +10,7 @@ import {
 import { ClientRequestOptions, normalizeIndianCity, resolveIndianPincodeCandidates } from './pincode-resolver';
 import { safeFetch } from './safe-fetch';
 import { reverseGeocodeCoordinates } from './reverse-geocoder';
+import { logServerWarning } from '../logger';
 
 export * from './open-meteo-types';
 
@@ -62,7 +63,8 @@ export async function geocodeOpenMeteoPlace(
 
     const response = await safeFetch(url.toString(), { method: 'GET', headers: { Accept: 'application/json' } }, options);
     if (response.status === 429) {
-      throw new AirQualityError('Free geocoding service rate limit reached. Please wait a moment and try again.', 429);
+      logServerWarning('OpenMeteoClient', 'Geocoding rate limit reached (HTTP 429)');
+      throw new AirQualityError('Geocoding service rate limit reached. Please wait a moment and try again.', 429);
     }
     if (!response.ok) continue;
 
@@ -91,9 +93,7 @@ export async function geocodeOpenMeteoPlace(
   }
 
   if (isPincode) {
-    throw new LocationNotFoundError(
-      `Could not resolve Indian pincode "${query}". Please enter a city or area name instead (e.g. "Connaught Place, New Delhi" or "Bandra, Mumbai").`
-    );
+    throw new LocationNotFoundError(`Could not resolve Indian pincode "${query}". Please enter a city or area name instead.`);
   }
 
   throw new LocationNotFoundError(query);
@@ -112,17 +112,20 @@ export async function fetchOpenMeteoAirQuality(
   const url = `${OPEN_METEO_AIR_QUALITY_URL}?latitude=${latitude}&longitude=${longitude}&current=pm2_5,pm10&hourly=pm2_5,pm10&forecast_days=3&timezone=${encodeURIComponent(timeZone || 'auto')}`;
   const response = await safeFetch(url, { method: 'GET', headers: { Accept: 'application/json' } }, options);
   if (response.status === 429) {
-    throw new AirQualityError('Open-Meteo API rate limit reached. Please wait a moment and retry.', 429);
+    logServerWarning('OpenMeteoClient', 'Air quality provider rate limit reached (HTTP 429)');
+    throw new AirQualityError('Air quality service rate limit reached. Please wait a moment and retry.', 429);
   }
   if (!response.ok) {
-    throw new AirQualityError(`Open-Meteo Air Quality API returned HTTP status ${response.status}.`, 502);
+    logServerWarning('OpenMeteoClient', `Air quality provider returned HTTP status ${response.status}`);
+    throw new AirQualityError('Air quality service temporarily unavailable. Please try again later.', 502);
   }
 
   let data: OpenMeteoAirQualityResponse;
   try {
     data = (await response.json()) as OpenMeteoAirQualityResponse;
   } catch {
-    throw new AirQualityError('Invalid response received from Open-Meteo Air Quality service.', 502);
+    logServerWarning('OpenMeteoClient', 'Failed to parse JSON response from air quality provider');
+    throw new AirQualityError('Invalid response received from air quality service.', 502);
   }
 
   const effectiveOffsetSec = typeof data.utc_offset_seconds === 'number'

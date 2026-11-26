@@ -1,8 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getClientIp, reverseGeocodeRateLimiter } from '@/lib/rate-limit';
 import { reverseGeocodeCoordinates } from '@/lib/air-quality/reverse-geocoder';
+import { logServerError } from '@/lib/logger';
 
 export const maxDuration = 10;
+
+const CoordinateParamSchema = (name: string, min: number, max: number) =>
+  z
+    .string()
+    .min(1, `${name} parameter is required.`)
+    .max(40, `${name} parameter must be at most 40 characters.`)
+    .refine((val) => /^[+-]?\d+(\.\d+)?$/.test(val.trim()), {
+      message: `${name} must be a valid numeric string.`,
+    })
+    .transform((val) => Number(val))
+    .refine((num) => Number.isFinite(num) && num >= min && num <= max, {
+      message: `${name} must be a finite number between ${min} and ${max}.`,
+    });
+
+export const ReverseGeocodeQuerySchema = z.object({
+  lat: CoordinateParamSchema('Latitude', -90, 90),
+  lon: CoordinateParamSchema('Longitude', -180, 180),
+});
 
 export async function GET(request: NextRequest) {
   const clientIp = getClientIp(request);
@@ -28,18 +48,18 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const lat = parseFloat(latStr);
-  const lon = parseFloat(lonStr);
-
-  if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+  const parseResult = ReverseGeocodeQuerySchema.safeParse({ lat: latStr, lon: lonStr });
+  if (!parseResult.success) {
     return NextResponse.json(
       {
         error: 'Invalid coordinates',
-        message: 'Latitude must be between -90 and 90, longitude between -180 and 180.',
+        message: parseResult.error.issues[0]?.message || 'Invalid coordinates parameters.',
       },
       { status: 400 }
     );
   }
+
+  const { lat, lon } = parseResult.data;
 
   try {
     const result = await reverseGeocodeCoordinates(lat, lon, { timeoutMs: 4000 });
@@ -52,7 +72,8 @@ export async function GET(request: NextRequest) {
         'Cache-Control': 'public, max-age=3600, s-maxage=86400',
       },
     });
-  } catch {
+  } catch (error: unknown) {
+    logServerError('API:reverse-geocode', error);
     return NextResponse.json({ formattedAddress: null }, { status: 200 });
   }
 }

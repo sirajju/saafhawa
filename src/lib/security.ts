@@ -7,25 +7,31 @@ import { NextRequest, NextResponse } from 'next/server';
 export const MAX_REQUEST_BODY_BYTES = 64 * 1024; // 64 KB
 
 export const SECURITY_HEADERS_LIST = [
-  { key: 'X-DNS-Prefetch-Control', value: 'on' },
+  { key: 'X-DNS-Prefetch-Control', value: 'off' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+  { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
   {
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self';",
       "script-src 'self' 'unsafe-inline';",
+      "script-src-attr 'none';",
       "style-src 'self' 'unsafe-inline';",
       "img-src 'self' data: https:;",
       "font-src 'self';",
       "connect-src 'self';",
+      "worker-src 'self';",
       "frame-ancestors 'none';",
       "object-src 'none';",
       "base-uri 'self';",
       "form-action 'self';",
+      "upgrade-insecure-requests;",
     ].join(' '),
   },
 ] as const;
@@ -42,7 +48,21 @@ export async function readJsonBodyWithLimit<T = unknown>(
   request: NextRequest,
   maxBytes: number = MAX_REQUEST_BODY_BYTES
 ): Promise<{ data: T; error?: never } | { data?: never; error: NextResponse }> {
-  // 1. Check Content-Length header if present
+  // 1. Verify Content-Type starts with application/json (prevents simple CSRF / text-plain abuse)
+  const contentType = request.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().startsWith('application/json')) {
+    return {
+      error: NextResponse.json(
+        {
+          error: 'Unsupported Media Type',
+          message: 'Content-Type must start with application/json.',
+        },
+        { status: 415 }
+      ),
+    };
+  }
+
+  // 2. Check Content-Length header if present
   const contentLengthHeader = request.headers.get('content-length');
   if (contentLengthHeader) {
     const declaredLength = parseInt(contentLengthHeader, 10);
