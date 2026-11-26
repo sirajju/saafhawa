@@ -13,6 +13,8 @@ describe('Code Quality & Bug Fixes 1-4', () => {
   it('Fix 1: validates coordinates format as "lat, lon" with max length 50', () => {
     const valid = PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: '12.9716, 77.5946' });
     expect(valid.coordinates).toBe('12.9716, 77.5946');
+    const validNegative = PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: '-33.8688, 151.2093' });
+    expect(validNegative.coordinates).toBe('-33.8688, 151.2093');
 
     expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: 'InvalidCityName' })).toThrow(/lat, lon/);
     expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: '12.97, 77.59' + '0'.repeat(45) })).toThrow(/50 characters/);
@@ -131,6 +133,19 @@ describe('Code Quality & Bug Fixes 1-4', () => {
     await expect(
       fetchWaqiNearestStation(28.6, 77.2, 'test-token', mockTimeoutFetch as unknown as typeof fetch)
     ).rejects.toThrow();
+
+    const { reverseGeocodeCoordinates } = await import('../lib/air-quality/reverse-geocoder');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ city: 'Kozhikode', principalSubdivision: 'Kerala', countryName: 'India' }),
+    } as Response);
+
+    const geo1 = await reverseGeocodeCoordinates(11.2588, 75.7804);
+    expect(geo1?.formattedAddress).toBe('Kozhikode, Kerala');
+    const geo2 = await reverseGeocodeCoordinates(11.2588, 75.7804);
+    expect(geo2?.formattedAddress).toBe('Kozhikode, Kerala');
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    fetchSpy.mockRestore();
   });
 
   it('Fix 9: advisory generator returns generationMethod and fallbackReason, never caching template fallback', async () => {

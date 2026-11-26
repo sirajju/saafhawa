@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:live": "vitest run src/test/live-evaluator-queries.test.ts --exclude \"\"",
+    "test:live": "vitest run --config vitest.live.config.mts",
     "test:e2e": "playwright test"
   },
   "dependencies": {
