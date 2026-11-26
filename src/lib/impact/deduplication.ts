@@ -68,22 +68,23 @@ export function calculateDeduplicatedTotals(
   let totalPm25Grams = 0;
   let totalCo2Grams = 0;
 
-  // Evaluate commute actions in order of priority: WFH -> Metro -> Carpool
   const commuteOrder = ['work_from_home_on_smog_days', 'swap_car_for_metro', 'swap_two_wheeler_for_metro_or_bus', 'carpool_to_work'];
-  // Evaluate indoor actions in order: Sealing -> Purifier -> Box fan
   const indoorOrder = ['weatherstrip_doors_and_windows', 'seal_windows_during_peak_inversion', 'run_hepa_air_purifier_bedroom', 'diy_corsi_rosenthal_box'];
 
-  const sortedActions = [...applicableActions].sort((a, b) => {
-    const aCommute = commuteOrder.indexOf(a.actionId);
-    const bCommute = commuteOrder.indexOf(b.actionId);
-    if (aCommute !== -1 && bCommute !== -1) return aCommute - bCommute;
+  const ACTION_EVALUATION_PRIORITY: Record<string, number> = {
+    work_from_home_on_smog_days: 10,
+    swap_car_for_metro: 20,
+    swap_two_wheeler_for_metro_or_bus: 30,
+    carpool_to_work: 40,
+    weatherstrip_doors_and_windows: 50,
+    seal_windows_during_peak_inversion: 60,
+    run_hepa_air_purifier_bedroom: 70,
+    diy_corsi_rosenthal_box: 80,
+  };
 
-    const aIndoor = indoorOrder.indexOf(a.actionId);
-    const bIndoor = indoorOrder.indexOf(b.actionId);
-    if (aIndoor !== -1 && bIndoor !== -1) return aIndoor - bIndoor;
-
-    return 0;
-  });
+  const sortedActions = [...applicableActions].sort(
+    (a, b) => (ACTION_EVALUATION_PRIORITY[a.actionId] ?? 1000) - (ACTION_EVALUATION_PRIORITY[b.actionId] ?? 1000)
+  );
 
   for (const action of sortedActions) {
     let scale = 1.0;
