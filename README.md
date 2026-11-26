@@ -333,13 +333,16 @@ npm run lint
 # 2. Run TypeScript compiler check
 npx tsc --noEmit
 
-# 3. Run all unit and component tests (172 tests across 29 test files)
+# 3. Run all unit and component tests (258 tests across 42 test files)
 npm test
 
-# 4. Run production standalone build
+# 4. Run real live network queries test across 5 Indian evaluator cities
+npm run test:live
+
+# 5. Run production build
 npm run build
 
-# 5. Run Playwright E2E smoke tests (5 tests)
+# 6. Run Playwright E2E browser tests (18 tests across 7 spec files)
 npm run test:e2e
 ```
 
@@ -396,7 +399,7 @@ vercel --prod
 For in-depth audits of each scoring criterion, see the dedicated documentation files:
 - 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64KB body caps, rate limiters, credential hygiene, trusted proxy hops (`TRUSTED_PROXY_HOPS`).
 - ♿ [`ACCESSIBILITY.md`](ACCESSIBILITY.md) — Semantic landmarks, fieldsets, live regions, text equivalents, keyboard tests, timeline passed states.
-- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (172 Vitest tests, 5 Playwright E2E tests, 0 ESLint warnings, 0 TypeScript errors).
+- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (258 Vitest tests, 1 live network test, 18 Playwright E2E tests, 0 ESLint warnings, 0 TypeScript errors).
 - ⚡ [`EFFICIENCY.md`](EFFICIENCY.md) — Measured build assets, Next.js standalone containerization, TTL cache bounding, strict <= 200 lines per file.
 - 📐 [`docs/DECISIONS.md`](docs/DECISIONS.md) — 5 architectural design decision records with trade-off analysis.
 
