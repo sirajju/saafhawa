@@ -384,7 +384,7 @@ gcloud run deploy saafhawa \
   --port 8080 \
   --memory 1Gi \
   --cpu 1 \
-  --set-env-vars "NODE_ENV=production,GEMINI_MODEL=gemini-flash-lite-latest,GEMINI_FALLBACK_MODEL=gemini-2.5-flash-lite"
+  --set-env-vars "NODE_ENV=production,GEMINI_API_KEY=YOUR_GEMINI_KEY,GEMINI_MODELS=gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash,TRUSTED_PROXY_HOPS=1"
 ```
 
 ### 7. Deploy to Vercel
@@ -398,13 +398,13 @@ SaafHawa is pre-configured for zero-friction deployment on [Vercel](https://verc
 
 | Variable | Required? | Default / Example | Purpose |
 |---|---|---|---|
-| `GEMINI_API_KEY` | **Required** | `AIzaSy...` | Powers Gemini action selection, live function-calling chat, and WhatsApp community advisories. |
+| `GEMINI_API_KEY` | Optional (enables AI) | `AIzaSy...` | Powers Gemini action selection, live function-calling chat, and WhatsApp community advisories (rule-based fallback activates if unset). |
 | `GEMINI_MODELS` | Optional | `gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash` | Ordered list of models tried in sequence, skipping exhausted daily quotas. |
 | `GEMINI_MODEL` | Optional | `gemini-flash-lite-latest` | Backwards-compatible primary model ID (used if `GEMINI_MODELS` is omitted). |
 | `GEMINI_FALLBACK_MODEL` | Optional | `gemini-2.5-flash-lite` | Backwards-compatible fallback model ID (used if `GEMINI_MODELS` is omitted). |
 | `GOOGLE_MAPS_API_KEY` | Optional | `AIzaSy...` | Upgrades telemetry to Tier 2 Google Air Quality ML model (falls back to Open-Meteo CAMS if omitted). |
 | `WAQI_TOKEN` | Optional | `your_waqi_token` | Upgrades telemetry to Tier 1 official CPCB continuous ambient ground station monitoring. |
-| `RATE_LIMIT_ENABLED` | Optional | `true` | In-memory token-bucket sliding rate limiter on sensitive API routes. |
+| `TRUSTED_PROXY_HOPS` | Optional | `1` | Number of trusted reverse proxy hops from the right of X-Forwarded-For for rate limiting (1 for Cloud Run/Vercel, 2 for GCLB). |
 
 Deploy using the Vercel CLI or Git integration:
 ```bash
