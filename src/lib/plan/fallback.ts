@@ -26,8 +26,9 @@ export function getRuleBasedFallbackActions(
           .filter((p): p is typeof p & { aqi: number } => typeof p.aqi === 'number')
           .map((p) => p.aqi)
       )
-    : (aqiNum ?? 150);
-  const isCleanAir = aqiNum !== null && aqiNum !== undefined && aqiNum <= 100 && maxForecast <= 100;
+    : aqiNum;
+  const isCleanAir =
+    aqiNum !== null && aqiNum !== undefined && aqiNum <= 100 && maxForecast !== null && maxForecast <= 100;
 
   const isZeroCost = profile.budget === 'zero_cost';
 

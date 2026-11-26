@@ -44,7 +44,7 @@ export async function generateCommunityAdvisory(
   const snapshot = {
     locationName: report.location.name,
     aqi: report.current.aqi,
-    category: report.current.category || 'Severe',
+    category: report.current.category || 'unavailable',
     pm25UgM3: report.current.pm25 ? report.current.pm25.value : null,
   };
 
@@ -71,9 +71,9 @@ LOCATION & AIR QUALITY:
 - Location: ${report.location.name}
 - Data Source: ${report.current.dataSource || 'Open-Meteo (CAMS model)'}
 - Measured At: ${formatMeasurementTime(report.current.dateTime, report.location.timeZone)}
-- Air Quality: AQI ${report.current.aqi ?? 'Severe'} (${report.current.category ?? 'Unhealthy'})
-- PM2.5 Level: ${report.current.pm25?.value ?? 'Elevated'} µg/m³
-- Dominant Pollutant: ${report.current.dominantPollutant ?? 'PM2.5'}
+- Air Quality: AQI ${report.current.aqi ?? 'unavailable'} (${report.current.category ?? 'unavailable'})
+- PM2.5 Level: ${report.current.pm25?.value !== null && report.current.pm25?.value !== undefined ? `${report.current.pm25.value} µg/m³` : 'unavailable'}
+- Dominant Pollutant: ${report.current.dominantPollutant ?? 'unavailable'}
 ${isSample ? '- DATA NOTE: This advisory is based on sample reference conditions for New Delhi, not live sensor data. State clearly that this is sample reference data for planning, and do NOT use words like "live" or "real-time".' : ''}
 
 REQUIREMENTS:

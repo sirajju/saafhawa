@@ -39,7 +39,7 @@ export function AirQualityCard({
   }, [hourlyForecast, current.aqi]);
 
   const advice = buildForecastAdvice(
-    current.aqi ?? 300,
+    current.aqi,
     syncedForecast,
     householdProfile,
     location.timeZone

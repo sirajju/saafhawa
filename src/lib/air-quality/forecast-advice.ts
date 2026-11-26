@@ -36,9 +36,9 @@ export function buildForecastAdvice(
   const best = candidates[0];
 
   const aqiNum = typeof currentAqi === 'number' && !isNaN(currentAqi) ? currentAqi : null;
-  const maxForecastAqi = validPoints.length > 0 ? Math.max(...validPoints.map((p) => p.aqi)) : (aqiNum ?? 150);
+  const maxForecastAqi = validPoints.length > 0 ? Math.max(...validPoints.map((p) => p.aqi)) : aqiNum;
   const isCurrentlyClean = aqiNum !== null && aqiNum <= 100;
-  const staysClean = isCurrentlyClean && maxForecastAqi <= 100;
+  const staysClean = isCurrentlyClean && maxForecastAqi !== null && maxForecastAqi <= 100;
 
   if (staysClean && aqiNum !== null) {
     const hasAsthma = Boolean(household?.hasAsthmaOrRespiratoryCondition);
@@ -72,7 +72,7 @@ export function buildForecastAdvice(
 
   const advicePrefix = isCurrentlyClean
     ? 'Air quality is currently favorable, but deteriorates later.'
-    : getAdvicePrefix(aqiNum ?? 200, startTimeStr, best.isTomorrow, nowDetails.hour, household);
+    : getAdvicePrefix(aqiNum, startTimeStr, best.isTomorrow, nowDetails.hour, household);
   const adviceCleanestSuffix = best.isTomorrow
     ? `Cleanest window: tomorrow ${windowTimeSpan}.`
     : `Cleanest window today: ${windowTimeSpan}.`;
@@ -92,7 +92,7 @@ export function buildForecastAdvice(
 }
 
 function getAdvicePrefix(
-  currentAqi: number,
+  currentAqi: number | null,
   startTimeStr: string,
   isTomorrow: boolean,
   currentHour: number,
@@ -103,7 +103,7 @@ function getAdvicePrefix(
   const hasResp = Boolean(household?.hasAsthmaOrRespiratoryCondition);
   const doesExercise = Boolean(household?.doesOutdoorExercise);
 
-  if (currentAqi <= 100 && !isTomorrow) {
+  if (currentAqi !== null && currentAqi <= 100 && !isTomorrow) {
     return 'Air quality is favorable today.';
   }
 

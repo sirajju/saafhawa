@@ -38,7 +38,7 @@ PERSONALIZATION & CLINICAL RULES:
 6. FORECAST TIMING: Schedule time-sensitive actions (ventilation, walks, workouts, outdoor chores) specifically for the cleanest forecast window: ${cleanestWindowText}.
    - If commutersCount is 0, do NOT schedule masks for "Commute Hours"; schedule for "Any outdoor walks or errands".
 7. COMMUTE ACTIONS: If primaryCommuteMode is "none" or commutersCount is 0, DO NOT select commute actions ("post_commute_hygiene", "swap_car_for_metro", "swap_two_wheeler_for_metro_or_bus", "carpool_to_work", "work_from_home_on_smog_days").
-8. AIR QUALITY SENSITIVITY: Current AQI is ${airQuality.current.aqi ?? 'Unknown'} (${airQuality.current.category ?? 'Unhealthy'}). If air quality is Good (<=50) or Satisfactory (51-100) and forecast remains clean, DO NOT recommend N95 masks, window sealing, or keeping children/seniors indoors. State clearly that air is fine for normal activity (with a light note for people with asthma if AQI is above 50). Only recommend timing changes if the forecast actually gets worse (>100).
+8. AIR QUALITY SENSITIVITY: Current AQI is ${airQuality.current.aqi ?? 'unavailable'} (${airQuality.current.category ?? 'unavailable'}). If air quality is Good (<=50) or Satisfactory (51-100) and forecast remains clean, DO NOT recommend N95 masks, window sealing, or keeping children/seniors indoors. State clearly that air is fine for normal activity (with a light note for people with asthma if AQI is above 50). Only recommend timing changes if the forecast actually gets worse (>100).
 9. Return strictly structured JSON matching the requested schema.`;
 
   const catalogueList = catalogue
@@ -64,8 +64,8 @@ PERSONALIZATION & CLINICAL RULES:
 - Budget Preference: ${profile.budget}
 
 Today's Air Quality Conditions:
-- Current AQI: ${airQuality.current.aqi ?? 'Unknown'} (${airQuality.current.category ?? 'Unhealthy'}, Dominant: ${airQuality.current.dominantPollutant ?? 'PM2.5'})
-- Current PM2.5: ${airQuality.current.pm25?.value ?? 'Elevated'} µg/m³
+- Current AQI: ${airQuality.current.aqi ?? 'unavailable'} (${airQuality.current.category ?? 'unavailable'}, Dominant: ${airQuality.current.dominantPollutant ?? 'unavailable'})
+- Current PM2.5: ${airQuality.current.pm25?.value !== null && airQuality.current.pm25?.value !== undefined ? `${airQuality.current.pm25.value} µg/m³` : 'unavailable'}
 - Cleanest Forecast Window Today: ${cleanestWindowText}
 
 Action Catalogue:
