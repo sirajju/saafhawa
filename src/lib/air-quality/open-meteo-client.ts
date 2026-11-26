@@ -36,7 +36,7 @@ export async function geocodeOpenMeteoPlace(
         formattedAddress: rev?.formattedAddress || `Coordinates (${lat.toFixed(4)}°, ${lon.toFixed(4)}°)`,
         latitude: lat,
         longitude: lon,
-        timeZone: 'Asia/Kolkata',
+        timeZone: 'auto',
       };
     }
   }
@@ -109,15 +109,8 @@ export async function fetchOpenMeteoAirQuality(
   timeZone: string,
   options: ClientRequestOptions = {}
 ): Promise<OpenMeteoAirQualityResult> {
-  const url = new URL(OPEN_METEO_AIR_QUALITY_URL);
-  url.searchParams.set('latitude', latitude.toString());
-  url.searchParams.set('longitude', longitude.toString());
-  url.searchParams.set('current', 'pm2_5,pm10');
-  url.searchParams.set('hourly', 'pm2_5,pm10');
-  url.searchParams.set('forecast_days', '3');
-  url.searchParams.set('timezone', timeZone || 'Asia/Kolkata');
-
-  const response = await safeFetch(url.toString(), { method: 'GET', headers: { Accept: 'application/json' } }, options);
+  const url = `${OPEN_METEO_AIR_QUALITY_URL}?latitude=${latitude}&longitude=${longitude}&current=pm2_5,pm10&hourly=pm2_5,pm10&forecast_days=3&timezone=${encodeURIComponent(timeZone || 'auto')}`;
+  const response = await safeFetch(url, { method: 'GET', headers: { Accept: 'application/json' } }, options);
   if (response.status === 429) {
     throw new AirQualityError('Open-Meteo API rate limit reached. Please wait a moment and retry.', 429);
   }
@@ -150,7 +143,7 @@ export async function fetchOpenMeteoAirQuality(
     category: currentCpcb.category,
     dominantPollutant: currentCpcb.dominantPollutant,
     indexCode: 'ind_cpcb',
-    indexDisplayName: 'India National AQI (CPCB)',
+    indexDisplayName: 'AQI (hourly estimate, CPCB breakpoints)',
     pm25: currentPm25 !== null ? { value: currentPm25, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
     pm10: currentPm10 !== null ? { value: currentPm10, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
     dataSource: 'Open-Meteo (CAMS model)',
@@ -187,11 +180,15 @@ export async function fetchOpenMeteoAirQuality(
       category: pointCpcb.category,
       dominantPollutant: pointCpcb.dominantPollutant,
       indexCode: 'ind_cpcb',
-      indexDisplayName: 'India National AQI (CPCB)',
+      indexDisplayName: 'AQI (hourly estimate, CPCB breakpoints)',
       pm25: pm25Val !== null ? { value: pm25Val, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
       pm10: pm10Val !== null ? { value: pm10Val, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
     });
   }
 
-  return { current, hourlyForecast };
+  return {
+    current,
+    hourlyForecast,
+    timeZone: data.timezone || (timeZone && timeZone !== 'auto' ? timeZone : 'Asia/Kolkata'),
+  };
 }

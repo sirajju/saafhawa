@@ -110,7 +110,7 @@ export async function fetchWaqiNearestStation(
     category: cpcb.category,
     dominantPollutant: d.dominentpol === 'pm25' || d.dominentpol === 'pm10' ? d.dominentpol : cpcb.dominantPollutant,
     indexCode: 'ind_cpcb',
-    indexDisplayName: 'India National AQI (CPCB)',
+    indexDisplayName: 'AQI (hourly estimate, CPCB breakpoints)',
     pm25: pm25Val !== null ? { value: pm25Val, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
     pm10: pm10Val !== null ? { value: pm10Val, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
     dataSource: `CPCB Ground Station (${stationName})`,

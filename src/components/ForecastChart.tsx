@@ -116,7 +116,7 @@ export function ForecastChart({
     <div className="forecast" role="region" aria-label="24-hour air quality forecast chart">
       <div className="forecast-head">
         <h3>Next 24 hours</h3>
-        <span className="caption">PM2.5-based AQI by hour</span>
+        <span className="caption">AQI (hourly estimate, CPCB breakpoints)</span>
       </div>
 
       <ForecastChartSvg

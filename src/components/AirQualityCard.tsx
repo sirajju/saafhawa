@@ -72,7 +72,7 @@ export function AirQualityCard({
       <div className="hero">
         <div>
           <div className="eyebrow" id="air-now">
-            Air quality now · {current.indexDisplayName || current.indexCode || 'India AQI (CPCB)'}
+            Air quality now · {current.indexDisplayName || 'AQI (hourly estimate, CPCB breakpoints)'}
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '14px', marginTop: '10px' }}>
             <div className="aqi-num num" style={{ color: catColor }}>

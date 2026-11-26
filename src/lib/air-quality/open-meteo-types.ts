@@ -10,6 +10,7 @@ export interface OpenMeteoLocationResult {
 export interface OpenMeteoAirQualityResult {
   current: CurrentAirQuality;
   hourlyForecast: HourlyForecastPoint[];
+  timeZone?: string;
 }
 
 export interface OpenMeteoGeocodingItem {

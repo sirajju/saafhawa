@@ -37,7 +37,7 @@ export function extractPrimaryIndex(indexes: AirQualityIndex[]): ExtractedIndex 
       category: indCpcb.category ?? null,
       dominantPollutant: indCpcb.dominantPollutant ?? null,
       indexCode: indCpcb.code,
-      indexDisplayName: indCpcb.displayName ?? 'India National AQI (CPCB)',
+      indexDisplayName: indCpcb.displayName ?? 'AQI (hourly estimate, CPCB breakpoints)',
     };
   }
 

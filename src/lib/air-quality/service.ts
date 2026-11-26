@@ -60,7 +60,7 @@ async function fetchViaOpenMeteo(
       name: location.formattedAddress,
       latitude: location.latitude,
       longitude: location.longitude,
-      timeZone: location.timeZone,
+      timeZone: aqData.timeZone || (location.timeZone !== 'auto' ? location.timeZone : 'Asia/Kolkata'),
     },
     current: {
       ...aqData.current,
@@ -120,7 +120,7 @@ export async function getAirQualityByLocation(
             name: `${location.formattedAddress} · Station: ${waqiStation.stationName}`,
             latitude: waqiStation.latitude,
             longitude: waqiStation.longitude,
-            timeZone: location.timeZone,
+            timeZone: openMeteoData?.timeZone || (location.timeZone !== 'auto' ? location.timeZone : 'Asia/Kolkata'),
           },
           current: waqiStation.current,
           hourlyForecast: openMeteoData?.hourlyForecast || [],
