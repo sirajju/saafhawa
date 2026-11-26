@@ -1,0 +1,160 @@
+/* Hero Section */
+.hero {
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 32px;
+}
+
+.aqi-num {
+  font-size: 88px;
+  line-height: 0.95;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.scale {
+  margin-top: 20px;
+}
+
+.scale-track {
+  height: 6px;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    var(--aqi-good) 0%,
+    var(--aqi-sat) 20%,
+    var(--aqi-mod) 40%,
+    var(--aqi-poor) 60%,
+    var(--aqi-vpoor) 80%,
+    var(--aqi-severe) 100%
+  );
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.scale-pin {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid var(--ink);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.advice {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-left: 1px solid var(--line);
+  padding-left: 32px;
+}
+
+.advice-text {
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 550;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.advice-text strong {
+  font-weight: 700;
+}
+
+.meta {
+  padding: 16px 28px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.meta-items {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.meta-items span strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.btn-sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+/* Forecast Chart Section */
+.forecast {
+  padding: 24px 28px;
+}
+
+.chart-wrap {
+  margin-top: 16px;
+}
+
+/* Impact Card */
+.impact {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.impact > div {
+  padding: 24px 28px;
+}
+
+.impact > div + div {
+  border-left: 1px solid var(--line);
+}
+
+.impact-val {
+  font-size: 38px;
+  line-height: 1.1;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 6px 0 2px;
+  color: var(--brand);
+}
+
+.impact p {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.foot-note {
+  padding: 12px 28px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-3);
+}

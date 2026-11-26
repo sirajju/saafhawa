@@ -1,0 +1,168 @@
+/* Timeline */
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 8px 0 16px;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.progress-track {
+  width: 120px;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.progress-track i {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.period {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+}
+
+.period + .period {
+  border-top: 1px solid var(--line);
+}
+
+.period-label {
+  padding: 24px 20px 24px 28px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--surface-2);
+  border-right: 1px solid var(--line);
+}
+
+.period-label span {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.item-list {
+  display: grid;
+}
+
+.item {
+  padding: 20px 28px;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.item + .item {
+  border-top: 1px solid var(--line);
+}
+
+.chk {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+  cursor: pointer;
+  background: var(--surface);
+  transition: all 0.15s ease;
+}
+
+.chk:hover {
+  border-color: var(--brand);
+}
+
+.chk.done {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+
+.item.done .item-title {
+  text-decoration: line-through;
+  color: var(--ink-3);
+}
+
+.item-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.item-desc {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.badge-high {
+  background: #fbe9e8;
+  color: #c4302b;
+}
+
+[data-theme="dark"] .badge-high {
+  background: #2c1413;
+  color: #f0625b;
+}
+
+.badge-med {
+  background: #fbf3dc;
+  color: #8a6400;
+}
+
+[data-theme="dark"] .badge-med {
+  background: #2b2512;
+  color: #f0c43c;
+}
+
+.badge-low {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+
+.details {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.details:hover {
+  text-decoration: underline;
+}

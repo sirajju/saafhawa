@@ -1,0 +1,62 @@
+/* ---------- SaafHawa Design Tokens (Reference Match) ---------- */
+:root,
+[data-theme="light"] {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #f1efe9;
+  --line: #e5e2db;
+  --line-strong: #d6d2c8;
+  --ink: #15171c;
+  --ink-2: #4a4f59;
+  --ink-3: #737883;
+  --brand: #0e5a55;
+  --brand-hover: #0b4a46;
+  --brand-ink: #ffffff;
+  --brand-soft: #e2efec;
+  --shadow: 0 1px 2px rgba(21, 23, 28, 0.04), 0 4px 16px rgba(21, 23, 28, 0.05);
+
+  /* CPCB Air Quality Category Colors - Strictly reserved for air quality */
+  --aqi-good: #2f8a3e;
+  --aqi-sat: #6f9e2a;
+  --aqi-mod: #b8860b;
+  --aqi-poor: #d0611a;
+  --aqi-vpoor: #c4302b;
+  --aqi-severe: #8a1a38;
+
+  --aqi-good-soft: #eaf5eb;
+  --aqi-sat-soft: #f0f7e6;
+  --aqi-mod-soft: #fbf3dc;
+  --aqi-poor-soft: #fbeee6;
+  --aqi-vpoor-soft: #fbe9e8;
+  --aqi-severe-soft: #f8e5eb;
+}
+
+[data-theme="dark"] {
+  --bg: #0e1013;
+  --surface: #16191e;
+  --surface-2: #1c2027;
+  --line: #262b33;
+  --line-strong: #333a44;
+  --ink: #eceef1;
+  --ink-2: #b4b9c3;
+  --ink-3: #8a909b;
+  --brand: #5fc4b8;
+  --brand-hover: #79d3c8;
+  --brand-ink: #0e1013;
+  --brand-soft: #15302c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+
+  --aqi-good: #5cc26c;
+  --aqi-sat: #a6cf5a;
+  --aqi-mod: #f0c43c;
+  --aqi-poor: #f5934a;
+  --aqi-vpoor: #f0625b;
+  --aqi-severe: #e0577c;
+
+  --aqi-good-soft: #142718;
+  --aqi-sat-soft: #1c2712;
+  --aqi-mod-soft: #2b2512;
+  --aqi-poor-soft: #2e1c12;
+  --aqi-vpoor-soft: #2c1413;
+  --aqi-severe-soft: #281017;
+}

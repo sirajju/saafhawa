@@ -1,0 +1,117 @@
+/* Chat rail */
+.chat-head {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.chat-head p {
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+
+.chat-body {
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.bubble {
+  background: var(--surface-2);
+  border-radius: 14px 14px 14px 4px;
+  padding: 12px 14px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.bubble strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.bubble.user {
+  background: var(--brand);
+  color: var(--brand-ink);
+  border-radius: 14px 14px 4px 14px;
+  justify-self: end;
+  max-width: 85%;
+}
+
+.chips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chip {
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.35;
+  transition: all 0.15s ease;
+}
+
+.chip:hover {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+}
+
+.chat-foot {
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.chat-input {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input input {
+  flex: 1;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.chat-input input:focus {
+  outline: 2px solid var(--brand);
+  border-color: transparent;
+}
+
+.chat-input .btn {
+  height: 40px;
+  padding: 0 14px;
+}
+
+.share-card {
+  margin-top: 24px;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.share-card:hover {
+  background: var(--surface-2);
+}
+
+.share-card p {
+  font-size: 13px;
+  color: var(--ink-3);
+}

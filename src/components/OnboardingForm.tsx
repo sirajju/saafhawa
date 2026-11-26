@@ -50,7 +50,7 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
   const handleAreaChange = (val: string) => {
     setAreaError(null);
     setAreaNote(null);
-    setFormData((prev) => ({ ...prev, place: val }));
+    setFormData((prev) => ({ ...prev, place: val, coordinates: undefined }));
   };
 
   const handleToggleEquipment = (

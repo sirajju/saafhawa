@@ -46,6 +46,19 @@ describe('Plan Module - Zod Validation', () => {
     expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, homeAreaSqFt: 25001 })).toThrow(/cannot exceed 25,000 sq ft/);
     expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, homeAreaSqFt: 40 })).toThrow(/at least 50 sq ft/);
   });
+
+  it('validates coordinates format as "lat, lon" with maximum length of 50', () => {
+    const validCoords = PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: '11.2551, 75.8287' });
+    expect(validCoords.coordinates).toBe('11.2551, 75.8287');
+
+    const omittedCoords = PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: undefined });
+    expect(omittedCoords.coordinates).toBeUndefined();
+
+    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: 'Mumbai' })).toThrow(/lat, lon/);
+    expect(() =>
+      PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: '11.2551, 75.8287' + '0'.repeat(45) })
+    ).toThrow(/cannot exceed 50 characters/);
+  });
 });
 
 describe('Plan Module - Prompt Builder', () => {
