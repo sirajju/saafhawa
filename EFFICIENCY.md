@@ -33,7 +33,7 @@ This document details the efficiency and resource optimization strategies implem
 
 ### 3. Lightweight Arithmetic Engine
 - **Pure Arithmetic:** Personal dose avoided ($\mu\text{g}$) and source emissions prevented ($\text{g}$) are computed using algebraic formulas directly in TypeScript without loading external mathematical or physics libraries: [`src/lib/impact/calculator.ts`](src/lib/impact/calculator.ts).
-- **In-Memory Synchronous Execution:** Evaluates all 21 actions synchronously in memory via direct algebraic operations with zero external network or database dependencies.
+- **In-Memory Synchronous Execution:** Evaluates all 26 actions synchronously in memory via direct algebraic operations with zero external network or database dependencies.
 
 ---
 

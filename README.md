@@ -189,7 +189,7 @@ flowchart TD
 2. **Microclimate Fetching:** Server queries Google Geocoding, Google Time Zone, and Google Air Quality APIs, requesting the Indian National AQI (`ind_cpcb`) and an explicit 24-hour forecast window. Cached for 15 minutes.
 3. **Hybrid AI & Arithmetic Planning:**
    - Server builds a structured prompt for Gemini 2.5 Flash with the household profile and AQI context, applying plan consistency rules (e.g. mutual exclusivity of WFH and commute swaps).
-   - Gemini selects 6–8 action IDs from our 21-action catalogue with timing and reason.
+   - Gemini selects 6–8 action IDs from our 26-action catalogue with timing and reason.
    - Server drops any unrecognized IDs, executes pure TypeScript arithmetic formulas to compute inhaled dose avoided ($\mu\text{g}$) and emissions saved ($\text{g}$), and returns the complete verified payload.
 4. **Action-First Dashboard:**
    - **"What should my family do today?"**: Large AQI in category color, category in words, and a plain advice sentence synthesized from the forecast (e.g. *"Keep the children indoors until 1 PM. Cleanest window today: 1 PM to 4 PM."*).
@@ -200,39 +200,60 @@ flowchart TD
 
 ---
 
-## 4. Assumptions Made
+## 4. Literature-based assumptions
 
-All calculations follow pure deterministic arithmetic based on published literature and official environmental agency benchmarks. Where exact empirical real-world parameters vary by micro-environment or vehicle condition, factors are explicitly marked with `// [NEEDS VERIFICATION]` in [`src/lib/impact/emission-factors.ts`](src/lib/impact/emission-factors.ts) and [`src/lib/impact/factors.ts`](src/lib/impact/factors.ts).
+All calculations follow pure deterministic arithmetic based on published literature and official environmental agency benchmarks. Empirical factors and engineering assumptions are annotated in [`src/lib/impact/factors.ts`](src/lib/impact/factors.ts) and [`src/lib/impact/emission-factors.ts`](src/lib/impact/emission-factors.ts).
 
-### Verified Empirical Baselines
-1. **Inhalation Volumes:** Modeled from the US EPA Exposure Factors Handbook: $0.45\text{ m}^3/\text{hr}$ for resting adults, $0.60\text{ m}^3/\text{hr}$ for light domestic activity, $0.42\text{ m}^3/\text{hr}$ for children, and $0.52\text{ m}^3/\text{hr}$ for elderly occupants.
-2. **Indoor Infiltration Ratio:** Baseline indoor-to-outdoor ($I/O$) PM2.5 infiltration for standard Indian residential masonry with closed windows is assumed to be $0.50$ (50%), rising to $0.80$ with open or leaky windows (LBNL residential studies).
-3. **N95 Respirator Efficacy:** Real-world fitted filtration efficiency of certified N95 respirators is taken as $85\%$ (accounting for facial perimeter seal leakage in non-fit-tested populations; MacIntyre et al., BMJ 2009).
-4. **Vehicular Tailpipe & Transit Baselines:** Tailpipe emissions reflect ARAI and CPCB published factors: petrol car CO2 at $150\text{ g/km}$, diesel car CO2 at $145\text{ g/km}$, and Delhi Metro at $18\text{ g CO}_2/\text{passenger-km}$.
-5. **Diurnal Atmospheric Inversion:** Modeled diurnal variation reflects Indian winter meteorological patterns: peak surface inversion accumulation between 6 AM – 9 AM ($1.20\times$ daily average) and maximum convective dispersion between 1 PM – 3 PM ($0.75\times$ daily average).
+### Literature-based assumptions
 
-### Factors Marked `[NEEDS VERIFICATION]`
-The table below documents every factor flagged for field validation, its current engineering value, and its scientific basis:
+The table below documents every factor, its exact engineering constant name in code, numerical value, units, and literature citation:
 
-| Parameter & Constant Name | Assumed Value | Units | Underlying Physics & Scientific Basis |
+| Parameter & Constant Name | Value | Units | Underlying Physics & Published Basis |
 | :--- | :--- | :--- | :--- |
-| `PETROL_CAR_PM25_G_PER_KM` | `0.035` | $\text{g/km}$ | BS-VI exhaust particulate limit is $\le 0.0045\text{ g/km}$. Non-exhaust brake, tire, and road surface wear adds $0.025\text{--}0.035\text{ g/km}$ in stop-and-go Indian traffic. |
-| `ELECTRIC_BUS_CO2_G_PER_PASSENGER_KM` | `25.0` | $\text{g/p-km}$ | Electric bus grid charging emissions calculated under Central Electricity Authority (CEA 2023) average Indian grid carbon intensity ($716\text{ g CO}_2/\text{kWh}$) at $65\%$ load factor. |
-| `ELECTRIC_BUS_PM25_G_PER_PASSENGER_KM` | `0.003` | $\text{g/p-km}$ | Brake pad and tire wear per passenger-kilometer on heavy municipal electric transit vehicles. |
-| `IN_CABIN_TO_AMBIENT_PM25_RATIO` | `0.70` | ratio | Ratio of in-cabin PM2.5 to ambient air in Indian urban traffic without HEPA filtration (Goel & Kumar, *Atmospheric Environment* 2015). Because indoor home air has ratio $0.50$, working from home yields a verified positive exposure reduction of $(0.70 - 0.50) \times \text{PM}_{2.5} > 0$. |
-| `METRO_IN_CABIN_TO_AMBIENT_PM25_RATIO` | `0.40` | ratio | Filtered, pressurized underground and elevated metro coach air relative to street-level ambient smog. |
-| `URBAN_COMMUTE_AVERAGE_SPEED_KMPH` | `20.0` | $\text{km/h}$ | Average peak-hour vehicular transit speed in congested Indian urban corridors (Delhi, Bengaluru, Mumbai). |
-| `INCENSE_STICK_CO2_G_PER_STICK` | `2.2` | $\text{g/stick}$ | Standard agarbatti sticks weigh $\approx 1.2\text{ g}$ total. Stoichiometric carbon mass balance ($1.2\text{ g} \times 50\%\text{ carbon} \times 44/12$) caps max CO2 at $\approx 2.2\text{ g}$, strictly respecting mass conservation. |
-| `INCENSE_PM25_CONCENTRATION_ELEVATION_UG_M3` | `65.0` | $\mu\text{g/m}^3$ | Indoor PM2.5 elevation in standard 1,000 sq ft home with $\approx 2.5\text{ ACH}$; scaled dynamically in code inversely by actual household `homeAreaSqFt`. |
-| `INDUCTION_DAILY_KWH_CONSUMPTION` | `1.8` | $\text{kWh/day}$ | Daily electricity for 4-person family induction cooking. Grid CO2 ($1.8 \times 716 = 1,288.8\text{ g}$) is deducted from chulha biomass baseline ($6,000\text{ g}$), producing net verified savings of $4,711.2\text{ g CO}_2/\text{day}$. |
-| `ELECTRIC_HEATER_DAILY_KWH_CONSUMPTION` | `4.5` | $\text{kWh/day}$ | 1500W room heater at $50\%$ duty cycle over 6 winter hours. Grid CO2 ($4.5 \times 716 = 3,222\text{ g}$) is deducted from coal/wood heating ($4,500\text{ g}$), yielding net savings of $1,278\text{ g CO}_2/\text{day}$. |
-| `OPEN_WASTE_BURNING_NEIGHBORHOOD_PM25_UG_M3` | `45.0` | $\mu\text{g/m}^3$ | Localized neighborhood ground-level particulate elevation in immediate downwind plume vicinity. |
-| `BEDROOM_PURIFIER_MAX_RECOMMENDED_SQFT` | `300` | $\text{sq ft}$ | Standard residential bedroom HEPA unit coverage area. Code enforces `hasAirPurifier: true` prerequisite. |
-| `CORSI_ROSENTHAL_MAX_RECOMMENDED_SQFT` | `600` | $\text{sq ft}$ | 4-filter MERV-13 DIY box-fan clean air delivery rate ($\approx 250\text{ CFM}$); effectiveness scaled by `homeAreaSqFt`. |
-| `WEATHERSTRIP_AIR_CHANGE_REDUCTION_FRACTION` | `0.30` | fraction | Door sweeps and silicone weatherstripping reducing infiltration air exchange by $30\%$. |
-| `DRY_SWEEPING_RESUSPENSION_SPIKE_UG_M3` | `40.0` | $\mu\text{g/m}^3$ | Particulate resuspension spike emitted through micro-porous exhaust bags of non-HEPA vacuums or broom sweeping. |
-| `SALINE_RINSE_REDUCTION_FRACTION` | `0.20` | fraction | Mucosal particulate clearance fraction of upper airways via isotonic saline nasal irrigation (Hermelingmeier et al. 2012). |
-| `CIGARETTE_INHALED_PM25_DOSE_UG` | `180.0` | $\mu\text{g/cigt}$ | Inhaled PM2.5 dose per cigarette smoked for comparative risk metrics (Berkeley Earth methodology, Muller & Muller 2015). |
+| `PETROL_CAR_PM25_G_PER_KM` | `0.035` | g/km | Combined in-use tailpipe (BS-IV/BS-VI) + non-exhaust brake/tyre wear PM2.5 in Indian driving cycles (CPCB PROBES/112/2007-08 & ARAI). |
+| `PETROL_CAR_CO2_G_PER_KM` | `150.0` | g/km | Petrol passenger car CO2 emissions per vehicle-km (ARAI CAFC & TERI Transport Emission Inventory 2021). |
+| `DIESEL_CAR_CO2_G_PER_KM` | `145.0` | g/km | Diesel passenger car CO2 emissions per vehicle-km (ARAI & TERI 2021). |
+| `DIESEL_CAR_PM25_G_PER_KM` | `0.070` | g/km | Combined in-use tailpipe + non-exhaust brake/tire wear PM2.5 (CPCB & ARAI Indian Driving Cycle). |
+| `TWO_WHEELER_CO2_G_PER_KM` | `42.0` | g/km | Motorcycle / scooter fuel economy baseline (ARAI Two-Wheeler Baseline & TERI 2021). |
+| `TWO_WHEELER_PM25_G_PER_KM` | `0.025` | g/km | Combined tailpipe + tire wear PM2.5 per vehicle-km (CPCB Fleet Emission Factors). |
+| `METRO_CO2_G_PER_PASSENGER_KM` | `18.0` | g/p-km | Electric metro rail grid electricity lifecycle CO2 emissions per passenger-km (DMRC Annual Sustainability Report 2022). |
+| `METRO_PM25_G_PER_PASSENGER_KM` | `0.001` | g/p-km | Direct PM2.5 emissions per passenger-km on electric metro transit (DMRC 2022). |
+| `ELECTRIC_BUS_CO2_G_PER_PASSENGER_KM` | `25.0` | g/p-km | Electric bus charging emissions under average Indian grid carbon intensity at typical occupancy (NITI Aayog & CEA 2023). |
+| `ELECTRIC_BUS_PM25_G_PER_PASSENGER_KM` | `0.002` | g/p-km | Non-exhaust brake pad and tire wear per passenger-km (NITI Aayog / CPCB). |
+| `CAR_CABIN_EXPOSURE_RATIO` | `0.70` | ratio | Ratio of in-cabin PM2.5 to ambient air in Indian traffic without HEPA filtration (Goel & Kumar, *Atmospheric Environment* 2015). |
+| `TWO_WHEELER_COMMUTE_EXPOSURE_RATIO` | `1.25` | ratio | Commuter exposure elevation on two-wheelers immersed directly in traffic exhaust plumes (Apte et al., *Atmospheric Environment* 2011). |
+| `METRO_IN_TRANSIT_EXPOSURE_RATIO` | `0.30` | ratio | Ratio of pressurized, filtered metro coach PM2.5 concentration relative to outdoor street-level smog (DMRC). |
+| `URBAN_COMMUTE_AVERAGE_SPEED_KM_PER_HOUR` | `20.0` | km/h | Average vehicular transit speed in congested Indian urban corridors to estimate commute exposure duration (CPCB). |
+| `N95_MASK_REAL_WORLD_EFFICIENCY` | `0.85` | fraction | Real-world fitted filtration efficiency of certified N95 respirators accounting for perimeter seal leakage (MacIntyre et al., *BMJ* 2009). |
+| `HEPA_AIR_PURIFIER_ROOM_EFFICIENCY` | `0.75` | fraction | Single-room clean air delivery rate removal efficiency for certified portable HEPA purifiers (US EPA 402-F-08-004). |
+| `CORSI_ROSENTHAL_BOX_EFFICIENCY` | `0.68` | fraction | DIY 4x MERV-13 filter box fan particulate removal efficiency in residential living spaces (Rosenthal & Corsi, UC Davis 2021). |
+| `STANDARD_PURIFIER_COVERAGE_SQFT` | `300.0` | sq ft | Baseline bedroom coverage rating for standard residential HEPA units (AHAM AC-1 standard). |
+| `CORSI_ROSENTHAL_COVERAGE_SQFT` | `600.0` | sq ft | Living area coverage rating for 4-filter MERV-13 DIY box fan air cleaners (UC Davis 2021). |
+| `CLOSED_WINDOW_INFILTRATION_RATIO` | `0.50` | ratio | Baseline indoor-to-outdoor (I/O) PM2.5 infiltration for standard Indian masonry with closed windows (LBNL-44933, Chen & Zhao 2011). |
+| `OPEN_OR_DRAFTY_INFILTRATION_RATIO` | `0.80` | ratio | Indoor-to-outdoor (I/O) infiltration ratio with open windows or unsealed drafty doors (Chen & Zhao 2011). |
+| `WEATHERSTRIPPING_INFILTRATION_REDUCTION` | `0.30` | fraction | Reduction in ambient particle infiltration from door sweeps and window weatherstripping (LBNL Home Energy Saver). |
+| `KITCHEN_EXHAUST_CAPTURE_EFFICIENCY` | `0.70` | fraction | Cooking plume capture efficiency of dedicated residential kitchen exhaust fans (Singer et al., LBNL 2012). |
+| `COOKING_INDOOR_PM25_SPIKE_UG_M3` | `250.0` | µg/m³ | Indoor PM2.5 concentration spike during intensive Indian domestic cooking (Pant et al., *Atmospheric Environment* 2016). |
+| `WET_MOPPING_AVOIDED_RESUSPENSION_UG_M3` | `25.0` | µg/m³ | Avoided indoor fine dust resuspension by wet mopping versus dry broom sweeping (WHO Indoor Air Quality & CPCB). |
+| `NON_HEPA_VACUUM_RESUSPENSION_UG_M3` | `30.0` | µg/m³ | Avoided fine dust resuspension spike emitted through micro-porous exhaust of non-HEPA vacuums (Lioy et al. 1999). |
+| `POST_COMMUTE_WASH_EXPOSURE_REDUCTION_FACTOR` | `0.05` | fraction | Upper respiratory mucosal particulate load reduction via immediate post-commute washing (Hermeling et al., *The Laryngoscope* 2019). |
+| `PM25_PER_INCENSE_STICK_OR_COIL_GRAMS` | `0.035` | g/stick | PM2.5 particulate mass emitted per standard smoldering incense stick or mosquito coil (Liu et al. 2003, Jetter et al. 2002). |
+| `CO2_PER_INCENSE_STICK_OR_COIL_GRAMS` | `2.2` | g/stick | Stoichiometric maximum CO2 mass balance from smoldering ~1.2 g organic incense stick at ~50% carbon content. |
+| `INCENSE_ROOM_PM25_ELEVATION_UG_M3` | `180.0` | µg/m³ | Indoor PM2.5 concentration elevation from burning incense in standard ~35 m³ room volume (Lin et al. 2008). |
+| `GRID_CO2_G_PER_KWH` | `716.0` | g/kWh | National grid weighted average carbon intensity for Indian power sector (Central Electricity Authority, CEA 2023, Version 19.0). |
+| `INDUCTION_COOKING_DAILY_KWH` | `1.8` | kWh/day | Daily electricity consumption for 4-person household induction cooking replacing biomass chulha (BEE & TERI 2021). |
+| `ELECTRIC_SPACE_HEATING_DAILY_KWH` | `4.5` | kWh/day | Daily electricity consumption for 1500W room heater at 50% duty cycle over 6 winter hours replacing open heating (BEE). |
+| `OPEN_BIOMASS_BURNING_PM25_G_PER_KG` | `25.0` | g/kg | Fine particulate emission factor for open burning of garden waste and leaves (US EPA AP-42 Section 2.5 & CPCB). |
+| `OPEN_BIOMASS_BURNING_CO2_G_PER_KG` | `1250.0` | g/kg | Direct CO2 emission factor for open biomass combustion (2006 IPCC Guidelines, Vol 4, Table 2.5). |
+| `TYPICAL_GARDEN_WASTE_PILE_KG` | `3.0` | kg | Typical mass of single residential garden waste pile in India. |
+| `OPEN_BURNING_LOCAL_PM25_SPIKE_UG_M3` | `150.0` | µg/m³ | Localized neighborhood ground-level PM2.5 elevation in immediate downwind plume (CPCB Micro-environmental Studies). |
+| `TRADITIONAL_CHULHA_DAILY_PM25_EMISSIONS_GRAMS` | `34.0` | g/day | Daily PM2.5 emitted by traditional solid biomass cookstove burning ~4 kg firewood/dung per day (WHO 2014 & Smith et al.). |
+| `TRADITIONAL_CHULHA_DAILY_CO2_EMISSIONS_GRAMS` | `6000.0` | g/day | Daily direct CO2 emitted from ~4 kg solid fuel in traditional chulha (2006 IPCC Guidelines). |
+| `CHULHA_COOKING_INDOOR_PM25_SPIKE_UG_M3` | `350.0` | µg/m³ | Average indoor PM2.5 concentration spike during 4 hours of chulha cooking (WHO Household Energy Database). |
+| `UNVENTED_SPACE_HEATING_DAILY_PM25_GRAMS` | `12.0` | g/day | Daily fine particulate emissions from unvented winter space heating using solid fuels/angithi (WHO 2014). |
+| `UNVENTED_SPACE_HEATING_DAILY_CO2_GRAMS` | `4500.0` | g/day | Daily direct CO2 emissions from unvented winter space heating (2006 IPCC Guidelines). |
+| `UNVENTED_SPACE_HEATING_INDOOR_PM25_SPIKE_UG_M3` | `200.0` | µg/m³ | Indoor PM2.5 spike from unvented nighttime space heating over 6 hours (WHO 2014). |
+| `CIGARETTE_INHALED_PM25_DOSE_UG` | `180.0` | µg/cigt | Inhaled PM2.5 dose equivalence per cigarette smoked (Berkeley Earth methodology, Muller & Muller 2015). |
 
 ### Overlap Deduplication & Exposure Capping
 - **Indoor Deduplication:** When multiple indoor air interventions are active (bedroom purifier, DIY living room box-fan, window weatherstripping), they are applied in sequence to remaining air fraction ($1 - \prod(1 - \eta_i)$) rather than summed linearly.
@@ -252,7 +273,7 @@ The table below maps each requirement from the problem statement to its implemen
 | **Explicit forecast time period & resilient forecast failure recovery** | [`src/lib/air-quality/forecast-period.ts`](src/lib/air-quality/forecast-period.ts), [`src/lib/air-quality/service.ts`](src/lib/air-quality/service.ts) | [`src/test/air-quality-client.test.ts`](src/test/air-quality-client.test.ts), [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts) |
 | **Quota exceeded (429) & network error (503) without leaking raw internals** | [`src/lib/air-quality/google-client.ts`](src/lib/air-quality/google-client.ts), [`src/lib/air-quality/types.ts`](src/lib/air-quality/types.ts) | [`src/test/air-quality-client.test.ts`](src/test/air-quality-client.test.ts), [`src/test/air-quality-service.test.ts`](src/test/air-quality-service.test.ts) |
 | **Single query param `place`, 120-char limit, capped cache** | [`src/lib/air-quality/cache.ts`](src/lib/air-quality/cache.ts), [`src/app/api/air-quality/route.ts`](src/app/api/air-quality/route.ts) | [`src/test/air-quality-cache-index.test.ts`](src/test/air-quality-cache-index.test.ts), [`src/test/air-quality-route.test.ts`](src/test/air-quality-route.test.ts) |
-| **Catalogue of 21 actions across routine, indoor, and swaps** | [`src/lib/impact/catalogue.ts`](src/lib/impact/catalogue.ts) | [`src/test/impact-catalogue.test.ts`](src/test/impact-catalogue.test.ts) |
+| **Catalogue of 26 actions across routine, indoor, and swaps** | [`src/lib/impact/catalogue.ts`](src/lib/impact/catalogue.ts) | [`src/test/impact-catalogue.test.ts`](src/test/impact-catalogue.test.ts) |
 | **Pure TypeScript arithmetic: dose avoided ($\mu\text{g}$) & emissions saved ($\text{g}$)** | [`src/lib/impact/calculator.ts`](src/lib/impact/calculator.ts), [`src/lib/impact/routine-impact.ts`](src/lib/impact/routine-impact.ts), [`src/lib/impact/indoor-impact.ts`](src/lib/impact/indoor-impact.ts), [`src/lib/impact/commute-swaps.ts`](src/lib/impact/commute-swaps.ts), [`src/lib/impact/combustion-swaps.ts`](src/lib/impact/combustion-swaps.ts) | [`src/test/impact-catalogue.test.ts`](src/test/impact-catalogue.test.ts), [`src/test/impact-indoor-swaps.test.ts`](src/test/impact-indoor-swaps.test.ts), [`src/test/impact-edge-cases.test.ts`](src/test/impact-edge-cases.test.ts), [`src/test/impact-corrections.test.ts`](src/test/impact-corrections.test.ts) |
 | **Scientific citations for every factor with NEEDS VERIFICATION markers** | [`src/lib/impact/factors.ts`](src/lib/impact/factors.ts) | [`src/test/impact-catalogue.test.ts`](src/test/impact-catalogue.test.ts), [`src/test/impact-corrections.test.ts`](src/test/impact-corrections.test.ts) |
 | **Edge cases: household with no car, very clean air ($5\ \mu\text{g}/\text{m}^3$)** | [`src/lib/impact/calculator.ts`](src/lib/impact/calculator.ts) | [`src/test/impact-edge-cases.test.ts`](src/test/impact-edge-cases.test.ts), [`src/test/impact-corrections.test.ts`](src/test/impact-corrections.test.ts) |
