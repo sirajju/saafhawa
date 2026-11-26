@@ -1,3 +1,5 @@
+import { parseDateTimeToIso } from './time-utils';
+
 export interface ForecastAdvicePoint {
   dateTime: string;
   aqi: number | null;
@@ -31,9 +33,11 @@ export interface LocalTimeDetails {
 }
 
 export function getLocalTimeDetails(dateTimeIso: string, timeZone: string): LocalTimeDetails {
-  const d = new Date(dateTimeIso);
+  const targetTz = timeZone || 'Asia/Kolkata';
+  const iso = parseDateTimeToIso(dateTimeIso, targetTz);
+  const d = new Date(iso);
   const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: timeZone || 'Asia/Kolkata',
+    timeZone: targetTz,
     hour: 'numeric',
     hourCycle: 'h23',
     day: 'numeric',

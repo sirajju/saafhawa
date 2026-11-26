@@ -155,26 +155,5 @@ export function calculateCpcbAqi(
   };
 }
 
-/**
- * Formats a measurement ISO timestamp in the given time zone (default Asia/Kolkata)
- * into a human-readable local time (e.g. "11:30 AM").
- */
-export function formatMeasurementTime(
-  dateTimeIso?: string,
-  timeZone = 'Asia/Kolkata'
-): string {
-  if (!dateTimeIso) return 'Recent';
-  try {
-    const d = new Date(dateTimeIso);
-    if (isNaN(d.getTime())) return dateTimeIso;
-    return d.toLocaleTimeString('en-IN', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-      timeZone: timeZone || 'Asia/Kolkata',
-    });
-  } catch {
-    return dateTimeIso;
-  }
-}
+export { formatMeasurementTime, parseDateTimeToIso, getTimeZoneOffsetSeconds } from './time-utils';
 

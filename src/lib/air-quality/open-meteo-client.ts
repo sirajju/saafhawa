@@ -1,4 +1,5 @@
 import { calculateCpcbAqi } from './cpcb-aqi';
+import { parseDateTimeToIso, getTimeZoneOffsetSeconds } from './time-utils';
 import { AirQualityError, CurrentAirQuality, HourlyForecastPoint, LocationNotFoundError } from './types';
 import {
   OpenMeteoAirQualityResponse,
@@ -113,7 +114,7 @@ export async function fetchOpenMeteoAirQuality(
   url.searchParams.set('longitude', longitude.toString());
   url.searchParams.set('current', 'pm2_5,pm10');
   url.searchParams.set('hourly', 'pm2_5,pm10');
-  url.searchParams.set('forecast_days', '2');
+  url.searchParams.set('forecast_days', '3');
   url.searchParams.set('timezone', timeZone || 'Asia/Kolkata');
 
   const response = await safeFetch(url.toString(), { method: 'GET', headers: { Accept: 'application/json' } }, options);
@@ -131,6 +132,10 @@ export async function fetchOpenMeteoAirQuality(
     throw new AirQualityError('Invalid response received from Open-Meteo Air Quality service.', 502);
   }
 
+  const effectiveOffsetSec = typeof data.utc_offset_seconds === 'number'
+    ? data.utc_offset_seconds
+    : getTimeZoneOffsetSeconds(timeZone);
+
   const currentData = data.current || {};
   const currentPm25 = typeof currentData.pm2_5 === 'number' ? currentData.pm2_5 : null;
   const currentPm10 = typeof currentData.pm10 === 'number' ? currentData.pm10 : null;
@@ -138,8 +143,7 @@ export async function fetchOpenMeteoAirQuality(
 
   let currentDateTimeIso = new Date().toISOString();
   if (currentData.time) {
-    const parsedTime = new Date(currentData.time);
-    if (!isNaN(parsedTime.getTime())) currentDateTimeIso = parsedTime.toISOString();
+    currentDateTimeIso = parseDateTimeToIso(currentData.time, effectiveOffsetSec);
   }
 
   const current: CurrentAirQuality = {
@@ -164,7 +168,8 @@ export async function fetchOpenMeteoAirQuality(
   const nowMs = Date.now();
   let startIndex = 0;
   for (let i = 0; i < hourlyTimes.length; i++) {
-    const ptMs = new Date(hourlyTimes[i]).getTime();
+    const ptIso = parseDateTimeToIso(hourlyTimes[i], effectiveOffsetSec);
+    const ptMs = new Date(ptIso).getTime();
     if (!isNaN(ptMs) && ptMs >= nowMs - 30 * 60 * 1000) {
       startIndex = i;
       break;
@@ -180,8 +185,7 @@ export async function fetchOpenMeteoAirQuality(
     const pm10Val = typeof hourlyPm10List[i] === 'number' ? (hourlyPm10List[i] as number) : null;
     const pointCpcb = calculateCpcbAqi(pm25Val, pm10Val);
 
-    const parsedPoint = new Date(rawTime);
-    const pointIso = !isNaN(parsedPoint.getTime()) ? parsedPoint.toISOString() : rawTime;
+    const pointIso = parseDateTimeToIso(rawTime, effectiveOffsetSec);
     hourlyForecast.push({
       dateTime: pointIso,
       aqi: pointCpcb.aqi,

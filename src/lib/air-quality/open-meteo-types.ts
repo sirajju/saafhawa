@@ -32,6 +32,8 @@ export interface OpenMeteoGeocodingResponse {
 }
 
 export interface OpenMeteoAirQualityResponse {
+  utc_offset_seconds?: number;
+  timezone?: string;
   current?: {
     time?: string;
     pm2_5?: number | null;

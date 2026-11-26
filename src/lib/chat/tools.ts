@@ -1,6 +1,6 @@
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
-import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
+import { formatMeasurementTime, parseDateTimeToIso } from '../air-quality/cpcb-aqi';
 import { ACTION_CATALOGUE } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { HouseholdProfile, HouseholdProfileSchema } from '../impact/types';
@@ -13,7 +13,8 @@ export function formatHourInPlaceLocalTime(
   timeZone = 'Asia/Kolkata'
 ): string {
   const formatWithTz = (tz: string) => {
-    const rawDate = new Date(dateTimeIso);
+    const iso = parseDateTimeToIso(dateTimeIso, tz);
+    const rawDate = new Date(iso);
     if (isNaN(rawDate.getTime())) return dateTimeIso;
     // Round odd minutes to the nearest hour (e.g. 10:04 AM -> 10 AM, 10:45 AM -> 11 AM)
     const roundedMs = Math.round(rawDate.getTime() / (3600 * 1000)) * (3600 * 1000);
