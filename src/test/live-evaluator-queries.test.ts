@@ -18,7 +18,7 @@ describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () =>
     const results = [];
 
     for (const p of places) {
-      let report;
+      let report: import('@/lib/air-quality/types').AirQualityReport | undefined;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
           report = await getAirQualityByLocation(p.query);
@@ -29,6 +29,7 @@ describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () =>
         }
       }
 
+      if (!report) throw new Error(`Failed to fetch report for ${p.city}`);
       expect(report.location.name).toBeTruthy();
       expect(report.current.dataSource).toBe('Open-Meteo (CAMS model)');
       expect(report.current.aqi).toBeGreaterThanOrEqual(0);
