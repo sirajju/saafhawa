@@ -1,5 +1,6 @@
 import { calculateCpcbAqi } from './cpcb-aqi';
 import { CurrentAirQuality, AirQualityError } from './types';
+import { safeFetch } from './safe-fetch';
 
 const WAQI_FEED_BASE_URL = 'https://api.waqi.info/feed';
 
@@ -49,7 +50,8 @@ export async function fetchWaqiNearestStation(
   latitude: number,
   longitude: number,
   token = process.env.WAQI_TOKEN,
-  fetchFn: typeof fetch = fetch
+  fetchFn: typeof fetch = fetch,
+  timeoutMs?: number
 ): Promise<WaqiStationResult | null> {
   if (!token || token.trim().length === 0) {
     return null;
@@ -59,11 +61,16 @@ export async function fetchWaqiNearestStation(
 
   let response: Response;
   try {
-    response = await fetchFn(url, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-    });
+    response = await safeFetch(
+      url,
+      {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      },
+      { fetchFn, timeoutMs }
+    );
   } catch (err: unknown) {
+    if (err instanceof AirQualityError) throw err;
     throw new AirQualityError(
       `Unable to connect to WAQI ground station service: ${err instanceof Error ? err.message : 'Network error'}`,
       503

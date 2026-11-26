@@ -11,7 +11,25 @@ export interface ReverseGeocodeResult {
   country?: string;
 }
 
+const MAX_CACHE_ENTRIES = 50;
 const reverseGeocodeCache = new Map<string, ReverseGeocodeResult>();
+let lastNominatimRequestTime = 0;
+
+function setCachedResult(key: string, result: ReverseGeocodeResult): void {
+  if (reverseGeocodeCache.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = reverseGeocodeCache.keys().next().value;
+    if (oldestKey) reverseGeocodeCache.delete(oldestKey);
+  }
+  reverseGeocodeCache.set(key, result);
+}
+
+async function waitForNominatimRateLimit(): Promise<void> {
+  const elapsed = Date.now() - lastNominatimRequestTime;
+  if (elapsed < 1000) {
+    await new Promise((resolve) => setTimeout(resolve, 1000 - elapsed));
+  }
+  lastNominatimRequestTime = Date.now();
+}
 
 export async function reverseGeocodeCoordinates(
   lat: number,
@@ -29,71 +47,76 @@ export async function reverseGeocodeCoordinates(
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+    try {
+      const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: { Accept: 'application/json' },
+      });
 
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: { Accept: 'application/json' },
-    });
-    clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        const city = (data.city || data.locality || '').trim();
+        const state = (data.principalSubdivision || '').trim();
+        const country = (data.countryName || '').trim();
 
-    if (res.ok) {
-      const data = await res.json();
-      const city = (data.city || data.locality || '').trim();
-      const state = (data.principalSubdivision || '').trim();
-      const country = (data.countryName || '').trim();
-
-      if (city) {
-        const formattedAddress = state ? `${city}, ${state}` : city;
-        const result: ReverseGeocodeResult = {
-          formattedAddress,
-          city,
-          locality: data.locality,
-          state,
-          country,
-        };
-        reverseGeocodeCache.set(cacheKey, result);
-        return result;
+        if (city) {
+          const formattedAddress = state ? `${city}, ${state}` : city;
+          const result: ReverseGeocodeResult = {
+            formattedAddress,
+            city,
+            locality: data.locality,
+            state,
+            country,
+          };
+          setCachedResult(cacheKey, result);
+          return result;
+        }
       }
+    } finally {
+      clearTimeout(timeout);
     }
   } catch {
     // Fall through to Nominatim fallback
   }
 
-  // 2. Secondary Fallback: OpenStreetMap Nominatim
+  // 2. Secondary Fallback: OpenStreetMap Nominatim (respecting 1 req/sec policy)
   try {
+    await waitForNominatimRateLimit();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'SaafHawa-CleanAirApp/1.0 (https://github.com/sirajju/saafhawa)',
+        },
+      });
 
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'SaafHawa-CleanAirApp/1.0 (https://github.com/sirajju/saafhawa)',
-      },
-    });
-    clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        const addr = data.address || {};
+        const city = (addr.city || addr.town || addr.municipality || addr.county || addr.suburb || '').trim();
+        const state = (addr.state || '').trim();
+        const country = (addr.country || '').trim();
 
-    if (res.ok) {
-      const data = await res.json();
-      const addr = data.address || {};
-      const city = (addr.city || addr.town || addr.municipality || addr.county || addr.suburb || '').trim();
-      const state = (addr.state || '').trim();
-      const country = (addr.country || '').trim();
-
-      if (city) {
-        const formattedAddress = state ? `${city}, ${state}` : city;
-        const result: ReverseGeocodeResult = {
-          formattedAddress,
-          city,
-          locality: addr.suburb || addr.neighbourhood,
-          state,
-          country,
-        };
-        reverseGeocodeCache.set(cacheKey, result);
-        return result;
+        if (city) {
+          const formattedAddress = state ? `${city}, ${state}` : city;
+          const result: ReverseGeocodeResult = {
+            formattedAddress,
+            city,
+            locality: addr.suburb || addr.neighbourhood,
+            state,
+            country,
+          };
+          setCachedResult(cacheKey, result);
+          return result;
+        }
       }
+    } finally {
+      clearTimeout(timeout);
     }
   } catch {
     // Both providers failed
