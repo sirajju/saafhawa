@@ -17,17 +17,19 @@ This document records the core architectural and design decisions made in **Saaf
 
 - **Context:** Users ask open-ended follow-up questions in the assistant panel (e.g., "Can my daughter play outside at 5 PM?").
 - **Decision:** Gemini is configured with native Function Calling declarations ([`../src/lib/chat/tools.ts`](../src/lib/chat/tools.ts)). When an action requires live data, the server intercepts the tool call, executes [`getAirQualityAndForecast`](../src/lib/chat/tools.ts) or [`calculateActionImpact`](../src/lib/chat/tools.ts), and feeds grounded observations back into the conversational context.
-- **Rationale:** Prevents the LLM from fabricating current PM2.5 numbers or hourly forecasts. The model reasons over real 24-hour hourly sensor data from Google Air Quality API.
+- **Rationale:** Prevents the LLM from fabricating current PM2.5 numbers or hourly forecasts. The model reasons over real 24-hour hourly sensor data from the active provider.
 - **Trade-off:** Adds an extra round-trip API turn for tool execution, but grounds responses in real-time sensor measurements and verified calculations instead of unverified generation.
 
 ---
 
-### Decision 3: Zero-Key Self-Contained Fallback Mode
+### Decision 3: Free Keyless Default with Multi-Provider Hierarchy
 
-- **Context:** The application must remain operable, testable, and demonstrable in environments where neither `GOOGLE_MAPS_API_KEY` nor `GEMINI_API_KEY` are provided.
-- **Decision:** Built-in New Delhi reference air quality data ([`../src/lib/air-quality/sample-data.ts`](../src/lib/air-quality/sample-data.ts)) activates automatically whenever Google Maps API keys are unset, and deterministic rule-based ranking ([`../src/lib/plan/fallback.ts`](../src/lib/plan/fallback.ts)) activates whenever Gemini API keys are unset or plan generation fails. A prominent "Sample Data" indicator is rendered to inform the user.
-- **Rationale:** Eliminates setup friction for evaluators and guarantees that unit/E2E test suites never depend on external network reachability or paid quotas.
-- **Trade-off:** Sample data represents fixed reference conditions rather than live ambient sensor values for arbitrary locations.
+- **Context:** The application must remain operable, testable, and demonstrable in environments where neither `GOOGLE_MAPS_API_KEY`, `WAQI_TOKEN`, nor `GEMINI_API_KEY` are provided.
+- **Decision:** SaafHawa implements a clean data source hierarchy:
+  1. **Air Quality:** Free keyless Open-Meteo (Copernicus CAMS model) and OpenStreetMap Nominatim reverse geocoding serve as universal defaults. Optional upgrades prioritize nearest CPCB CAAQMS ground stations when `WAQI_TOKEN` is configured, or Google Air Quality API when `GOOGLE_MAPS_API_KEY` is set.
+  2. **AI & Planning:** `GEMINI_API_KEY` is optional. When configured, SaafHawa queries candidate models defined in `GEMINI_MODELS` (`gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash`) using the `@google/genai` `v1beta` API. When keys are unset or daily limits are exhausted, deterministic rule-based planning ([`../src/lib/plan/fallback.ts`](../src/lib/plan/fallback.ts)) automatically provides tailored interventions with honest UI status.
+- **Rationale:** Eliminates setup friction for evaluators, ensures complete live real-time coverage across any Indian location without paid API keys, and guarantees that test suites never depend on paid quotas or external billing.
+- **Trade-off:** Model output depends on API availability; transparent rule-based fallback ensures reliable uninterrupted service.
 
 ---
 

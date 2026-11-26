@@ -159,10 +159,11 @@ flowchart TD
         end
     end
 
-    subgraph GoogleServices["Google Cloud & Developer APIs"]
-        GeoAPI["Google Geocoding API"]
-        AirAPI["Google Air Quality API (ind_cpcb / uaqi)"]
-        GeminiAPI["Google Gemini 2.5 Flash (@google/genai)"]
+    subgraph Providers["External Data & AI Services"]
+        OpenMeteo["Open-Meteo & Nominatim (Keyless Default)"]
+        WAQI["WAQI CPCB Ground Stations (Optional Token)"]
+        GoogleMaps["Google Maps & Air Quality (Optional Key)"]
+        GeminiAPI["Gemini Chain v1beta: GEMINI_MODELS (Optional Key)"]
     end
 
     UI -->|JSON Over HTTPS| RL
@@ -175,8 +176,9 @@ flowchart TD
     ChatRoute --> ChatService
     AdvisoryRoute --> AdvisoryGen
 
-    AQService -->|Resolved Lat/Lng| GeoAPI
-    AQService -->|Ind_CPCB & Hourly Forecast| AirAPI
+    AQService -->|Keyless Live Forecast| OpenMeteo
+    AQService -.->|Optional Station Readings| WAQI
+    AQService -.->|Optional Sensor Readings| GoogleMaps
     PlanService -->|Structured Action Selection| GeminiAPI
     PlanService -->|Attach Real Numbers| ImpactCalc
     ChatService -->|Function Calls: live AQ & impact| GeminiAPI
@@ -186,9 +188,9 @@ flowchart TD
 
 ### End-to-End Workflow:
 1. **Three-Step Onboarding:** The user completes three short, accessible steps (1: Who lives here, asking place first with browser location support; 2: How you get around; 3: Your home, with no pre-ticked habits). Large tappable choice chips replace cumbersome dropdowns and numeric inputs. Profile is saved in `localStorage`.
-2. **Microclimate Fetching:** Server queries Google Geocoding, Google Time Zone, and Google Air Quality APIs, requesting the Indian National AQI (`ind_cpcb`) and an explicit 24-hour forecast window. Cached for 15 minutes.
+2. **Microclimate Fetching:** Server uses free, keyless Open-Meteo (Copernicus CAMS model) and Nominatim reverse geocoding as the universal default, with optional upgrades to nearest CPCB ground stations (via `WAQI_TOKEN`) and Google Air Quality (via `GOOGLE_MAPS_API_KEY`). Cached for 15 minutes.
 3. **Hybrid AI & Arithmetic Planning:**
-   - Server builds a structured prompt for Gemini 2.5 Flash with the household profile and AQI context, applying plan consistency rules (e.g. mutual exclusivity of WFH and commute swaps).
+   - Server builds a structured prompt for the Gemini models chain (`GEMINI_MODELS`: `gemini-flash-lite-latest`, `gemini-2.5-flash-lite`, `gemini-3.8-flash` on `v1beta` API) with the household profile and AQI context, applying plan consistency rules (e.g. mutual exclusivity of WFH and commute swaps). When `GEMINI_API_KEY` is not provided, expired, or out of quota, deterministic rule-based planning transparently generates the plan.
    - Gemini selects 6–8 action IDs from our 26-action catalogue with timing and reason.
    - Server drops any unrecognized IDs, executes pure TypeScript arithmetic formulas to compute inhaled dose avoided ($\mu\text{g}$) and emissions saved ($\text{g}$), and returns the complete verified payload.
 4. **Action-First Dashboard:**
@@ -329,15 +331,11 @@ GEMINI_MODEL=gemini-flash-lite-latest
 GEMINI_FALLBACK_MODEL=gemini-2.5-flash-lite
 ```
 
-#### Gemini Free-Tier Model Allowances:
-| Model ID | Free Tier RPM | Free Tier RPD | Structured JSON & Tools | Role in SaafHawa |
-|---|---|---|---|---|
-| `gemini-flash-lite-latest` | **15 RPM** | **1,500 RPD** | Fully Supported | **Default Primary Model** |
-| `gemini-2.5-flash-lite` | **15 RPM** | **1,500 RPD** | Fully Supported | **Default Secondary Model** |
-| `gemini-3.8-flash` | 5 RPM | 20 RPD | Fully Supported | **Tertiary Candidate Model** (high demand) |
+#### Gemini Rate Limits & Ordered Fallback Chain:
 
-> [!TIP]
-> When `GEMINI_MODELS` is provided as a comma-separated list (e.g. `gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash`), SaafHawa attempts each candidate in sequence. Because each model on Google AI Studio's free tier has an independent daily request quota, exhausted models are immediately remembered and skipped for the rest of their quota window, maximizing uptime across free tier limits. Single-model `GEMINI_MODEL` and `GEMINI_FALLBACK_MODEL` remain fully supported for backwards compatibility.
+SaafHawa uses an ordered fallback chain configured via `GEMINI_MODELS` (`gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash`) using Google's `@google/genai` SDK on the `v1beta` API. Because each model on Google AI Studio has independent rate limits and daily quotas, exhausted models are immediately remembered and skipped for the rest of their quota window, maximizing uptime across free tier limits. Single-model `GEMINI_MODEL` and `GEMINI_FALLBACK_MODEL` remain supported for backwards compatibility. When all models are busy or when no key is set, SaafHawa transparently uses deterministic rule-based planning.
+
+For official details on requests per minute (RPM) and requests per day (RPD) across Gemini models and tiers, see [Google's Gemini Rate Limits Documentation](https://ai.google.dev/gemini-api/docs/rate-limits).
 
 ### 4. Running Locally
 ```bash
