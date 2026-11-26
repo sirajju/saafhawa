@@ -13,7 +13,6 @@ header.app-header {
   height: 64px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
 }
 
@@ -45,83 +44,100 @@ header.app-header {
   color: var(--ink-3);
 }
 
+.spacer {
+  flex: 1;
+}
+
 .place {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--ink-2);
-  font-size: 13px;
-}
-
-.place strong {
-  color: var(--ink);
-  font-weight: 600;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 99px;
-  background: var(--aqi-vpoor);
-  flex: none;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.theme-toggle {
   display: inline-flex;
   align-items: center;
-  background: var(--surface-2);
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 2px;
-  gap: 2px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
 }
 
-.theme-btn {
-  width: 32px;
+.place:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.seg button {
   height: 32px;
+  width: 36px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-3);
   display: grid;
   place-items: center;
-  border-radius: 8px;
-  color: var(--ink-3);
   transition: all 0.15s ease;
 }
 
-.theme-btn:hover {
-  color: var(--ink);
-}
-
-.theme-btn.active {
+.seg button[aria-pressed="true"] {
   background: var(--surface);
   color: var(--ink);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
 }
 
-.theme-btn svg {
-  width: 16px;
-  height: 16px;
+.seg label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
 }
 
-/* Page Grid: Dashboard (main) + Chat Rail (380px) */
+.seg label:hover {
+  color: var(--ink);
+}
+
+.seg label.active,
+.seg label:has(input:checked) {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+
+/* Cards & Layout */
 .page {
-  padding: 32px 0 80px;
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: 32px;
+  padding: 32px 0 80px;
   align-items: start;
 }
 
 .rail {
   position: sticky;
-  top: 96px;
+  top: 88px;
+  display: grid;
+  gap: 16px;
 }
 
-/* Cards & Layout */
 .card {
   background: var(--surface);
   border: 1px solid var(--line);

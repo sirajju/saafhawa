@@ -28,99 +28,103 @@
   margin-top: 20px;
 }
 
-.scale-track {
-  height: 6px;
-  border-radius: 99px;
-  background: linear-gradient(
-    90deg,
-    var(--aqi-good) 0%,
-    var(--aqi-sat) 20%,
-    var(--aqi-mod) 40%,
-    var(--aqi-poor) 60%,
-    var(--aqi-vpoor) 80%,
-    var(--aqi-severe) 100%
-  );
+.scale-bar {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  height: 8px;
   position: relative;
-  margin-bottom: 6px;
 }
 
-.scale-pin {
+.scale-bar span {
+  border-radius: 2px;
+}
+
+.scale-marker {
   position: absolute;
-  top: 50%;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 3px solid var(--ink);
-  transform: translate(-50%, -50%);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  top: -5px;
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--ink);
+  box-shadow: 0 0 0 2px var(--surface);
+  transform: translateX(-50%);
 }
 
 .scale-labels {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  margin-top: 8px;
   font-size: 13px;
   color: var(--ink-3);
-  font-variant-numeric: tabular-nums;
 }
 
 .advice {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   border-left: 1px solid var(--line);
   padding-left: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .advice-text {
   font-size: 22px;
-  line-height: 1.35;
-  font-weight: 550;
-  letter-spacing: -0.015em;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--ink);
 }
 
-.advice-text strong {
-  font-weight: 700;
-}
-
-.meta {
-  padding: 16px 28px;
-  border-top: 1px solid var(--line);
-  background: var(--surface-2);
+.chips {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  font-size: 13px;
-  color: var(--ink-2);
-}
-
-.meta-items {
-  display: flex;
-  gap: 20px;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
-.meta-items span strong {
-  color: var(--ink);
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 13px;
   font-weight: 600;
 }
 
-.btn-sm {
-  height: 32px;
-  padding: 0 12px;
+.chip.neutral {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding: 14px 28px;
+  border-top: 1px solid var(--line);
   font-size: 13px;
-  border-radius: 8px;
+  color: var(--ink-3);
+}
+
+.meta b {
+  color: var(--ink-2);
+  font-weight: 500;
 }
 
 /* Forecast Chart Section */
 .forecast {
-  padding: 24px 28px;
+  padding: 24px 28px 20px;
+  border-top: 1px solid var(--line);
 }
 
-.chart-wrap {
-  margin-top: 16px;
+.forecast-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
 }
 
 /* Impact Card */
@@ -137,13 +141,19 @@
   border-left: 1px solid var(--line);
 }
 
-.impact-val {
-  font-size: 38px;
-  line-height: 1.1;
+.stat {
+  font-size: 30px;
   font-weight: 650;
   letter-spacing: -0.02em;
-  margin: 6px 0 2px;
-  color: var(--brand);
+  margin: 6px 0 4px;
+  color: var(--ink);
+}
+
+.stat small {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-3);
+  margin-left: 4px;
 }
 
 .impact p {

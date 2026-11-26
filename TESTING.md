@@ -12,15 +12,15 @@ This document records the testing architecture of **SaafHawa** with exact, unedi
 
 ---
 
-### 2. Measured Vitest Output (258 Tests Across 42 Test Files)
+### 2. Measured Vitest Output (260 Tests Across 43 Test Files)
 
 ```
 > saafhawa@0.1.0 test
 > vitest run
 
- Test Files  42 passed (42)
-      Tests  258 passed (258)
-   Duration  8.06s
+ Test Files  43 passed (43)
+      Tests  260 passed (260)
+   Duration  8.99s
 ```
 
 ---
@@ -34,40 +34,44 @@ This document records the testing architecture of **SaafHawa** with exact, unedi
  ✓ src/test/live-evaluator-queries.test.ts (1 test)
  Test Files  1 passed (1)
       Tests  1 passed (1)
-   Duration  6.37s
+   Duration  5.36s
 ```
 
 Live queries for Delhi, Mumbai, Kolkata, Lucknow, and Bengaluru all resolve valid CPCB AQI, PM2.5, PM10, and hourly forecasts via Open-Meteo without API keys.
 
 ---
 
-### 4. Measured Playwright E2E Output (18 Tests Across 7 Spec Files)
+### 4. Measured Playwright E2E Output (22 Tests Across 8 Spec Files)
 
 ```
 > saafhawa@0.1.0 test:e2e
 > playwright test
 
-Running 18 tests using 1 worker
+Running 22 tests using 1 worker
   ok  1 › e2e/chat-real.spec.ts: submits a real question through UI to unmocked /api/chat
   ok  2 › e2e/chat-real.spec.ts: direct API call with shared ChatRequest schema succeeds
-  ok  3 › e2e/layout-fixes.spec.ts: onboarding at 390px phone: 16px padding & icon button
-  ok  4 › e2e/layout-fixes.spec.ts: plan load: programmatic focus on h1 has no visible outline box
-  ok  5 › e2e/layout-fixes.spec.ts: chart at 390px phone renders text at >= 12px
-  ok  6 › e2e/modals-and-security.spec.ts: mobile floating Ask button opens chat sheet
-  ok  7 › e2e/modals-and-security.spec.ts: community advisory modal displays WhatsApp card
-  ok  8 › e2e/modals-and-security.spec.ts: serves strict security headers without unsafe-eval
-  ok  9 › e2e/onboarding-reference-and-switch.spec.ts: validates empty area input on step 1
-  ok 10 › e2e/onboarding-reference-and-switch.spec.ts: completes 3-step onboarding and uses switch
-  ok 11 › e2e/onboarding-reference-and-switch.spec.ts: captures screenshots of 3 steps in light/dark
-  ok 12 › e2e/onboarding-reference-and-switch.spec.ts: onboarding <=600px wide, fixed bar, >=24px gap
-  ok 13 › e2e/screenshots.spec.ts: captures dashboard, chat, and advisory at 1440px and 390px
-  ok 14 › e2e/smoke.spec.ts: completes 3-step onboarding and renders clean air action plan
-  ok 15 › e2e/smoke.spec.ts: no horizontal overflow at 390px (mobile) and 1440px viewports
-  ok 16 › e2e/smoke.spec.ts: mobile 390px guidance sentence fully readable without scrolling
-  ok 17 › e2e/theme-and-typography.spec.ts: toggles theme to dark, light, system with persistence
-  ok 18 › e2e/theme-and-typography.spec.ts: verifies no visible text is smaller than 13px
+  ok  3 › e2e/dashboard-styling.spec.ts: first plan card title is wider than 300px on desktop
+  ok  4 › e2e/dashboard-styling.spec.ts: AQI scale bar segments have distinct computed background colors
+  ok  5 › e2e/dashboard-styling.spec.ts: theme switch buttons are at least 32px wide
+  ok  6 › e2e/dashboard-styling.spec.ts: Dashboard / Household switch has position: fixed
+  ok  7 › e2e/layout-fixes.spec.ts: onboarding at 390px phone: 16px padding & icon button
+  ok  8 › e2e/layout-fixes.spec.ts: plan load: programmatic focus on h1 has no visible outline box
+  ok  9 › e2e/layout-fixes.spec.ts: chart at 390px phone renders text at >= 12px
+  ok 10 › e2e/modals-and-security.spec.ts: mobile floating Ask button opens chat sheet
+  ok 11 › e2e/modals-and-security.spec.ts: community advisory modal displays WhatsApp card
+  ok 12 › e2e/modals-and-security.spec.ts: serves strict security headers without unsafe-eval
+  ok 13 › e2e/onboarding-reference-and-switch.spec.ts: validates empty area input on step 1
+  ok 14 › e2e/onboarding-reference-and-switch.spec.ts: completes 3-step onboarding and uses switch
+  ok 15 › e2e/onboarding-reference-and-switch.spec.ts: captures screenshots of 3 steps in light/dark
+  ok 16 › e2e/onboarding-reference-and-switch.spec.ts: onboarding <=600px wide, fixed bar, >=24px gap
+  ok 17 › e2e/screenshots.spec.ts: captures dashboard, chat, and advisory at 1440px and 390px
+  ok 18 › e2e/smoke.spec.ts: completes 3-step onboarding and renders clean air action plan
+  ok 19 › e2e/smoke.spec.ts: no horizontal overflow at 390px (mobile) and 1440px viewports
+  ok 20 › e2e/smoke.spec.ts: mobile 390px guidance sentence fully readable without scrolling
+  ok 21 › e2e/theme-and-typography.spec.ts: toggles theme to dark, light, system with persistence
+  ok 22 › e2e/theme-and-typography.spec.ts: verifies no visible text is smaller than 13px
 
-  18 passed (14.0s)
+  22 passed (13.9s)
 ```
 
 ---
@@ -102,6 +106,7 @@ Running 18 tests using 1 worker
 | `src/test/components-cards.test.tsx` | Card accessibility, ARIA live regions, contrast tokens |
 | `src/test/components-form.test.tsx` | Onboarding fieldsets, radio groups, keyboard navigation, validation alerts |
 | `src/test/cpcb-aqi.test.ts` | Official Indian CPCB piecewise linear calculation (0-500 scale) |
+| `src/test/css-selector-parity.test.ts` | Exact selector parity against submission-1-96.72 and <= 200 line limit per sheet |
 | `src/test/daily-timeline.test.ts` | Timeline period bucketing, past action badges, completion toggle |
 | `src/test/forecast-advice-clock.test.ts` | Rolling 24-hr advice window, future waking hours selection |
 | `src/test/four-fixes-validation.test.tsx` | UI edge cases, coordinate resets, layout constraints |
@@ -133,6 +138,7 @@ Running 18 tests using 1 worker
 | `src/test/use-onboarding-location.test.tsx` | Browser geolocation hook, error recovery, reverse geocoding |
 | `src/test/waqi-client.test.ts` | WAQI CPCB ground station querying, fallback to Open-Meteo |
 | `e2e/chat-real.spec.ts` | Real unmocked end-to-end chat queries and API responses |
+| `e2e/dashboard-styling.spec.ts` | Desktop 1440px plan card title width, scale bar colors, theme buttons, fixed switch |
 | `e2e/layout-fixes.spec.ts` | Padding, outline suppression, and chart typography on mobile |
 | `e2e/modals-and-security.spec.ts` | Mobile chat sheet, advisory modal, and live HTTP security headers |
 | `e2e/onboarding-reference-and-switch.spec.ts` | Onboarding dimensions, fixed footer bar, floating view switch |
