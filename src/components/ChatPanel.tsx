@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessage, ChatMessageList } from './ChatMessageList';
 import { ChatRequest } from '@/lib/chat/types';
@@ -17,12 +17,16 @@ export interface ChatPanelProps {
   timeZone?: string;
   onClose?: () => void;
   className?: string;
+  headingId?: string;
 }
 
 const SAMPLE_PROMPTS = [
-  'Can my daughter play outside at 5 PM?',
-  'Is a DIY box-fan filter worth it?',
+  'Can my daughter play outside at 5 PM?', 'Is a DIY box-fan filter worth it?',
   'Metro or car for tomorrow’s commute?',
+];
+
+const INITIAL_GREETING: ChatMessage[] = [
+  { role: 'assistant', content: "Ask me about timing, masks, purifiers or your commute. I'll check the forecast first.", isGreeting: true },
 ];
 
 /**
@@ -38,13 +42,12 @@ export function ChatPanel({
   timeZone,
   onClose,
   className = '',
+  headingId: propHeadingId,
 }: ChatPanelProps) {
+  const generatedHeadingId = useId();
+  const effectiveHeadingId = propHeadingId || `chat-heading-${generatedHeadingId}`;
   const shortPlace = getShortPlaceName(displayPlace || place);
-  const [messages, setMessages] = useState<ChatMessage[]>([{
-    role: 'assistant',
-    content: "Ask me about timing, masks, purifiers or your commute. I'll check the forecast first.",
-    isGreeting: true,
-  }]);
+  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_GREETING);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -73,8 +76,7 @@ export function ChatPanel({
 
     try {
       const conversationHistory = currentList
-        .filter((m) => !m.isGreeting && !m.isError)
-        .slice(-6)
+        .filter((m) => !m.isGreeting && !m.isError).slice(-6)
         .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }));
 
       const payload: ChatRequest = {
@@ -127,17 +129,16 @@ export function ChatPanel({
   const handleRetryMessage = (msgIdx: number) => {
     for (let i = msgIdx - 1; i >= 0; i--) {
       if (messages[i].role === 'user') {
-        const userText = messages[i].content;
-        const baseList = messages.filter((_, idx) => idx !== msgIdx && idx !== i);
-        handleSendMessage(userText, baseList);
+        handleSendMessage(messages[i].content, messages.filter((_, idx) => idx !== msgIdx && idx !== i));
         break;
       }
     }
   };
 
   return (
-    <section aria-labelledby="chat-heading" className={`card ${className}`}>
+    <section aria-labelledby={effectiveHeadingId} className={`card ${className}`}>
       <ChatHeader
+        headingId={effectiveHeadingId}
         place={shortPlace}
         dataSource={dataSource}
         measuredTime={measuredTime}

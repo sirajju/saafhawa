@@ -8,22 +8,11 @@ interface ViewSwitchProps {
 }
 
 export function ViewSwitch({ currentView, onChangeView }: ViewSwitchProps) {
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      onChangeView('onb');
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      onChangeView('dash');
-    }
-  };
-
   return (
-    <nav
+    <div
       className="view-switch seg"
       aria-label="Switch view"
       role="group"
-      onKeyDown={handleKeyDown}
     >
       <button
         type="button"
@@ -43,6 +32,6 @@ export function ViewSwitch({ currentView, onChangeView }: ViewSwitchProps) {
       >
         Household
       </button>
-    </nav>
+    </div>
   );
 }

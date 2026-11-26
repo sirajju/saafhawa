@@ -1,13 +1,16 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ViewSwitch } from '@/components/ViewSwitch';
 
 describe('ViewSwitch Component', () => {
-  it('renders Dashboard and Household buttons with active states', () => {
+  it('renders Dashboard and Household buttons with active states inside role="group" div', () => {
     const handleChange = vi.fn();
     render(<ViewSwitch currentView="dash" onChangeView={handleChange} />);
+
+    const group = screen.getByRole('group', { name: 'Switch view' });
+    expect(group.tagName.toLowerCase()).toBe('div');
 
     const dashBtn = screen.getByRole('button', { name: 'Dashboard' });
     const onbBtn = screen.getByRole('button', { name: 'Household' });
@@ -27,16 +30,16 @@ describe('ViewSwitch Component', () => {
     expect(handleChange).toHaveBeenCalledWith('onb');
   });
 
-  it('supports arrow key navigation to toggle view', () => {
+  it('supports standard button keyboard activation via Space or Enter', async () => {
+    const user = userEvent.setup();
     const handleChange = vi.fn();
     render(<ViewSwitch currentView="dash" onChangeView={handleChange} />);
 
-    const nav = screen.getByRole('group', { name: 'Switch view' });
+    const onbBtn = screen.getByRole('button', { name: 'Household' });
+    onbBtn.focus();
+    expect(document.activeElement).toBe(onbBtn);
 
-    fireEvent.keyDown(nav, { key: 'ArrowRight' });
+    await user.keyboard('{Enter}');
     expect(handleChange).toHaveBeenCalledWith('onb');
-
-    fireEvent.keyDown(nav, { key: 'ArrowLeft' });
-    expect(handleChange).toHaveBeenCalledWith('dash');
   });
 });

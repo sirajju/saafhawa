@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useId } from 'react';
 import { PlanResponse, PlanRequest } from '@/lib/plan/types';
+import { useFocusTrap } from '@/lib/use-focus-trap';
 import { AirQualityCard } from './AirQualityCard';
 import { TotalSavingsBanner } from './TotalSavingsBanner';
 import { DailyTimeline } from './dashboard/DailyTimeline';
@@ -36,6 +37,9 @@ export function PlanDashboard({
 }: PlanDashboardProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
+  const handleCloseMobileChat = useCallback(() => setIsMobileChatOpen(false), []);
+  const mobileChatTrapRef = useFocusTrap<HTMLDivElement>(isMobileChatOpen, handleCloseMobileChat);
+  const mobileChatHeadingId = useId();
   const lookupQuery =
     lookupPlace ||
     profile?.coordinates ||
@@ -122,18 +126,10 @@ export function PlanDashboard({
           timeZone={plan.location.timeZone}
         />
 
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           onClick={onOpenAdvisoryModal}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onOpenAdvisoryModal?.();
-            }
-          }}
           className="card share-card"
-          aria-label="Warn your society: A ready WhatsApp message in English or Hindi"
         >
           <span
             className="logo-mark"
@@ -146,7 +142,7 @@ export function PlanDashboard({
             <h3>Warn your society</h3>
             <p className="caption">A ready WhatsApp message in English or हिन्दी</p>
           </div>
-        </div>
+        </button>
       </aside>
 
       {/* Floating "Ask Assistant" Button on Mobile & Tablet */}
@@ -166,9 +162,10 @@ export function PlanDashboard({
       {/* Mobile Full-Height Sheet Modal */}
       {isMobileChatOpen && (
         <div
+          ref={mobileChatTrapRef}
           role="dialog"
           aria-modal="true"
-          aria-labelledby="chat-heading"
+          aria-labelledby={mobileChatHeadingId}
           className="lg:hidden fixed inset-0 z-50 flex flex-col bg-[var(--surface)] animate-in slide-in-from-bottom duration-200"
         >
           <ChatPanel
@@ -178,7 +175,8 @@ export function PlanDashboard({
             dataSource={plan.currentAirQuality?.dataSource}
             measuredTime={plan.currentAirQuality?.dateTime}
             timeZone={plan.location.timeZone}
-            onClose={() => setIsMobileChatOpen(false)}
+            onClose={handleCloseMobileChat}
+            headingId={mobileChatHeadingId}
           />
         </div>
       )}

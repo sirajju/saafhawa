@@ -6,21 +6,21 @@ This document records the testing architecture of **SaafHawa** with exact, unedi
 
 ### 1. Test Architecture Overview
 
-- **Unit & Integration Suite (Vitest with v8 Coverage):** 294 automated tests across 73 test files in [`src/test/`](src/test/) covering schemas, rate limiters, deterministic physics, Gemini client resilience, model fallback chains, CPCB AQI breakpoints, time zones, and accessible components. Executed via `npm test` or `npm run test:coverage`.
+- **Unit & Integration Suite (Vitest with v8 Coverage):** 296 automated tests across 74 test files in [`src/test/`](src/test/) covering schemas, rate limiters, deterministic physics, Gemini client resilience, model fallback chains, CPCB AQI breakpoints, time zones, and accessible components. Executed via `npm test` or `npm run test:coverage`.
 - **Live Network Suite (Vitest Live):** Dedicated live network integration in [`src/test/live-evaluator-queries.test.ts`](src/test/live-evaluator-queries.test.ts) querying real Open-Meteo APIs for 5 evaluator cities without API keys. Executed via `npm run test:live`.
 - **End-to-End Suite (Playwright):** 19 browser tests across 6 spec files in [`e2e/`](e2e/) validating onboarding, dashboard, theme switching, typography, and responsive layouts at 390px and 1440px. Executed via `npm run test:e2e`. Live network chat tests tagged `@live` are isolated and executed via `npm run test:e2e:live`.
 - **Screenshot Automation:** Headless screenshot capture script in [`scripts/capture-screenshots.ts`](scripts/capture-screenshots.ts) executed via `npm run capture-screenshots`.
 
 ---
 
-### 2. Measured Vitest Output (294 Tests Across 73 Test Files)
+### 2. Measured Vitest Output (296 Tests Across 74 Test Files)
 
 ```
 > saafhawa@0.1.0 test
 > vitest run
 
- Test Files  73 passed (73)
-      Tests  294 passed (294)
+ Test Files  74 passed (74)
+      Tests  296 passed (296)
    Duration  14.2s
 ```
 
@@ -36,7 +36,7 @@ This document records the testing architecture of **SaafHawa** with exact, unedi
 -------------------|---------|----------|---------|---------|
 File               | % Stmts | % Branch | % Funcs | % Lines |
 -------------------|---------|----------|---------|---------|
-All files          |   81.11 |    72.01 |   74.74 |   83.21 |
+All files          |   81.33 |    72.23 |   75.31 |   83.45 |
 -------------------|---------|----------|---------|---------|
 Thresholds: Statements >= 78%, Branches >= 68%, Functions >= 72%, Lines >= 80% (PASSED)
 ```
@@ -128,6 +128,7 @@ Running 19 tests using 1 worker
 | `src/test/components-advisory-dialog.test.tsx` | Modal focus trapping, escape key restoration, Hindi lang tagging |
 | `src/test/components-cards.test.tsx` | Card accessibility, ARIA live regions, contrast tokens |
 | `src/test/components-error-state.test.tsx` | Error alert banner, retry action, change location callback |
+| `src/test/components-mobile-chat-sheet.test.tsx` | Mobile chat sheet modal focus trap, escape key dismissal, and return focus |
 | `src/test/components-form.test.tsx` | Onboarding fieldsets, radio groups, keyboard navigation, validation alerts |
 | `src/test/components-navbar.test.tsx` | Navigation branding, skip link, edit place button, theme toggling |
 | `src/test/components-view-switch.test.tsx` | Floating Dashboard / Household view switch with arrow key navigation |

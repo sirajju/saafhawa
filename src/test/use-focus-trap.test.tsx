@@ -70,6 +70,28 @@ describe('useFocusTrap Hook', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
+  it('does not re-trigger focus effect when parent re-renders with new onClose reference', () => {
+    const handleClose1 = vi.fn();
+    const handleClose2 = vi.fn();
+    const { rerender } = render(<TrapModal isOpen={true} onClose={handleClose1} />);
+
+    const middleInput = screen.getByPlaceholderText('Middle');
+    middleInput.focus();
+    expect(document.activeElement).toBe(middleInput);
+
+    // Re-render with new onClose callback while still open
+    rerender(<TrapModal isOpen={true} onClose={handleClose2} />);
+
+    // Active element should remain middleInput without being reset to first element
+    expect(document.activeElement).toBe(middleInput);
+
+    // Press Escape to confirm new callback is used
+    const escEvent = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    window.dispatchEvent(escEvent);
+    expect(handleClose2).toHaveBeenCalledTimes(1);
+    expect(handleClose1).not.toHaveBeenCalled();
+  });
+
   it('restores focus to previous active element on close', async () => {
     const user = userEvent.setup();
     const { unmount } = render(<TestContainer />);

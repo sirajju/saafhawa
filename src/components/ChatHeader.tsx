@@ -6,6 +6,7 @@ import { getShortPlaceName } from '@/lib/design-system';
 import { formatMeasurementTime } from '@/lib/air-quality/cpcb-aqi';
 
 export interface ChatHeaderProps {
+  headingId?: string;
   place?: string;
   dataSource?: string;
   measuredTime?: string;
@@ -14,6 +15,7 @@ export interface ChatHeaderProps {
 }
 
 export function ChatHeader({
+  headingId = 'chat-heading',
   place,
   dataSource,
   measuredTime,
@@ -27,7 +29,7 @@ export function ChatHeader({
   return (
     <div className="chat-head flex items-center justify-between">
       <div>
-        <h3 id="chat-heading">
+        <h3 id={headingId}>
           Ask SaafHawa
           <span className="sr-only"> Assistant</span>
         </h3>
