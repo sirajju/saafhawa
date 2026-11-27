@@ -4,43 +4,6 @@ import { AQI_UNAVAILABLE } from '../constants';
  * Returns color and text description for AQI and action categories.
  */
 
-export function getCategoryBadgeDetails(category: string): {
-  label: string;
-  icon: string;
-  badgeClass: string;
-} {
-  switch (category) {
-    case 'daily_routine':
-      return {
-        label: 'Daily Routine',
-        icon: '🌅',
-        badgeClass:
-          'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-700',
-      };
-    case 'indoor_air':
-      return {
-        label: 'Indoor Air',
-        icon: '🏠',
-        badgeClass:
-          'bg-teal-100 text-teal-900 border-teal-300 dark:bg-teal-950/60 dark:text-teal-200 dark:border-teal-700',
-      };
-    case 'sustainable_swaps':
-      return {
-        label: 'Sustainable Swap',
-        icon: '🚲',
-        badgeClass:
-          'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-700',
-      };
-    default:
-      return {
-        label: 'Action',
-        icon: '🌱',
-        badgeClass:
-          'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600',
-      };
-  }
-}
-
 export function getAqiCategoryDetails(
   category: string | null | undefined,
   aqi: number | null | undefined

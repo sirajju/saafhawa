@@ -1,4 +1,5 @@
 import { redact } from '../logger';
+import { MS_PER_DAY } from '@/lib/constants';
 
 export interface QuotaAnalysis {
   isQuota: boolean;
@@ -118,7 +119,7 @@ export function parseGeminiQuotaError(error: unknown): QuotaAnalysis {
     lower.includes('perday') ||
     (retryDelayMs !== undefined && retryDelayMs > 60000);
 
-  const resetAt = isDaily ? Date.now() + (retryDelayMs ?? 24 * 3600 * 1000) : undefined;
+  const resetAt = isDaily ? Date.now() + (retryDelayMs ?? MS_PER_DAY) : undefined;
   const resetTimeFormatted = resetAt
     ? new Date(resetAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
     : undefined;

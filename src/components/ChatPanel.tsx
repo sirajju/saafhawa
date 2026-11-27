@@ -7,6 +7,7 @@ import { type ChatRequest } from '@/lib/chat/types';
 import { SendIcon } from './ui/Icons';
 import { getShortPlaceName } from '@/lib/design-system';
 import { SAMPLE_PROMPTS, INITIAL_GREETING, type ChatPanelProps } from './chat/chat-constants';
+import { TEXT_LIMITS } from '@/lib/constants';
 
 export type { ChatPanelProps };
 
@@ -58,7 +59,7 @@ export function ChatPanel({
     try {
       const conversationHistory = currentList
         .filter((m) => !m.isGreeting && !m.isError)
-        .slice(-6)
+        .slice(-TEXT_LIMITS.CHAT_HISTORY_TURNS)
         .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }));
 
       const payload: ChatRequest = {

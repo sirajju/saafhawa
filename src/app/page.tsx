@@ -10,8 +10,7 @@ import { ViewSwitch } from '@/components/ViewSwitch';
 import { Footer } from '@/components/Footer';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { type PlanRequest, type PlanResponse } from '@/lib/plan/types';
-
-const STORAGE_KEY = 'saafhawa_profile';
+import { STORAGE_KEYS } from '@/lib/constants';
 
 export default function HomePage() {
   const [profile, setProfile] = useState<PlanRequest | null>(null);
@@ -66,7 +65,7 @@ export default function HomePage() {
     let isMounted = true;
     async function loadSavedProfile() {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
+        const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
         if (saved) {
           const parsed: PlanRequest = JSON.parse(saved);
           if (isMounted) {
@@ -88,7 +87,7 @@ export default function HomePage() {
 
   const handleProfileSubmit = (newProfile: PlanRequest) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newProfile));
+      localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(newProfile));
     } catch {
       // Local storage safety
     }

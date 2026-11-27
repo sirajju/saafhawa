@@ -1,6 +1,7 @@
 import { Type } from '@google/genai';
 import { createGeminiClient } from '../gemini/client';
 import { capTextLength, withTimeout } from '../gemini/utils';
+import { TEXT_LIMITS } from '@/lib/constants';
 
 /**
  * Default generator invoking the official @google/genai SDK with structured JSON output.
@@ -56,5 +57,5 @@ export async function defaultGeminiGenerator(
 
   const response = await withTimeout(generatePromise, timeoutMs, 'Gemini Plan Generation');
 
-  return capTextLength(response.text, 10000) || null;
+  return capTextLength(response.text, TEXT_LIMITS.PLAN_REPLY_MAX_CHARS) || null;
 }

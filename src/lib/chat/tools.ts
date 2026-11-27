@@ -5,6 +5,7 @@ import { ACTION_CATALOGUE } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { type HouseholdProfile, HouseholdProfileSchema } from '../impact/types';
 import { getEmissionComparisonText, getExposureComparisonText } from '../impact/comparisons';
+import { MS_PER_HOUR } from '@/lib/constants';
 
 export function formatHourInPlaceLocalTime(dateTimeIso: string, timeZone = 'Asia/Kolkata'): string {
   const formatWithTz = (tz: string) => {
@@ -12,7 +13,7 @@ export function formatHourInPlaceLocalTime(dateTimeIso: string, timeZone = 'Asia
     const rawDate = new Date(iso);
     if (isNaN(rawDate.getTime())) return dateTimeIso;
     // Round odd minutes to the nearest hour (e.g. 10:04 AM -> 10 AM, 10:45 AM -> 11 AM)
-    const roundedMs = Math.round(rawDate.getTime() / (3600 * 1000)) * (3600 * 1000);
+    const roundedMs = Math.round(rawDate.getTime() / MS_PER_HOUR) * MS_PER_HOUR;
     const roundedDate = new Date(roundedMs);
     const formatted = roundedDate.toLocaleTimeString('en-US', {
       hour: 'numeric',

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { BrandIcon, LocationIcon, SunIcon, MoonIcon, SystemThemeIcon } from './ui/Icons';
 import { getShortPlaceName } from '@/lib/design-system';
+import { STORAGE_KEYS, THEME_MODES, type ThemeMode } from '@/lib/constants';
 
 interface NavbarProps {
   currentPlace?: string;
@@ -11,13 +12,12 @@ interface NavbarProps {
   isLoading?: boolean;
 }
 
-type ThemeMode = 'light' | 'dark' | 'system';
-
 export function Navbar({ currentPlace, onEditProfile }: NavbarProps) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window === 'undefined') return 'light';
     try {
-      return (localStorage.getItem('saafhawa_theme') as ThemeMode) || 'light';
+      const stored = localStorage.getItem(STORAGE_KEYS.THEME);
+      return THEME_MODES.find((mode) => mode === stored) ?? 'light';
     } catch {
       return 'light';
     }
@@ -28,7 +28,7 @@ export function Navbar({ currentPlace, onEditProfile }: NavbarProps) {
   const handleThemeChange = (newTheme: ThemeMode) => {
     setTheme(newTheme);
     try {
-      localStorage.setItem('saafhawa_theme', newTheme);
+      localStorage.setItem(STORAGE_KEYS.THEME, newTheme);
     } catch {
       // LocalStorage error
     }

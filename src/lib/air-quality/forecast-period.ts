@@ -1,3 +1,5 @@
+import { MS_PER_HOUR } from '@/lib/constants';
+
 /**
  * Computes an explicit 24-hour time period starting from the current UTC hour.
  */
@@ -20,7 +22,7 @@ export function computeForecastPeriod(
     )
   );
   // endTime is inclusive in Google Air Quality API
-  const end = new Date(start.getTime() + (hours - 1) * 3600 * 1000);
+  const end = new Date(start.getTime() + (hours - 1) * MS_PER_HOUR);
 
   return {
     startTime: start.toISOString(),

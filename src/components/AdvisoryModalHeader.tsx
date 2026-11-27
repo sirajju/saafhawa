@@ -2,15 +2,16 @@
 
 import { AdvisorySelectorBar } from './AdvisorySelectorBar';
 import { ShareIcon, CloseIcon } from './ui/Icons';
+import type { AdvisoryAudience, AdvisoryLanguage } from '@/lib/community/types';
 
 interface AdvisoryModalHeaderProps {
   onClose: () => void;
   place: string;
   displayPlace?: string;
-  audience: 'housing_society' | 'school_group';
-  language: 'en' | 'hi';
-  onAudienceChange: (a: 'housing_society' | 'school_group') => void;
-  onLanguageChange: (l: 'en' | 'hi') => void;
+  audience: AdvisoryAudience;
+  language: AdvisoryLanguage;
+  onAudienceChange: (a: AdvisoryAudience) => void;
+  onLanguageChange: (l: AdvisoryLanguage) => void;
 }
 
 export function AdvisoryModalHeader({

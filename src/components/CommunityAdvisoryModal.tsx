@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { type AdvisoryResponse } from '@/lib/community/types';
+import {
+  type AdvisoryResponse,
+  type AdvisoryAudience,
+  type AdvisoryLanguage,
+} from '@/lib/community/types';
 import { useFocusTrap } from '@/lib/use-focus-trap';
 import { AdvisoryModalHeader } from './AdvisoryModalHeader';
 import { AdvisoryModalBody } from './AdvisoryModalBody';
@@ -23,8 +27,8 @@ export function CommunityAdvisoryModal({
   place,
   displayPlace,
 }: CommunityAdvisoryModalProps) {
-  const [audience, setAudience] = useState<'housing_society' | 'school_group'>('housing_society');
-  const [language, setLanguage] = useState<'en' | 'hi'>('en');
+  const [audience, setAudience] = useState<AdvisoryAudience>('housing_society');
+  const [language, setLanguage] = useState<AdvisoryLanguage>('en');
   const [advisory, setAdvisory] = useState<AdvisoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);

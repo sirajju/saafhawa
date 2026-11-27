@@ -4,6 +4,7 @@ import { getClientIp, reverseGeocodeRateLimiter } from '@/lib/rate-limit';
 import { reverseGeocodeCoordinates } from '@/lib/air-quality/reverse-geocoder';
 import { logServerError } from '@/lib/logger';
 import { rateLimited, jsonError } from '@/lib/api/responses';
+import { TIMERS } from '@/lib/constants';
 
 export const maxDuration = 10;
 
@@ -52,7 +53,9 @@ export async function GET(request: NextRequest) {
   const { lat, lon } = parseResult.data;
 
   try {
-    const result = await reverseGeocodeCoordinates(lat, lon, { timeoutMs: 4000 });
+    const result = await reverseGeocodeCoordinates(lat, lon, {
+      timeoutMs: TIMERS.REVERSE_GEOCODE_TIMEOUT_MS,
+    });
     if (!result) {
       return NextResponse.json({ formattedAddress: null }, { status: 200 });
     }

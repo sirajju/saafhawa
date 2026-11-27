@@ -1,11 +1,11 @@
-import { type AdvisoryResponse } from '@/lib/community/types';
+import { type AdvisoryResponse, type AdvisoryLanguage } from '@/lib/community/types';
 import { RefreshIcon, AlertTriangleIcon } from './ui/Icons';
 
 interface AdvisoryModalBodyProps {
   isLoading: boolean;
   errorMessage: string | null;
   advisory: AdvisoryResponse | null;
-  language: 'en' | 'hi';
+  language: AdvisoryLanguage;
 }
 
 export function AdvisoryModalBody({

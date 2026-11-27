@@ -48,11 +48,36 @@ export const CHART_SVG_DIMENSIONS = {
  * Client and API timers (in milliseconds).
  */
 export const TIMERS = {
-  LOCATION_LOOKUP_TIMEOUT_MS: 10000,
   REVERSE_GEOCODE_TIMEOUT_MS: 4000,
   CHAT_BUDGET_MS: 20000,
   LOADING_INTERVAL_MS: 1800,
   GEMINI_TOTAL_TIMEOUT_MS: 24000,
   GEMINI_CALL_TIMEOUT_MS: 12000,
   DEFAULT_FETCH_TIMEOUT_MS: 12000,
+} as const;
+
+/**
+ * Time units (in milliseconds).
+ */
+export const MS_PER_HOUR = 60 * 60 * 1000;
+export const MS_PER_DAY = 24 * MS_PER_HOUR;
+
+/**
+ * Browser storage keys.
+ */
+export const STORAGE_KEYS = {
+  PROFILE: 'saafhawa_profile',
+  THEME: 'saafhawa_theme',
+} as const;
+
+export const THEME_MODES = ['light', 'dark', 'system'] as const;
+export type ThemeMode = (typeof THEME_MODES)[number];
+
+/**
+ * Size limits for conversation history and model output.
+ */
+export const TEXT_LIMITS = {
+  CHAT_HISTORY_TURNS: 6,
+  CHAT_REPLY_MAX_CHARS: 3000,
+  PLAN_REPLY_MAX_CHARS: 10000,
 } as const;

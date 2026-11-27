@@ -7,7 +7,7 @@ import {
   isTransientGeminiError,
 } from './quota';
 import { logServerWarning } from '../logger';
-import { TIMERS } from '../constants';
+import { TIMERS, MS_PER_DAY } from '../constants';
 
 export interface GeminiRetryOptions<T> {
   models?: string[];
@@ -99,7 +99,7 @@ export async function executeWithGeminiRetry<T>(
         const quota = parseGeminiQuotaError(err);
         if (quota.isDailyQuota) {
           failedDueToDailyQuota = true;
-          const reset = quota.resetAt || Date.now() + 24 * 3600 * 1000;
+          const reset = quota.resetAt || Date.now() + MS_PER_DAY;
           latestDailyResetAt = Math.max(latestDailyResetAt || 0, reset);
           modelExhaustionMap.set(model, reset);
           logServerWarning(

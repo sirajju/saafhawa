@@ -3,6 +3,7 @@
  * Resolves GPS coordinates into readable locality and city (e.g. "Kozhikode, Kerala").
  * Strictly enforces 1 request per second and sets a distinct User-Agent header.
  */
+import { TIMERS } from '../constants';
 
 export interface ReverseGeocodeResult {
   formattedAddress: string;
@@ -38,11 +39,10 @@ export async function reverseGeocodeCoordinates(
   options: { timeoutMs?: number } = {}
 ): Promise<ReverseGeocodeResult | null> {
   const cacheKey = `${lat.toFixed(4)},${lon.toFixed(4)}`;
-  if (reverseGeocodeCache.has(cacheKey)) {
-    return reverseGeocodeCache.get(cacheKey)!;
-  }
+  const cached = reverseGeocodeCache.get(cacheKey);
+  if (cached) return cached;
 
-  const timeoutMs = options.timeoutMs ?? 4000;
+  const timeoutMs = options.timeoutMs ?? TIMERS.REVERSE_GEOCODE_TIMEOUT_MS;
 
   try {
     await waitForNominatimRateLimit();

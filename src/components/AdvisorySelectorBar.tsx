@@ -1,10 +1,11 @@
 import { HomeIcon, ShieldIcon } from './ui/Icons';
+import type { AdvisoryAudience, AdvisoryLanguage } from '@/lib/community/types';
 
 interface AdvisorySelectorBarProps {
-  audience: 'housing_society' | 'school_group';
-  language: 'en' | 'hi';
-  onAudienceChange: (audience: 'housing_society' | 'school_group') => void;
-  onLanguageChange: (language: 'en' | 'hi') => void;
+  audience: AdvisoryAudience;
+  language: AdvisoryLanguage;
+  onAudienceChange: (audience: AdvisoryAudience) => void;
+  onLanguageChange: (language: AdvisoryLanguage) => void;
 }
 
 export function AdvisorySelectorBar({

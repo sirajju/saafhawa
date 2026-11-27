@@ -6,6 +6,7 @@ import {
   getLocalTimeDetails,
 } from './forecast-advice-types';
 import { findWakingWindowCandidates } from './forecast-window-search';
+import { MS_PER_HOUR } from '@/lib/constants';
 
 export type { ForecastAdvicePoint, ForecastAdviceHousehold, ForecastAdviceResult };
 export { getLocalTimeDetails };
@@ -68,7 +69,7 @@ export function buildForecastAdvice(
   }
 
   const startTimeStr = formatHourInPlaceLocalTime(best.startPoint.dateTime, timeZone);
-  const endIso = new Date(new Date(best.endPoint.dateTime).getTime() + 3600 * 1000).toISOString();
+  const endIso = new Date(new Date(best.endPoint.dateTime).getTime() + MS_PER_HOUR).toISOString();
   const endTimeStr = formatHourInPlaceLocalTime(endIso, timeZone);
 
   const windowTimeSpan = `${startTimeStr} to ${endTimeStr}`;

@@ -6,7 +6,7 @@ import { type AirQualityReport } from '../air-quality/types';
 import { capTextLength, withTimeout } from '../gemini/utils';
 import { executeWithGeminiRetry } from '../gemini/executor';
 import { logServerError } from '../logger';
-import { TIMERS } from '../constants';
+import { TIMERS, TEXT_LIMITS } from '../constants';
 import { CHAT_TOOLS } from './tool-declarations';
 import { executeSingleToolCall } from './tool-runner';
 import {
@@ -41,7 +41,7 @@ async function runGeminiConversation(
 ): Promise<string> {
   const contents: Content[] = [];
   const history = request.conversationHistory || [];
-  for (const msg of history.slice(-6)) {
+  for (const msg of history.slice(-TEXT_LIMITS.CHAT_HISTORY_TURNS)) {
     contents.push({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }],
@@ -105,7 +105,7 @@ async function runGeminiConversation(
   }
 
   return (
-    capTextLength(currentResponse.text?.trim(), 3000) ||
+    capTextLength(currentResponse.text?.trim(), TEXT_LIMITS.CHAT_REPLY_MAX_CHARS) ||
     'I am ready to help with your clean air questions.'
   );
 }

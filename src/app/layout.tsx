@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Noto_Sans_Devanagari } from 'next/font/google';
 import './globals.css';
+import { STORAGE_KEYS } from '@/lib/constants';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
 const themeScript = `
 (function() {
   try {
-    var stored = localStorage.getItem('saafhawa_theme') || 'light';
+    var stored = localStorage.getItem('${STORAGE_KEYS.THEME}') || 'light';
     var isDark = stored === 'dark' || (stored === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     document.documentElement.setAttribute('data-user-theme', stored);
