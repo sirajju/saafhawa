@@ -6,10 +6,10 @@ This document records the testing architecture of **SaafHawa** with exact, unedi
 
 ### 1. Test Architecture Overview
 
-- **Unit & Integration Suite (Vitest with v8 Coverage):** 302 automated tests across 75 test files in [`src/test/`](src/test/) covering schemas, rate limiters, deterministic physics, Gemini client resilience, model fallback chains, CPCB AQI breakpoints, time zones, and accessible components. Executed via `npm test` or `npm run test:coverage`.
-- **Live Network Suite (Vitest Live):** Dedicated live network integration in [`src/test/live-evaluator-queries.test.ts`](src/test/live-evaluator-queries.test.ts) querying real Open-Meteo APIs for 5 evaluator cities without API keys. Executed via `npm run test:live`.
-- **End-to-End Suite (Playwright):** 19 browser tests across 6 spec files in [`e2e/`](e2e/) validating onboarding, dashboard, theme switching, typography, and responsive layouts at 390px and 1440px. Executed via `npm run test:e2e`. Live network chat tests tagged `@live` are isolated and executed via `npm run test:e2e:live`.
-- **Screenshot Automation:** Headless screenshot capture script in [`scripts/capture-screenshots.ts`](scripts/capture-screenshots.ts) executed via `npm run capture-screenshots`.
+- **Unit & Integration Suite (Vitest with v8 Coverage):** 302 automated tests across 75 test files in [`src/test/`](../src/test/) covering schemas, rate limiters, deterministic physics, Gemini client resilience, model fallback chains, CPCB AQI breakpoints, time zones, and accessible components. Executed via `npm test` or `npm run test:coverage`.
+- **Live Network Suite (Vitest Live):** Dedicated live network integration in [`src/test/live-evaluator-queries.test.ts`](../src/test/live-evaluator-queries.test.ts) querying real Open-Meteo APIs for 5 evaluator cities without API keys. Executed via `npm run test:live`.
+- **End-to-End Suite (Playwright):** 19 browser tests across 6 spec files in [`e2e/`](../e2e/) validating onboarding, dashboard, theme switching, typography, and responsive layouts at 390px and 1440px. Executed via `npm run test:e2e`. Live network chat tests tagged `@live` are isolated and executed via `npm run test:e2e:live`.
+- **Screenshot Automation:** Headless screenshot capture script in [`scripts/capture-screenshots.ts`](../scripts/capture-screenshots.ts) executed via `npm run capture-screenshots`.
 
 ---
 

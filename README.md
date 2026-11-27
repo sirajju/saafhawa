@@ -456,9 +456,10 @@ vercel --prod
 For in-depth audits of each scoring criterion, see the dedicated documentation files:
 
 - 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64KB body caps, rate limiters, credential hygiene, trusted proxy hops (`TRUSTED_PROXY_HOPS`).
-- ♿ [`ACCESSIBILITY.md`](ACCESSIBILITY.md) — Semantic landmarks, fieldsets, live regions, text equivalents, keyboard tests, timeline passed states.
-- 🧪 [`TESTING.md`](TESTING.md) — Real command execution logs (302 Vitest tests, 1 live network test, 19 Playwright E2E tests, 0 ESLint warnings, 0 TypeScript errors).
-- ⚡ [`EFFICIENCY.md`](EFFICIENCY.md) — Measured build assets, Next.js standalone containerization, TTL cache bounding, strict <= 200 lines per file.
+- 🏗️ [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Architectural topology, module map, and end-to-end request flows.
+- ♿ [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) — Semantic landmarks, fieldsets, live regions, text equivalents, keyboard tests, timeline passed states.
+- 🧪 [`docs/TESTING.md`](docs/TESTING.md) — Automated test suites, coverage reports, live network tests, Playwright E2E scenarios, linting and typecheck.
+- ⚡ [`docs/EFFICIENCY.md`](docs/EFFICIENCY.md) — Measured build assets, Next.js standalone containerization, TTL cache bounding, strict <= 200 lines per file.
 - 📐 [`docs/DECISIONS.md`](docs/DECISIONS.md) — 5 architectural design decision records with trade-off analysis.
 
 ---
