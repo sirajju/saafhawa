@@ -1,15 +1,16 @@
 import { type PlanRequest, type PlanResponse } from '../plan/types';
 import { type AdvisoryResponse } from '../community/types';
+import { SimpleTtlCache } from '../air-quality/cache';
 
-interface CacheEntry<T> {
-  data: T;
-  expiresAt: number;
-}
+const CACHE_TTL_MINUTES = 30;
+/** Bounded so per-profile plan keys cannot grow server memory without limit. */
+export const GEMINI_CACHE_MAX_ENTRIES = 200;
 
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
-
-const planCache = new Map<string, CacheEntry<PlanResponse>>();
-const advisoryCache = new Map<string, CacheEntry<AdvisoryResponse>>();
+const planCache = new SimpleTtlCache<PlanResponse>(CACHE_TTL_MINUTES, GEMINI_CACHE_MAX_ENTRIES);
+const advisoryCache = new SimpleTtlCache<AdvisoryResponse>(
+  CACHE_TTL_MINUTES,
+  GEMINI_CACHE_MAX_ENTRIES
+);
 
 function getHourKey(): string {
   return new Date().toISOString().slice(0, 13); // e.g. "2026-11-25T21"
@@ -36,20 +37,11 @@ export function buildPlanCacheKey(place: string, profile: PlanRequest): string {
 }
 
 export function getCachedPlan(cacheKey: string): PlanResponse | null {
-  const entry = planCache.get(cacheKey);
-  if (!entry) return null;
-  if (Date.now() > entry.expiresAt) {
-    planCache.delete(cacheKey);
-    return null;
-  }
-  return entry.data;
+  return planCache.get(cacheKey)?.value ?? null;
 }
 
 export function setCachedPlan(cacheKey: string, plan: PlanResponse): void {
-  planCache.set(cacheKey, {
-    data: plan,
-    expiresAt: Date.now() + CACHE_TTL_MS,
-  });
+  planCache.set(cacheKey, plan);
 }
 
 export function buildAdvisoryCacheKey(place: string, audience: string, language: string): string {
@@ -59,20 +51,16 @@ export function buildAdvisoryCacheKey(place: string, audience: string, language:
 }
 
 export function getCachedAdvisory(cacheKey: string): AdvisoryResponse | null {
-  const entry = advisoryCache.get(cacheKey);
-  if (!entry) return null;
-  if (Date.now() > entry.expiresAt) {
-    advisoryCache.delete(cacheKey);
-    return null;
-  }
-  return entry.data;
+  return advisoryCache.get(cacheKey)?.value ?? null;
 }
 
 export function setCachedAdvisory(cacheKey: string, advisory: AdvisoryResponse): void {
-  advisoryCache.set(cacheKey, {
-    data: advisory,
-    expiresAt: Date.now() + CACHE_TTL_MS,
-  });
+  advisoryCache.set(cacheKey, advisory);
+}
+
+/** Number of live plan entries (used to verify the memory bound). */
+export function getPlanCacheSize(): number {
+  return planCache.size();
 }
 
 export function clearGeminiCache(): void {

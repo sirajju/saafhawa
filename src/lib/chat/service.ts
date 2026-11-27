@@ -3,7 +3,7 @@ import { createGeminiClient, resolveGeminiModels } from '../gemini/client';
 import { resolveGeminiApiKey } from '../env';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { type AirQualityReport } from '../air-quality/types';
-import { capTextLength, withTimeout } from '../gemini/utils';
+import { capTextLength, withAbortTimeout } from '../gemini/utils';
 import { executeWithGeminiRetry, deriveFallbackReason } from '../gemini/executor';
 import { logServerError } from '../logger';
 import { TIMERS, TEXT_LIMITS, FALLBACK_REASONS } from '../constants';
@@ -60,12 +60,13 @@ async function runGeminiConversation(
     return Math.min(remainingMs, Math.max(3000, Math.floor(remainingMs / roundsLeft)));
   };
 
-  let currentResponse = await withTimeout(
-    ai.models.generateContent({
-      model: activeModel,
-      contents,
-      config: { systemInstruction, tools: CHAT_TOOLS },
-    }),
+  let currentResponse = await withAbortTimeout(
+    (abortSignal) =>
+      ai.models.generateContent({
+        model: activeModel,
+        contents,
+        config: { systemInstruction, tools: CHAT_TOOLS, abortSignal },
+      }),
     getTimeoutForRound(0, 3),
     'Gemini Chat Initial'
   );
@@ -93,12 +94,13 @@ async function runGeminiConversation(
     }
     contents.push({ role: 'user', parts: responseParts });
 
-    currentResponse = await withTimeout(
-      ai.models.generateContent({
-        model: activeModel,
-        contents,
-        config: { systemInstruction, tools: CHAT_TOOLS },
-      }),
+    currentResponse = await withAbortTimeout(
+      (abortSignal) =>
+        ai.models.generateContent({
+          model: activeModel,
+          contents,
+          config: { systemInstruction, tools: CHAT_TOOLS, abortSignal },
+        }),
       getTimeoutForRound(round + 1, 3),
       `Gemini Chat Round ${round + 2}`
     );

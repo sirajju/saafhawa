@@ -27,6 +27,23 @@ export async function withTimeout<T>(
   }
 }
 
+/**
+ * Like withTimeout, but also aborts the underlying request (via AbortSignal) once the
+ * call settles or times out, so a timed-out Gemini call does not keep running.
+ */
+export async function withAbortTimeout<T>(
+  run: (abortSignal: AbortSignal) => Promise<T>,
+  ms: number = DEFAULT_GEMINI_TIMEOUT_MS,
+  label = 'Gemini API'
+): Promise<T> {
+  const controller = new AbortController();
+  try {
+    return await withTimeout(run(controller.signal), ms, label);
+  } finally {
+    controller.abort();
+  }
+}
+
 export function capTextLength(
   text: string | null | undefined,
   maxChars: number = MAX_GEMINI_RESPONSE_CHARS

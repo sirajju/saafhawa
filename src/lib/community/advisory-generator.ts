@@ -3,13 +3,14 @@ import { resolveGeminiApiKey } from '../env';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { type AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/time-utils';
-import { capTextLength, withTimeout } from '../gemini/utils';
+import { capTextLength, withAbortTimeout } from '../gemini/utils';
 import { executeWithGeminiRetry, deriveFallbackReason } from '../gemini/executor';
 import { logServerError } from '../logger';
 import { type AdvisoryRequest, type AdvisoryResponse } from './types';
 import { generateTemplateAdvisory } from './advisory-templates';
 import { buildAdvisoryCacheKey, getCachedAdvisory, setCachedAdvisory } from '../gemini/cache';
-import { FALLBACK_REASONS } from '@/lib/constants';
+import { FALLBACK_REASONS } from '../constants';
+import { UNTRUSTED_INPUT_RULE } from '../gemini/prompt-safety';
 
 export interface AdvisoryGeneratorOptions {
   models?: string[];
@@ -78,15 +79,21 @@ REQUIREMENTS:
 2. Near the top, clearly state the data source (${report.current.dataSource || 'Open-Meteo (CAMS model)'}) and local measurement time (${formatMeasurementTime(report.current.dateTime, report.location.timeZone)}).
 3. Provide 4 to 5 highly practical, low-emission actions specific to ${request.audience === 'school_group' ? 'schools (cancel morning outdoor assemblies, N95 masking on buses, inhalers for asthma kids, indoor recess)' : 'housing societies (no leaf burning, wet mopping corridors instead of dry sweeping, no vehicle idling at gates, shift elderly walks to midday, carpooling)'}.
 4. Keep it brief (under 250 words) so it fits in a single mobile screen and is ready to copy-paste.
-5. Output ONLY the raw WhatsApp text with no conversational preamble or markdown code fences.`;
+5. Output ONLY the raw WhatsApp text with no conversational preamble or markdown code fences.
+6. ${UNTRUSTED_INPUT_RULE}`;
 
     const execResult = await executeWithGeminiRetry<string>({
       models,
       apiKey,
       label: 'AdvisoryGenerator',
       fn: async (activeModel, timeoutMs) => {
-        const response = await withTimeout(
-          ai.models.generateContent({ model: activeModel, contents: prompt }),
+        const response = await withAbortTimeout(
+          (abortSignal) =>
+            ai.models.generateContent({
+              model: activeModel,
+              contents: prompt,
+              config: { abortSignal },
+            }),
           timeoutMs,
           'Gemini Advisory Generation'
         );

@@ -1,6 +1,7 @@
 import { ACTION_CATALOGUE, type ActionDefinition } from '../impact/catalogue';
 import { type AirQualityReport } from '../air-quality/types';
 import { type PlanRequest } from './types';
+import { UNTRUSTED_INPUT_RULE } from '../gemini/prompt-safety';
 
 export interface PromptContent {
   systemInstruction: string;
@@ -42,7 +43,8 @@ PERSONALIZATION & CLINICAL RULES:
    - If commutersCount is 0, do NOT schedule masks for "Commute Hours"; schedule for "Any outdoor walks or errands".
 7. COMMUTE ACTIONS: If primaryCommuteMode is "none" or commutersCount is 0, DO NOT select commute actions ("post_commute_hygiene", "swap_car_for_metro", "swap_two_wheeler_for_metro_or_bus", "carpool_to_work", "work_from_home_on_smog_days").
 8. AIR QUALITY SENSITIVITY: Current AQI is ${airQuality.current.aqi ?? 'unavailable'} (${airQuality.current.category ?? 'unavailable'}). If air quality is Good (<=50) or Satisfactory (51-100) and forecast remains clean, DO NOT recommend N95 masks, window sealing, or keeping children/seniors indoors. State clearly that air is fine for normal activity (with a light note for people with asthma if AQI is above 50). Only recommend timing changes if the forecast actually gets worse (>100).
-9. Return strictly structured JSON matching the requested schema.`;
+9. Return strictly structured JSON matching the requested schema.
+10. ${UNTRUSTED_INPUT_RULE}`;
 
   const catalogueList = catalogue
     .map(

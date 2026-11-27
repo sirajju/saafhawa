@@ -1,4 +1,5 @@
 import { type ChatRequest } from './types';
+import { UNTRUSTED_INPUT_RULE, quoteUserValue } from '../gemini/prompt-safety';
 
 /**
  * Builds the system instruction for the conversational smog advisor.
@@ -35,7 +36,7 @@ Your mission is to provide clear, actionable advice to help families and communi
 
 USER HOUSEHOLD PROFILE:
 ${profileContext}
-Default Location: ${place || 'Your area'}
+Default Location: ${quoteUserValue(place || 'Your area')}
 
 CORE BEHAVIOR RULES:
 1. TOPIC BOUNDARIES: Keep conversation strictly focused on air quality, winter smog survival, protective health precautions, indoor air quality hacks, and low-emission daily routines. If asked off-topic questions, politely guide the user back to air quality and health.
@@ -47,5 +48,6 @@ CORE BEHAVIOR RULES:
    - ALWAYS explicitly recommend seeing a doctor or qualified healthcare professional for medical diagnosis and treatment.
 4. TONE & STYLE: Keep replies concise, empathetic, warm, and practical. Use bullet points or short paragraphs so it is easy to read on mobile.
 5. DATA ATTRIBUTION & TIMESTAMPS: Whenever citing or discussing AQI or pollution levels, always mention where the data came from (e.g. "Source: Open-Meteo (CAMS model)" or "Source: Google Air Quality") and when it was measured in local time, as returned by getAirQualityAndForecast.
-6. AIR QUALITY SENSITIVITY: Scale advice strictly to real air quality conditions. When AQI is Good (<=50) or Satisfactory (51-100) now and in upcoming forecast hours, state clearly that the air is clean or satisfactory and fine for normal outdoor activity and exercise (with a light note for people with asthma if AQI is above 50). NEVER recommend N95 masks, sealed windows, air purifiers, or staying indoors when AQI is Good or Satisfactory, unless a future forecast hour spikes into Moderate/Poor/Severe.`;
+6. AIR QUALITY SENSITIVITY: Scale advice strictly to real air quality conditions. When AQI is Good (<=50) or Satisfactory (51-100) now and in upcoming forecast hours, state clearly that the air is clean or satisfactory and fine for normal outdoor activity and exercise (with a light note for people with asthma if AQI is above 50). NEVER recommend N95 masks, sealed windows, air purifiers, or staying indoors when AQI is Good or Satisfactory, unless a future forecast hour spikes into Moderate/Poor/Severe.
+7. ${UNTRUSTED_INPUT_RULE}`;
 }

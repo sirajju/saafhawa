@@ -1,7 +1,7 @@
 import { Type } from '@google/genai';
 import { createGeminiClient } from '../gemini/client';
-import { capTextLength, withTimeout } from '../gemini/utils';
-import { TEXT_LIMITS } from '@/lib/constants';
+import { capTextLength, withAbortTimeout } from '../gemini/utils';
+import { TEXT_LIMITS } from '../constants';
 
 /**
  * Default generator invoking the official @google/genai SDK with structured JSON output.
@@ -17,45 +17,47 @@ export async function defaultGeminiGenerator(
 ): Promise<string | null> {
   const ai = createGeminiClient(apiKey);
 
-  const generatePromise = ai.models.generateContent({
-    model,
-    contents: userPrompt,
-    config: {
-      systemInstruction,
-      responseMimeType: 'application/json',
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          selectedActions: {
-            type: Type.ARRAY,
-            description: 'The 6 to 8 most useful actions selected from the catalogue.',
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                actionId: {
-                  type: Type.STRING,
-                  description: 'The exact ID of the action from the provided catalogue.',
+  const generate = (abortSignal: AbortSignal) =>
+    ai.models.generateContent({
+      model,
+      contents: userPrompt,
+      config: {
+        abortSignal,
+        systemInstruction,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            selectedActions: {
+              type: Type.ARRAY,
+              description: 'The 6 to 8 most useful actions selected from the catalogue.',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  actionId: {
+                    type: Type.STRING,
+                    description: 'The exact ID of the action from the provided catalogue.',
+                  },
+                  suggestedTimeOfDay: {
+                    type: Type.STRING,
+                    description: 'When to perform this action (e.g. Morning, Evening, Night).',
+                  },
+                  reason: {
+                    type: Type.STRING,
+                    description:
+                      'A short friendly explanation of why this action suits this family today without mentioning numbers.',
+                  },
                 },
-                suggestedTimeOfDay: {
-                  type: Type.STRING,
-                  description: 'When to perform this action (e.g. Morning, Evening, Night).',
-                },
-                reason: {
-                  type: Type.STRING,
-                  description:
-                    'A short friendly explanation of why this action suits this family today without mentioning numbers.',
-                },
+                required: ['actionId', 'suggestedTimeOfDay', 'reason'],
               },
-              required: ['actionId', 'suggestedTimeOfDay', 'reason'],
             },
           },
+          required: ['selectedActions'],
         },
-        required: ['selectedActions'],
       },
-    },
-  });
+    });
 
-  const response = await withTimeout(generatePromise, timeoutMs, 'Gemini Plan Generation');
+  const response = await withAbortTimeout(generate, timeoutMs, 'Gemini Plan Generation');
 
   return capTextLength(response.text, TEXT_LIMITS.PLAN_REPLY_MAX_CHARS) || null;
 }
