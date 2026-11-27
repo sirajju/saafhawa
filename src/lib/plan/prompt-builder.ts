@@ -1,7 +1,7 @@
 import { ACTION_CATALOGUE, type ActionDefinition } from '../impact/catalogue';
 import { type AirQualityReport } from '../air-quality/types';
 import { type PlanRequest } from './types';
-import { UNTRUSTED_INPUT_RULE } from '../gemini/prompt-safety';
+import { UNTRUSTED_INPUT_RULE, quoteUserValue } from '../gemini/prompt-safety';
 
 export interface PromptContent {
   systemInstruction: string;
@@ -54,7 +54,7 @@ PERSONALIZATION & CLINICAL RULES:
     .join('\n');
 
   const userPrompt = `Household Profile:
-- Location: ${airQuality.location.name}
+- Location: ${quoteUserValue(airQuality.location.name)}
 - Occupants: ${profile.adultsCount} Adult(s), ${profile.childrenCount} Child(ren), ${profile.elderlyCount} Senior(s)
 - Vulnerability / Health: ${vulnerabilityDescription}
 - Commute: ${profile.primaryCommuteMode} (${profile.dailyCommuteDistanceKm} km round-trip, ${profile.commutersCount} commuter(s))

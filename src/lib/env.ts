@@ -25,7 +25,7 @@ export interface ParsedEnv {
   geminiApiKey: string | undefined;
   googleMapsApiKey: string | undefined;
   waqiToken: string | undefined;
-  geminiModels: string[];
+  geminiModels: readonly string[];
   trustedProxyHops: number;
   isVercel: boolean;
 }
@@ -90,7 +90,11 @@ let cachedEnv: ParsedEnv | undefined;
 function currentEnv(): ParsedEnv {
   const signature = ENV_KEYS.map((key) => process.env[key] ?? '').join('\u0000');
   if (!cachedEnv || signature !== cachedSignature) {
-    cachedEnv = parseEnv(process.env);
+    const parsed = parseEnv(process.env);
+    cachedEnv = Object.freeze({
+      ...parsed,
+      geminiModels: Object.freeze([...parsed.geminiModels]),
+    });
     cachedSignature = signature;
   }
   return cachedEnv;

@@ -10,7 +10,7 @@ import { type AdvisoryRequest, type AdvisoryResponse } from './types';
 import { generateTemplateAdvisory } from './advisory-templates';
 import { buildAdvisoryCacheKey, getCachedAdvisory, setCachedAdvisory } from '../gemini/cache';
 import { FALLBACK_REASONS } from '../constants';
-import { UNTRUSTED_INPUT_RULE } from '../gemini/prompt-safety';
+import { UNTRUSTED_INPUT_RULE, quoteUserValue } from '../gemini/prompt-safety';
 
 export interface AdvisoryGeneratorOptions {
   models?: string[];
@@ -67,7 +67,7 @@ export async function generateCommunityAdvisory(
 Write a concise, impactful WhatsApp broadcast advisory in ${request.language === 'hi' ? 'Hindi (Devanagari script)' : 'English'} for a ${request.audience === 'school_group' ? 'School / Parent Teacher Group' : 'Housing Society / Resident Welfare Association (RWA)'}.
 
 LOCATION & AIR QUALITY:
-- Location: ${report.location.name}
+- Location: ${quoteUserValue(report.location.name)}
 - Data Source: ${report.current.dataSource || 'Open-Meteo (CAMS model)'}
 - Measured At: ${formatMeasurementTime(report.current.dateTime, report.location.timeZone)}
 - Air Quality: AQI ${report.current.aqi ?? 'unavailable'} (${report.current.category ?? 'unavailable'})
@@ -92,7 +92,7 @@ REQUIREMENTS:
             ai.models.generateContent({
               model: activeModel,
               contents: prompt,
-              config: { abortSignal },
+              config: { systemInstruction: UNTRUSTED_INPUT_RULE, abortSignal },
             }),
           timeoutMs,
           'Gemini Advisory Generation'

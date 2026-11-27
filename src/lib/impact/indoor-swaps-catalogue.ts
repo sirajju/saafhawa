@@ -70,16 +70,16 @@ export const INDOOR_AND_SWAPS_ACTIONS_RAW: Omit<ActionDefinition, 'costRupees' |
   },
   {
     id: 'swap_car_for_metro',
-    title: 'Switch Daily Car Commute to Metro, Bus or Shared Auto',
+    title: 'Switch Daily Car Commute to Metro / Electric Rail',
     description:
-      'Replace solo petrol or diesel car commuting with public transport: metro or electric rail where your city has it, otherwise a city bus or shared auto.',
+      'Replace solo petrol or diesel passenger car commuting with electrified metro rail transit for daily work travel.',
     category: 'sustainable_swaps',
   },
   {
     id: 'swap_two_wheeler_for_metro_or_bus',
-    title: 'Switch Two-Wheeler Commute to Metro or Bus',
+    title: 'Switch Two-Wheeler Commute to Metro or Electric Bus',
     description:
-      'Shift motorcycle/scooter commuting to public transport (metro where available, otherwise a city bus) to cut personal tailpipe exposure and fleet emissions.',
+      'Shift motorcycle/scooter commuting to mass transit to drastically cut personal tailpipe exposure and fleet emissions.',
     category: 'sustainable_swaps',
   },
   {

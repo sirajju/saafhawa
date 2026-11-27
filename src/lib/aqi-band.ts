@@ -1,6 +1,7 @@
 /**
  * Single source of truth for mapping an AQI value or a provider's category label
- * onto the six CPCB bands. Labels win when they match; otherwise the number decides.
+ * onto the six CPCB bands. Bands are checked from most to least severe, and a band applies
+ * when either the label or the number matches it, so the more severe signal always wins.
  */
 export type AqiBand = 'severe' | 'vpoor' | 'poor' | 'mod' | 'sat' | 'good';
 
