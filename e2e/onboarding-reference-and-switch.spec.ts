@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { MOCK_PLAN } from './fixtures/mock-plan';
-import path from 'path';
 
 test.describe('Onboarding Reference Alignment & Floating Switch', () => {
   test('validates empty area input on step 1', async ({ page }) => {
