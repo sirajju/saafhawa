@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { MOCK_PLAN } from '../e2e/fixtures/mock-plan';
-import fs from 'fs';
 import path from 'path';
 
 test.describe('Take Production Screenshots', () => {
@@ -106,18 +105,5 @@ test.describe('Take Production Screenshots', () => {
         });
       }
     }
-
-    fs.copyFileSync(
-      path.join('docs', 'screenshots', 'saafhawa-dashboard-1440px-light.png'),
-      path.join('docs', 'screenshots', 'dashboard-after.png')
-    );
-    fs.copyFileSync(
-      path.join('docs', 'screenshots', 'saafhawa-onboarding-1440px-light.png'),
-      path.join('docs', 'screenshots', 'onboarding-after.png')
-    );
-    fs.copyFileSync(
-      path.join('docs', 'screenshots', 'saafhawa-chat-mobile-sheet-390px-light.png'),
-      path.join('docs', 'screenshots', 'chat-after.png')
-    );
   });
 });

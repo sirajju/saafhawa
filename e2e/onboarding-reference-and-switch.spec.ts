@@ -88,7 +88,7 @@ test.describe('Onboarding Reference Alignment & Floating Switch', () => {
     ).toBeVisible();
   });
 
-  test('captures screenshots of all 3 onboarding steps in light and dark mode at 1440px and 390px', async ({
+  test('navigates through all 3 onboarding steps in light and dark mode at 1440px and 390px', async ({
     page,
   }) => {
     const viewports = [
@@ -114,27 +114,13 @@ test.describe('Onboarding Reference Alignment & Floating Switch', () => {
         const areaInput = page.locator('#area');
         await areaInput.fill('Lajpat Nagar, Delhi');
 
-        // Step 1 screenshot
-        await page.screenshot({
-          path: path.join('docs', 'screenshots', `onboarding-step1-${vp.name}-${theme}.png`),
-          fullPage: true,
-        });
-
         // Step 2
         await page.locator('#onb-next').click();
         await expect(page.getByText('Step 2 of 3 · Getting around')).toBeVisible();
-        await page.screenshot({
-          path: path.join('docs', 'screenshots', `onboarding-step2-${vp.name}-${theme}.png`),
-          fullPage: true,
-        });
 
         // Step 3
         await page.locator('#onb-next').click();
         await expect(page.getByText('Step 3 of 3 · Inside your home')).toBeVisible();
-        await page.screenshot({
-          path: path.join('docs', 'screenshots', `onboarding-step3-${vp.name}-${theme}.png`),
-          fullPage: true,
-        });
       }
     }
   });
