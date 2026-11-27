@@ -93,7 +93,6 @@ export function toErrorResponse(
 
   logServerError(scope, err);
   const title = opts.serverErrorTitle || 'Internal Server Error';
-  const message =
-    opts.fallbackMessage || 'An unexpected error occurred. Please try again later.';
+  const message = opts.fallbackMessage || 'An unexpected error occurred. Please try again later.';
   return jsonError(500, title, message);
 }

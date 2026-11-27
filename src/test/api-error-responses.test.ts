@@ -20,9 +20,7 @@ describe('API Route Error Response Status, Title and Message Mapping', () => {
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toBe('Advisory Generation Error');
-    expect(data.message).toBe(
-      'Unable to generate community advisory right now. Please try again.'
-    );
+    expect(data.message).toBe('Unable to generate community advisory right now. Please try again.');
     expect(logSpy).toHaveBeenCalledWith('API:community-advisory', error);
     logSpy.mockRestore();
   });
