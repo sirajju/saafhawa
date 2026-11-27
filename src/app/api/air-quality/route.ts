@@ -37,6 +37,20 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    return toErrorResponse('API:air-quality', error);
+    return toErrorResponse('API:air-quality', error, {
+      serverErrorTitle: 'Internal Server Error',
+      fallbackMessage:
+        'An unexpected error occurred while processing air quality data. Please try again later.',
+      zodErrorTitle: 'Invalid Request',
+      zodErrorMessage:
+        'Query parameter "place" must be a valid location name or pincode between 2 and 120 characters.',
+      airQualityTitles: {
+        400: 'Invalid Request',
+        404: 'Not Found',
+        429: 'Too Many Requests',
+        503: 'Service Unavailable',
+      },
+      airQualityFallbackTitle: 'Service Error',
+    });
   }
 }

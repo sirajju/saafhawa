@@ -37,10 +37,12 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    return toErrorResponse(
-      'API:chat',
-      error,
-      'Unable to process your clean air question right now. Please try again shortly.'
-    );
+    return toErrorResponse('API:chat', error, {
+      serverErrorTitle: 'Chat Service Error',
+      fallbackMessage:
+        'Unable to process your clean air question right now. Please try again shortly.',
+      zodErrorTitle: 'Validation Error',
+      zodErrorMessage: 'Please provide a message under 500 characters.',
+    });
   }
 }

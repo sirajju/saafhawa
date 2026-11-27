@@ -40,10 +40,12 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    return toErrorResponse(
-      'API:community-advisory',
-      error,
-      'Unable to generate community advisory right now. Please try again.'
-    );
+    return toErrorResponse('API:community-advisory', error, {
+      serverErrorTitle: 'Advisory Generation Error',
+      fallbackMessage: 'Unable to generate community advisory right now. Please try again.',
+      zodErrorTitle: 'Validation Error',
+      zodErrorMessage: 'Invalid advisory parameters.',
+      treatAirQualityAsServerError: true,
+    });
   }
 }

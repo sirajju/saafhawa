@@ -37,10 +37,16 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    return toErrorResponse(
-      'API:plan',
-      error,
-      'An unexpected error occurred while generating your daily smog plan.'
-    );
+    return toErrorResponse('API:plan', error, {
+      serverErrorTitle: 'Internal Server Error',
+      fallbackMessage: 'An unexpected error occurred while generating your daily smog plan.',
+      zodErrorTitle: 'Validation Error',
+      zodErrorMessage: 'The household profile contains invalid or out-of-range values.',
+      airQualityTitles: {
+        404: 'Location Not Found',
+        429: 'Too Many Requests',
+      },
+      airQualityFallbackTitle: 'Service Unavailable',
+    });
   }
 }

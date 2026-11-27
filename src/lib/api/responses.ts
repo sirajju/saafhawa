@@ -34,7 +34,17 @@ export function jsonError(
   return NextResponse.json({ error, message }, { status, headers });
 }
 
-const AIR_QUALITY_ERROR_TITLES: Record<number, string> = {
+export interface RouteErrorOptions {
+  serverErrorTitle?: string;
+  fallbackMessage?: string;
+  zodErrorTitle?: string;
+  zodErrorMessage?: string;
+  airQualityTitles?: Record<number, string>;
+  airQualityFallbackTitle?: string;
+  treatAirQualityAsServerError?: boolean;
+}
+
+const DEFAULT_AQ_TITLES: Record<number, string> = {
   400: 'Invalid Request',
   404: 'Location Not Found',
   429: 'Too Many Requests',
@@ -49,22 +59,41 @@ const AIR_QUALITY_ERROR_TITLES: Record<number, string> = {
 export function toErrorResponse(
   scope: string,
   err: unknown,
-  fallbackMessage = 'An unexpected error occurred. Please try again later.'
+  options?: string | RouteErrorOptions
 ): NextResponse {
   if (isNextControlFlowError(err)) {
     throw err;
   }
 
+  const opts: RouteErrorOptions =
+    typeof options === 'string' ? { fallbackMessage: options } : options || {};
+
   if (err instanceof ZodError) {
-    const firstIssue = err.issues[0]?.message || 'Validation error.';
-    return jsonError(400, 'Invalid Request', firstIssue);
+    const title = opts.zodErrorTitle || 'Validation Error';
+    const message = opts.zodErrorMessage || err.issues[0]?.message || 'Validation error.';
+    return jsonError(400, title, message);
   }
 
   if (err instanceof AirQualityError) {
-    const errorTitle = AIR_QUALITY_ERROR_TITLES[err.statusCode] || 'Service Error';
-    return jsonError(err.statusCode, errorTitle, err.message);
+    if (opts.treatAirQualityAsServerError) {
+      logServerError(scope, err);
+      const title = opts.serverErrorTitle || 'Internal Server Error';
+      const message =
+        opts.fallbackMessage || 'An unexpected error occurred. Please try again later.';
+      return jsonError(500, title, message);
+    }
+
+    const title =
+      opts.airQualityTitles?.[err.statusCode] ||
+      opts.airQualityFallbackTitle ||
+      DEFAULT_AQ_TITLES[err.statusCode] ||
+      'Service Error';
+    return jsonError(err.statusCode, title, err.message);
   }
 
   logServerError(scope, err);
-  return jsonError(500, 'Internal Server Error', fallbackMessage);
+  const title = opts.serverErrorTitle || 'Internal Server Error';
+  const message =
+    opts.fallbackMessage || 'An unexpected error occurred. Please try again later.';
+  return jsonError(500, title, message);
 }
