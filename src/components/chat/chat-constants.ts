@@ -23,7 +23,7 @@ export const INITIAL_GREETING: ChatMessage[] = [
 ];
 
 export const SAMPLE_PROMPTS = [
-  'What should I do right now to protect my family?',
-  'Is it safe for morning walks tomorrow?',
-  'How do I seal my home during peak smog?',
+  'Can my daughter play outside at 5 PM?',
+  'Is a DIY box-fan filter worth it?',
+  "Metro or car for tomorrow's commute?",
 ];
