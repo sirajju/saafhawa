@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { env, DEFAULT_GEMINI_MODELS } from '../env';
+import { DEFAULT_GEMINI_MODELS } from '../env';
 
 export { DEFAULT_GEMINI_MODELS };
 export const DEFAULT_GEMINI_API_VERSION = 'v1beta';
@@ -33,23 +33,41 @@ export interface ResolveGeminiModelsOptions {
  * Resolves an ordered list of Gemini models to attempt.
  * Priority:
  * 1. Explicit options.models array if provided and non-empty.
- * 2. Backwards-compatible options.model / options.fallbackModel.
- * 3. Environment models or default chain from env.
+ * 2. GEMINI_MODELS env variable (comma-separated list).
+ * 3. options.model / fallbackModel mixed with GEMINI_MODEL / GEMINI_FALLBACK_MODEL.
+ * 4. Default model chain: DEFAULT_GEMINI_MODELS.
  */
 export function resolveGeminiModels(options?: ResolveGeminiModelsOptions): string[] {
   if (options?.models && options.models.length > 0) {
-    return Array.from(new Set(options.models.map((m) => m.trim()).filter(Boolean)));
+    const list = options.models.map((m) => m.trim()).filter(Boolean);
+    if (list.length > 0) {
+      return Array.from(new Set(list));
+    }
   }
 
-  if (options?.model || options?.fallbackModel) {
+  const envModels = process.env.GEMINI_MODELS?.trim();
+  if (envModels) {
+    const parsed = envModels
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (parsed.length > 0) {
+      return Array.from(new Set(parsed));
+    }
+  }
+
+  const explicitModel = options?.model || process.env.GEMINI_MODEL;
+  const explicitFallback = options?.fallbackModel || process.env.GEMINI_FALLBACK_MODEL;
+
+  if (explicitModel || explicitFallback) {
     const list = [
-      options.model || 'gemini-flash-lite-latest',
-      options.fallbackModel || 'gemini-2.5-flash-lite',
+      explicitModel || 'gemini-flash-lite-latest',
+      explicitFallback || 'gemini-2.5-flash-lite',
     ]
       .map((s) => s.trim())
       .filter(Boolean);
     return Array.from(new Set(list));
   }
 
-  return env.geminiModels;
+  return [...DEFAULT_GEMINI_MODELS];
 }

@@ -31,6 +31,24 @@ describe('GEMINI_MODELS chain resolution & ordered fallback', () => {
     expect(res).toEqual(['gemini-flash-lite-latest', 'gemini-2.5-flash-lite', 'gemini-3.8-flash']);
   });
 
+  it('prioritizes options.models over GEMINI_MODELS env var', () => {
+    process.env.GEMINI_MODELS = 'env-model-1, env-model-2';
+    const res = resolveGeminiModels({ models: ['custom-opt-1'] });
+    expect(res).toEqual(['custom-opt-1']);
+  });
+
+  it('prioritizes GEMINI_MODELS env var over options.model and options.fallbackModel', () => {
+    process.env.GEMINI_MODELS = 'env-chain-1, env-chain-2';
+    const res = resolveGeminiModels({ model: 'ignore-model', fallbackModel: 'ignore-fallback' });
+    expect(res).toEqual(['env-chain-1', 'env-chain-2']);
+  });
+
+  it('mixes options.model with GEMINI_FALLBACK_MODEL when GEMINI_MODELS is unset', () => {
+    process.env.GEMINI_FALLBACK_MODEL = 'env-fallback';
+    const res = resolveGeminiModels({ model: 'opt-primary' });
+    expect(res).toEqual(['opt-primary', 'env-fallback']);
+  });
+
   it('falls back to GEMINI_MODEL and GEMINI_FALLBACK_MODEL when GEMINI_MODELS is unset', () => {
     process.env.GEMINI_MODEL = 'custom-primary';
     process.env.GEMINI_FALLBACK_MODEL = 'custom-fallback';
