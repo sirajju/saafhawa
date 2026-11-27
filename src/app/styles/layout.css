@@ -114,6 +114,11 @@ header.app-header {
   color: var(--ink);
 }
 
+.seg label:has(input:focus-visible) {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
 .seg label.active,
 .seg label:has(input:checked) {
   background: var(--surface);

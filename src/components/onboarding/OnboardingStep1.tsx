@@ -46,9 +46,9 @@ export function OnboardingStep1({
       </p>
 
       <div className="q">
-        <h3>
+        <h2>
           <label htmlFor="area">Your area</label>
-        </h3>
+        </h2>
         <p className="caption" id="area-hint">
           City, locality or 6-digit pincode
         </p>
@@ -86,7 +86,7 @@ export function OnboardingStep1({
       </div>
 
       <div className="q">
-        <h3>Adults</h3>
+        <h2>Adults</h2>
         <p className="caption">18 to 64 years</p>
         <OptionGroup<number>
           label="Adults"
@@ -103,7 +103,7 @@ export function OnboardingStep1({
       </div>
 
       <div className="q">
-        <h3>Children</h3>
+        <h2>Children</h2>
         <p className="caption">Under 18 — their lungs are most sensitive</p>
         <OptionGroup<number>
           label="Children"
@@ -119,7 +119,7 @@ export function OnboardingStep1({
       </div>
 
       <div className="q">
-        <h3>Seniors</h3>
+        <h2>Seniors</h2>
         <p className="caption">65 and over — morning smog hits them hardest</p>
         <OptionGroup<number>
           label="Seniors"
@@ -135,7 +135,7 @@ export function OnboardingStep1({
       </div>
 
       <div className="q">
-        <h3>Does anyone have asthma or a breathing condition?</h3>
+        <h2>Does anyone have asthma or a breathing condition?</h2>
         <p className="caption">We&apos;ll prioritise filtration and stricter timing</p>
         <OptionGroup<boolean>
           label="Breathing condition"

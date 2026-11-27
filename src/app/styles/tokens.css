@@ -17,8 +17,8 @@
 
   /* CPCB Air Quality Category Colors - Strictly reserved for air quality */
   --aqi-good: #2f8a3e;
-  --aqi-sat: #6f9e2a;
-  --aqi-mod: #b8860b;
+  --aqi-sat: #5a8220;
+  --aqi-mod: #9a6f00;
   --aqi-poor: #d0611a;
   --aqi-vpoor: #c4302b;
   --aqi-severe: #8a1a38;

@@ -8,6 +8,7 @@ import { SendIcon } from './ui/Icons';
 import { getShortPlaceName } from '@/lib/design-system';
 import { SAMPLE_PROMPTS, INITIAL_GREETING, type ChatPanelProps } from './chat/chat-constants';
 import { TEXT_LIMITS } from '@/lib/constants';
+import { preferredScrollBehavior } from '@/lib/motion';
 
 export type { ChatPanelProps };
 
@@ -40,7 +41,7 @@ export function ChatPanel({
 
   useEffect(() => {
     if (hasUserInteractedRef.current && messages.length > 1) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: preferredScrollBehavior() });
     }
   }, [messages]);
 
@@ -142,9 +143,7 @@ export function ChatPanel({
       />
 
       {errorMessage && (
-        <div role="alert" className="px-4 py-1 text-[13px] text-rose-600 dark:text-rose-400">
-          {errorMessage}
-        </div>
+        <div className="px-4 py-1 text-[13px] text-rose-600 dark:text-rose-400">{errorMessage}</div>
       )}
 
       <div className="composer">

@@ -18,6 +18,7 @@ export function AdvisoryModalBody({
     <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
       {isLoading && (
         <div
+          role="status"
           style={{
             display: 'flex',
             flexDirection: 'column',

@@ -26,11 +26,13 @@
   margin-top: 32px;
 }
 
-.q h3 {
+.q h3,
+.q h2 {
   margin-bottom: 4px;
   font-size: 17px;
   line-height: 1.4;
   font-weight: 600;
+  letter-spacing: normal;
 }
 
 .q .caption {

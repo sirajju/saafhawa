@@ -136,10 +136,9 @@ export function ForecastChart({
         maxAqi={maxAqi}
         cleanestIndex={finalCleanestIndex}
         cleanestWindowLength={finalCleanestLength}
-        srSummary={srSummary}
       />
 
-      <div className="sr-only" tabIndex={0}>
+      <div className="sr-only">
         <span>{srSummary}</span>
         <span>Current: AQI {points[0]?.aqi ?? '—'}. </span>
         <span>

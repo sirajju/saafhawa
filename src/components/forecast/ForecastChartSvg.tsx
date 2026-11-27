@@ -17,7 +17,6 @@ interface ForecastChartSvgProps {
   maxAqi?: number;
   cleanestIndex?: number;
   cleanestWindowLength?: number;
-  srSummary: string;
 }
 
 export function ForecastChartSvg({
@@ -27,7 +26,6 @@ export function ForecastChartSvg({
   maxAqi = CHART_SVG_DIMENSIONS.MAX_AQI_SCALE,
   cleanestIndex = 0,
   cleanestWindowLength = 3,
-  srSummary,
 }: ForecastChartSvgProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [realWidth, setRealWidth] = React.useState<number>(chartWidth);
@@ -81,7 +79,7 @@ export function ForecastChartSvg({
         style={{ width: '100%', height: totalHeight }}
         className="w-full touch-pan-y overflow-visible"
         role="img"
-        aria-label={srSummary}
+        aria-label="Bar chart of hourly AQI for the next 24 hours. A text summary follows."
       >
         {/* Best window highlight rect rendered first so gridline text is never hidden */}
         <rect x={bestX} y={top} width={bestW} height={base - top} rx="6" fill="var(--brand-soft)" />

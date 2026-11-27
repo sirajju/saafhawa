@@ -45,7 +45,7 @@ export function OnboardingStep3({
       </p>
 
       <div className="q">
-        <h3>Home size</h3>
+        <h2>Home size</h2>
         <p className="caption">Used to size purifiers and filters</p>
         <OptionGroup<number>
           label="Home size"
@@ -61,7 +61,7 @@ export function OnboardingStep3({
       </div>
 
       <div className="q">
-        <h3>Cooking fuel</h3>
+        <h2>Cooking fuel</h2>
         <p className="caption">Burning fuel indoors adds fine particles</p>
         <OptionGroup<PlanRequest['cookingFuel']>
           label="Cooking fuel"
@@ -77,7 +77,7 @@ export function OnboardingStep3({
       </div>
 
       <div className="q">
-        <h3>What do you already have?</h3>
+        <h2>What do you already have?</h2>
         <p className="caption">Select all that apply</p>
         <div className="opts" role="group" aria-label="Equipment">
           <button
@@ -100,7 +100,7 @@ export function OnboardingStep3({
       </div>
 
       <div className="q">
-        <h3>Does anyone burn incense, dhoop or mosquito coils indoors?</h3>
+        <h2>Does anyone burn incense, dhoop or mosquito coils indoors?</h2>
         <p className="caption">Common and easy to fix — no judgement</p>
         <OptionGroup<'often' | 'sometimes' | 'no'>
           label="Incense"
@@ -115,7 +115,7 @@ export function OnboardingStep3({
       </div>
 
       <div className="q">
-        <h3>Budget for fixes this month</h3>
+        <h2>Budget for fixes this month</h2>
         <p className="caption">We&apos;ll start with free actions either way</p>
         <OptionGroup<PlanRequest['budget']>
           label="Budget"

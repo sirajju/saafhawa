@@ -27,7 +27,11 @@ export function AdvisoryModalFooter({
         gap: 12,
       }}
     >
-      <span className="caption" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span
+        className="caption"
+        role="status"
+        style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+      >
         {copied ? (
           <>
             <CheckIcon className="h-4 w-4" style={{ color: 'var(--brand)' }} />
@@ -45,7 +49,7 @@ export function AdvisoryModalFooter({
         </button>
 
         <a
-          href={whatsappUrl}
+          href={isLoading || !hasAdvisory ? undefined : whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
           aria-disabled={isLoading || !hasAdvisory}

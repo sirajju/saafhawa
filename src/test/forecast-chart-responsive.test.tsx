@@ -17,7 +17,6 @@ describe('Forecast Chart SVG Responsive Typography', () => {
         chartWidth={360}
         cleanestIndex={5}
         cleanestWindowLength={3}
-        srSummary="24-hour forecast chart"
       />
     );
 

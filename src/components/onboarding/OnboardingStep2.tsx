@@ -45,7 +45,7 @@ export function OnboardingStep2({
       </p>
 
       <div className="q">
-        <h3>Main way to work, school or college</h3>
+        <h2>Main way to work, school or college</h2>
         <p className="caption">Pick the one used most days</p>
         <OptionGroup<PlanRequest['primaryCommuteMode']>
           label="Main commute"
@@ -89,7 +89,7 @@ export function OnboardingStep2({
       </div>
 
       <div className="q">
-        <h3>Round trip per day</h3>
+        <h2>Round trip per day</h2>
         <p className="caption">Rough distance for one person</p>
         <OptionGroup<number>
           label="Distance"
@@ -105,7 +105,7 @@ export function OnboardingStep2({
       </div>
 
       <div className="q">
-        <h3>People who commute</h3>
+        <h2>People who commute</h2>
         <p className="caption">Travel outside most weekdays</p>
         <OptionGroup<number>
           label="Commuters"
@@ -120,7 +120,7 @@ export function OnboardingStep2({
       </div>
 
       <div className="q">
-        <h3>On bad days, could someone work from home?</h3>
+        <h2>On bad days, could someone work from home?</h2>
         <p className="caption">We&apos;ll suggest it only when the air is worst</p>
         <OptionGroup<boolean>
           label="Work from home"
@@ -134,7 +134,7 @@ export function OnboardingStep2({
       </div>
 
       <div className="q">
-        <h3>Could you share rides with someone?</h3>
+        <h2>Could you share rides with someone?</h2>
         <p className="caption">Colleagues, neighbours or a school pool</p>
         <OptionGroup<boolean>
           label="Carpool"

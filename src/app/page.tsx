@@ -11,6 +11,7 @@ import { Footer } from '@/components/Footer';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { type PlanRequest, type PlanResponse, PlanRequestSchema } from '@/lib/plan/types';
 import { STORAGE_KEYS } from '@/lib/constants';
+import { preferredScrollBehavior } from '@/lib/motion';
 
 export default function HomePage() {
   const [profile, setProfile] = useState<PlanRequest | null>(null);
@@ -148,7 +149,7 @@ export default function HomePage() {
           currentView={currentView}
           onChangeView={(v) => {
             setCurrentView(v);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: preferredScrollBehavior() });
           }}
         />
       )}
