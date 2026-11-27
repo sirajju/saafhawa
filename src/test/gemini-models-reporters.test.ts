@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { clearModelExhaustion } from '@/lib/gemini/quota';
 import { generateHouseholdPlan } from '@/lib/plan/service';
+import { PlanRequestSchema } from '@/lib/plan/types';
 import { handleChatQuery } from '@/lib/chat/service';
 import { generateCommunityAdvisory } from '@/lib/community/advisory-generator';
 import { type AirQualityReport } from '@/lib/air-quality/types';
@@ -58,7 +59,7 @@ describe('GEMINI_MODELS chain reporters', () => {
     });
 
     const plan = await generateHouseholdPlan(
-      { place: 'Bengaluru', budgetLevel: 'low', hasChildren: true, hasElderly: false },
+      PlanRequestSchema.parse({ place: 'Bengaluru', budget: 'low', childrenCount: 1 }),
       {
         apiKey: 'test-key',
         models: ['model-first', 'model-second'],

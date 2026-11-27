@@ -4,7 +4,8 @@ import { type FallbackReason } from '../constants';
 import { PlaceSchema } from '../validation';
 
 export const ChatMessageSchema = z.object({
-  role: z.enum(['user', 'assistant', 'system']),
+  // Only end-user and assistant turns are accepted from clients; system instructions are server-owned.
+  role: z.enum(['user', 'assistant']),
   content: z
     .string()
     .trim()

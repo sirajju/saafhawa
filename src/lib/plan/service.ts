@@ -123,10 +123,9 @@ async function tryGeminiPlanGeneration(
  * combining real-time local air quality data with AI action selection and deterministic physical impact math.
  */
 export async function generateHouseholdPlan(
-  rawInput: PlanRequest | Record<string, unknown>,
+  profile: PlanRequest,
   options: GeneratePlanOptions = {}
 ): Promise<PlanResponse> {
-  const profile = rawInput as unknown as PlanRequest;
   const fetchAirQuality = options.airQualityFetcher ?? getAirQualityByLocation;
   const lookupKey = profile.coordinates || profile.place;
 

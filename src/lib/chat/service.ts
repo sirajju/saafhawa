@@ -120,7 +120,7 @@ export async function handleChatQuery(
   const request: ChatRequest = {
     ...rawRequest,
     conversationHistory: rawRequest.conversationHistory ?? [],
-  } as ChatRequest;
+  };
   const models = resolveGeminiModels({
     models: options.models,
     model: options.model,

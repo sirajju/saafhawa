@@ -1,10 +1,10 @@
 import { type ChatMessage } from '../ChatMessageList';
-import { type HouseholdProfile } from '@/lib/impact/types';
+import { type PlanRequest } from '@/lib/plan/types';
 
 export interface ChatPanelProps {
   place: string;
   displayPlace?: string;
-  householdProfile?: HouseholdProfile;
+  householdProfile?: PlanRequest;
   dataSource?: string;
   measuredTime?: string;
   timeZone?: string;

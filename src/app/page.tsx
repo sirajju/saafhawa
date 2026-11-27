@@ -9,7 +9,7 @@ import { PlanDashboard } from '@/components/PlanDashboard';
 import { ViewSwitch } from '@/components/ViewSwitch';
 import { Footer } from '@/components/Footer';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { type PlanRequest, type PlanResponse } from '@/lib/plan/types';
+import { type PlanRequest, type PlanResponse, PlanRequestSchema } from '@/lib/plan/types';
 import { STORAGE_KEYS } from '@/lib/constants';
 
 export default function HomePage() {
@@ -67,10 +67,14 @@ export default function HomePage() {
       try {
         const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
         if (saved) {
-          const parsed: PlanRequest = JSON.parse(saved);
+          const parsed = PlanRequestSchema.safeParse(JSON.parse(saved));
+          if (!parsed.success) {
+            localStorage.removeItem(STORAGE_KEYS.PROFILE);
+            return;
+          }
           if (isMounted) {
-            setProfile(parsed);
-            await fetchPlan(parsed);
+            setProfile(parsed.data);
+            await fetchPlan(parsed.data);
           }
         }
       } catch {

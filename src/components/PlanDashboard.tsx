@@ -52,7 +52,9 @@ export function PlanDashboard({
       const saved = localStorage.getItem(getTodayStorageKey());
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          return parsed.filter((id): id is string => typeof id === 'string');
+        }
       }
     } catch {
       // Storage unavailable fallback

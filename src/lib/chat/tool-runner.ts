@@ -21,10 +21,10 @@ export async function executeSingleToolCall(
     const airResult = await executeGetAirQualityTool({ place: placeArg }, request.place, fetcher);
     toolsExecuted.push({
       toolName: fc.name,
-      args: (fc.args as Record<string, unknown>) || {},
+      args: fc.args ?? {},
       resultSummary: `Retrieved AQI ${airResult.currentAqi} (${airResult.category}) for ${airResult.locationName}`,
     });
-    return airResult as unknown as Record<string, unknown>;
+    return { ...airResult };
   }
 
   if (fc.name === 'calculateActionImpact') {
@@ -49,10 +49,10 @@ export async function executeSingleToolCall(
     );
     toolsExecuted.push({
       toolName: fc.name,
-      args: (fc.args as Record<string, unknown>) || {},
+      args: fc.args ?? {},
       resultSummary: `Calculated impact for ${impactResult.actionTitle} (PM2.5: ${currentPm25 ?? 'unknown'} µg/m³): ${impactResult.pm25InhaledDoseAvoidedUg ?? 'unknown'} µg dose avoided`,
     });
-    return impactResult as unknown as Record<string, unknown>;
+    return { ...impactResult };
   }
 
   if (fc.name === 'listCatalogueActions') {
@@ -60,7 +60,7 @@ export async function executeSingleToolCall(
     const listResult = executeListActionsTool({ category: categoryArg });
     toolsExecuted.push({
       toolName: fc.name,
-      args: (fc.args as Record<string, unknown>) || {},
+      args: fc.args ?? {},
       resultSummary: `Listed ${listResult.length} catalogue actions`,
     });
     return { actions: listResult };

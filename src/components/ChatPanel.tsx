@@ -66,7 +66,7 @@ export function ChatPanel({
         message: text,
         conversationHistory,
         place: place.trim(),
-        householdProfile: householdProfile as ChatRequest['householdProfile'],
+        householdProfile,
       };
 
       const response = await fetch('/api/chat', {
