@@ -1,4 +1,5 @@
 import { createGeminiClient, resolveGeminiModels } from '../gemini-client';
+import { resolveGeminiApiKey } from '../env';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
@@ -17,10 +18,6 @@ export interface AdvisoryGeneratorOptions {
   fallbackModel?: string;
   apiKey?: string;
   airQualityFetcher?: (place: string) => Promise<AirQualityReport>;
-}
-
-function resolveApiKey(customApiKey?: string): string | undefined {
-  return customApiKey || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
 }
 
 /**
@@ -42,7 +39,7 @@ export async function generateCommunityAdvisory(
     model: options.model,
     fallbackModel: options.fallbackModel,
   });
-  const apiKey = resolveApiKey(options.apiKey);
+  const apiKey = resolveGeminiApiKey(options.apiKey);
 
   const snapshot = {
     locationName: report.location.name,

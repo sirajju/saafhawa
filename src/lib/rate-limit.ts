@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { env } from './env';
 
 interface RateLimitRecord {
   timestamps: number[];
@@ -116,15 +117,7 @@ export function getTrustedProxyHops(customHops?: number): number {
   if (typeof customHops === 'number') {
     return customHops;
   }
-  const raw = process.env.TRUSTED_PROXY_HOPS;
-  if (raw === undefined || raw === '') {
-    return DEFAULT_TRUSTED_PROXY_HOPS;
-  }
-  if (raw === 'unknown' || raw === 'none') {
-    return 0;
-  }
-  const parsed = parseInt(raw, 10);
-  return isNaN(parsed) || parsed < 0 ? 0 : parsed;
+  return env.trustedProxyHops;
 }
 
 /**
@@ -133,7 +126,7 @@ export function getTrustedProxyHops(customHops?: number): number {
  * - On Cloud Run / Custom Proxy: trusts configured number of proxy hops from the right.
  */
 export function getClientIp(request: NextRequest, customHops?: number): string {
-  if (process.env.VERCEL) {
+  if (env.isVercel) {
     const forwardedFor = request.headers.get('x-forwarded-for');
     if (forwardedFor) {
       const parts = forwardedFor.split(',').map((p) => p.trim()).filter(Boolean);

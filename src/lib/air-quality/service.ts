@@ -6,6 +6,7 @@ import { fetchWaqiNearestStation } from './waqi-client';
 import { AirQualityReport, AirQualityReportSchema } from './types';
 import { extractPrimaryIndex, extractPollutant, ExtractedIndex } from './index-extractor';
 import { logServerWarning } from '../logger';
+import { env } from '../env';
 
 export { extractPrimaryIndex, extractPollutant };
 export type { ExtractedIndex };
@@ -18,13 +19,13 @@ export interface GetAirQualityOptions extends ClientRequestOptions {
 }
 
 function resolveGoogleApiKey(providedKey?: string): string | null {
-  const key = providedKey || process.env.GOOGLE_MAPS_API_KEY;
+  const key = providedKey || env.googleMapsApiKey;
   if (!key || key.trim() === '' || key === 'undefined') return null;
   return key;
 }
 
 function resolveWaqiToken(providedToken?: string): string | null {
-  const token = providedToken || process.env.WAQI_TOKEN;
+  const token = providedToken || env.waqiToken;
   if (!token || token.trim() === '' || token === 'undefined') return null;
   return token.trim();
 }

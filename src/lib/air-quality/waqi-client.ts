@@ -2,6 +2,7 @@ import { calculateCpcbAqi } from './cpcb-aqi';
 import { CurrentAirQuality, AirQualityError } from './types';
 import { safeFetch } from './safe-fetch';
 import { logServerWarning } from '../logger';
+import { env } from '../env';
 
 const WAQI_FEED_BASE_URL = 'https://api.waqi.info/feed';
 
@@ -50,7 +51,7 @@ interface WaqiResponse {
 export async function fetchWaqiNearestStation(
   latitude: number,
   longitude: number,
-  token = process.env.WAQI_TOKEN,
+  token = env.waqiToken,
   fetchFn: typeof fetch = fetch,
   timeoutMs?: number
 ): Promise<WaqiStationResult | null> {

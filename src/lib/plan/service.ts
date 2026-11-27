@@ -10,6 +10,7 @@ import { buildPlannedActionsAndSummary } from './plan-impact-summary';
 import { buildForecastAdvice } from '../air-quality/forecast-advice';
 import { executeWithGeminiRetry } from '../gemini-executor';
 import { resolveGeminiModels } from '../gemini-client';
+import { resolveGeminiApiKey } from '../env';
 import { buildPlanCacheKey, getCachedPlan, setCachedPlan } from '../gemini-cache';
 import { logServerError } from '../logger';
 import {
@@ -32,10 +33,6 @@ export interface GeneratePlanOptions {
     apiKey: string,
     timeoutMs?: number
   ) => Promise<string | null>;
-}
-
-function resolveGeminiApiKey(custom?: string): string | undefined {
-  return custom || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
 }
 
 /**

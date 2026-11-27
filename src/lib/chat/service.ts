@@ -1,5 +1,6 @@
 import type { GoogleGenAI, Content, Part } from '@google/genai';
 import { createGeminiClient, resolveGeminiModels } from '../gemini-client';
+import { resolveGeminiApiKey } from '../env';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { capTextLength, withTimeout } from '../gemini-utils';
@@ -24,10 +25,6 @@ export interface ChatServiceOptions {
 export type ChatInput = Omit<ChatRequest, 'conversationHistory'> & {
   conversationHistory?: ChatMessage[];
 };
-
-function resolveApiKey(customApiKey?: string): string | undefined {
-  return customApiKey || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
-}
 
 async function runGeminiConversation(
   ai: GoogleGenAI,
@@ -111,7 +108,7 @@ export async function handleChatQuery(
     model: options.model,
     fallbackModel: options.fallbackModel,
   });
-  const apiKey = resolveApiKey(options.apiKey);
+  const apiKey = resolveGeminiApiKey(options.apiKey);
   const fetcher = options.airQualityFetcher ?? getAirQualityByLocation;
 
   if (!apiKey) {
