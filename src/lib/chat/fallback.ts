@@ -57,14 +57,14 @@ export async function generateFallbackChatResponse(
     }
   }
 
-  const hasValidReport = Boolean(
+  const hasReport = Boolean(
     report && report.current.aqi !== null && report.current.aqi !== undefined
   );
-  const intent = detectIntent(request.message, hasValidReport);
+  const intent = detectIntent(request.message, hasReport);
   const hasAsthma = Boolean(request.householdProfile?.hasAsthmaOrRespiratoryCondition);
 
   // 1. Honesty on failed air quality lookup: never invent AQI numbers or categories
-  if (!hasValidReport || !report) {
+  if (!report || report.current.aqi === null || report.current.aqi === undefined) {
     let reply =
       "I couldn't get air quality for this place right now. Here is general guidance for your household:\n\n";
 
