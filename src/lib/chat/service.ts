@@ -7,10 +7,9 @@ import { executeWithGeminiRetry } from '../gemini-executor';
 import { logServerError } from '../logger';
 import { CHAT_TOOLS } from './tools';
 import { executeSingleToolCall } from './tool-runner';
-import { ChatRequestSchema, ChatResponse, ExecutedToolRecord, ChatRequest } from './types';
+import { ChatResponse, ExecutedToolRecord, ChatRequest, ChatMessage } from './types';
 import { buildChatSystemInstruction } from './instruction';
 import { generateFallbackChatResponse } from './fallback';
-import { z } from 'zod';
 
 export { buildChatSystemInstruction, generateFallbackChatResponse };
 
@@ -21,6 +20,10 @@ export interface ChatServiceOptions {
   apiKey?: string;
   airQualityFetcher?: (place: string) => Promise<AirQualityReport>;
 }
+
+export type ChatInput = Omit<ChatRequest, 'conversationHistory'> & {
+  conversationHistory?: ChatMessage[];
+};
 
 function resolveApiKey(customApiKey?: string): string | undefined {
   return customApiKey || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
@@ -96,10 +99,13 @@ async function runGeminiConversation(
  * Handles conversational queries using Gemini model chain with tool execution and fallback logic.
  */
 export async function handleChatQuery(
-  rawRequest: z.input<typeof ChatRequestSchema>,
+  rawRequest: ChatInput,
   options: ChatServiceOptions = {}
 ): Promise<ChatResponse> {
-  const request = ChatRequestSchema.parse(rawRequest);
+  const request: ChatRequest = {
+    ...rawRequest,
+    conversationHistory: rawRequest.conversationHistory ?? [],
+  } as ChatRequest;
   const models = resolveGeminiModels({
     models: options.models,
     model: options.model,

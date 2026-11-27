@@ -4,53 +4,32 @@ import { ChatRequestSchema } from '@/lib/chat/types';
 import { VALIDATION_MESSAGES } from '@/lib/constants';
 import { chatRateLimiter, getClientIp } from '@/lib/rate-limit';
 import { readJsonBodyWithLimit } from '@/lib/security';
-import { logServerError, isNextControlFlowError } from '@/lib/logger';
-import { ZodError } from 'zod';
+import { rateLimited, jsonError, toErrorResponse } from '@/lib/api/responses';
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. IP-based rate limiting
     const clientIp = getClientIp(request);
     const rateCheck = chatRateLimiter.check(clientIp);
-
     if (!rateCheck.success) {
-      return NextResponse.json(
-        {
-          error: 'Too Many Requests',
-          message: `Rate limit exceeded. Please wait ${rateCheck.resetSeconds} seconds before sending another message.`,
-        },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(rateCheck.resetSeconds),
-          },
-        }
+      return rateLimited(
+        rateCheck.resetSeconds,
+        `Rate limit exceeded. Please wait ${rateCheck.resetSeconds} seconds before sending another message.`
       );
     }
 
-    // 2. Safe JSON body reading with size limit enforcement
     const { data: rawBody, error: bodyError } = await readJsonBodyWithLimit(request);
     if (bodyError) {
       return bodyError;
     }
 
     const parseResult = ChatRequestSchema.safeParse(rawBody);
-
     if (!parseResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Validation Error',
-          message: VALIDATION_MESSAGES.INVALID_CHAT_QUERY,
-        },
-        { status: 400 }
-      );
+      return jsonError(400, 'Validation Error', VALIDATION_MESSAGES.INVALID_CHAT_QUERY);
     }
 
-    // 3. Process chat query with Gemini function-calling
     const response = await handleChatQuery(parseResult.data);
-
     return NextResponse.json(response, {
       status: 200,
       headers: {
@@ -58,27 +37,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    if (isNextControlFlowError(error)) {
-      throw error;
-    }
-
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation Error',
-          message: 'Please provide a message under 500 characters.',
-        },
-        { status: 400 }
-      );
-    }
-
-    logServerError('API:chat', error);
-    return NextResponse.json(
-      {
-        error: 'Chat Service Error',
-        message: 'Unable to process your clean air question right now. Please try again shortly.',
-      },
-      { status: 500 }
+    return toErrorResponse(
+      'API:chat',
+      error,
+      'Unable to process your clean air question right now. Please try again shortly.'
     );
   }
 }

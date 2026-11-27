@@ -16,7 +16,6 @@ import {
   GeminiPlanOutputSchema,
   GeminiSelectedAction,
   PlanRequest,
-  PlanRequestSchema,
   PlanResponse,
 } from './types';
 
@@ -44,10 +43,10 @@ function resolveGeminiApiKey(custom?: string): string | undefined {
  * combining real-time local air quality data with AI action selection and deterministic physical impact math.
  */
 export async function generateHouseholdPlan(
-  rawInput: unknown,
+  rawInput: PlanRequest | Record<string, unknown>,
   options: GeneratePlanOptions = {}
 ): Promise<PlanResponse> {
-  const profile: PlanRequest = PlanRequestSchema.parse(rawInput);
+  const profile = rawInput as unknown as PlanRequest;
   const fetchAirQuality = options.airQualityFetcher ?? getAirQualityByLocation;
   const lookupKey = profile.coordinates || profile.place;
 

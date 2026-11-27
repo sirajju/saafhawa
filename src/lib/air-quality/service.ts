@@ -3,7 +3,7 @@ import { ClientRequestOptions } from './google-client';
 import { fetchViaGoogle } from './google-service';
 import { geocodeOpenMeteoPlace, fetchOpenMeteoAirQuality, OpenMeteoLocationResult } from './open-meteo-client';
 import { fetchWaqiNearestStation } from './waqi-client';
-import { AirQualityQuerySchema, AirQualityReport, AirQualityReportSchema } from './types';
+import { AirQualityReport, AirQualityReportSchema } from './types';
 import { extractPrimaryIndex, extractPollutant, ExtractedIndex } from './index-extractor';
 import { logServerWarning } from '../logger';
 
@@ -89,7 +89,7 @@ export async function getAirQualityByLocation(
   rawPlace: string,
   options: GetAirQualityOptions = {}
 ): Promise<AirQualityReport> {
-  const { place } = AirQualityQuerySchema.parse({ place: rawPlace });
+  const place = rawPlace.trim();
   const cacheKey = normalizeLocationKey(place);
 
   if (!options.bypassCache) {

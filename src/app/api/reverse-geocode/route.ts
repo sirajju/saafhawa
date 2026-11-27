@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getClientIp, reverseGeocodeRateLimiter } from '@/lib/rate-limit';
 import { reverseGeocodeCoordinates } from '@/lib/air-quality/reverse-geocoder';
 import { logServerError } from '@/lib/logger';
+import { rateLimited, jsonError } from '@/lib/api/responses';
 
 export const maxDuration = 10;
 
@@ -28,13 +29,7 @@ export async function GET(request: NextRequest) {
   const clientIp = getClientIp(request);
   const rateCheck = reverseGeocodeRateLimiter.check(clientIp);
   if (!rateCheck.success) {
-    return NextResponse.json(
-      { error: 'Too Many Requests', message: 'Rate limit exceeded. Please wait shortly.' },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(rateCheck.resetSeconds) },
-      }
-    );
+    return rateLimited(rateCheck.resetSeconds, 'Rate limit exceeded. Please wait shortly.');
   }
 
   const { searchParams } = request.nextUrl;
@@ -42,20 +37,15 @@ export async function GET(request: NextRequest) {
   const lonStr = searchParams.get('lon');
 
   if (!latStr || !lonStr) {
-    return NextResponse.json(
-      { error: 'Missing coordinates', message: 'Both lat and lon parameters are required.' },
-      { status: 400 }
-    );
+    return jsonError(400, 'Missing coordinates', 'Both lat and lon parameters are required.');
   }
 
   const parseResult = ReverseGeocodeQuerySchema.safeParse({ lat: latStr, lon: lonStr });
   if (!parseResult.success) {
-    return NextResponse.json(
-      {
-        error: 'Invalid coordinates',
-        message: parseResult.error.issues[0]?.message || 'Invalid coordinates parameters.',
-      },
-      { status: 400 }
+    return jsonError(
+      400,
+      'Invalid coordinates',
+      parseResult.error.issues[0]?.message || 'Invalid coordinates parameters.'
     );
   }
 
