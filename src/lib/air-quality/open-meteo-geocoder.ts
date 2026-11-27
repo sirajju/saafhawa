@@ -100,7 +100,7 @@ export async function geocodeOpenMeteoPlace(
 
   if (isPincode) {
     throw new LocationNotFoundError(
-      `Could not resolve Indian pincode "${query}". Please enter a city or area name instead.`
+      `Could not resolve Indian pincode "${query}". Please enter a city or area name instead (e.g. "Connaught Place, New Delhi" or "Bandra, Mumbai").`
     );
   }
 
