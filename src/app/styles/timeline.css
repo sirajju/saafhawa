@@ -52,7 +52,7 @@
 }
 
 .period.past {
-  opacity: 0.55;
+  filter: grayscale(0.7);
 }
 
 .item {

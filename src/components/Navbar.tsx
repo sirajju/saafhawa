@@ -78,7 +78,7 @@ export function Navbar({ currentPlace, onEditProfile }: NavbarProps) {
             type="button"
             className="place"
             onClick={onEditProfile}
-            aria-label={`Edit household profile (${shortPlace})`}
+            aria-label={`${shortPlace}: edit household profile`}
           >
             <LocationIcon className="icon" />
             <span>{shortPlace}</span>

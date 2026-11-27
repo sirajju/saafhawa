@@ -69,7 +69,7 @@ test.describe('Modals, Chat & Security Headers', () => {
     }, MOCK_PLAN);
     await page.reload();
 
-    const shareBtn = page.getByRole('button', { name: /Share advisory/i }).first();
+    const shareBtn = page.getByRole('button', { name: /Share with society/i }).first();
     await expect(shareBtn).toBeVisible();
     await shareBtn.click();
 

@@ -47,11 +47,11 @@ export function DashboardHeader({
           <button
             type="button"
             onClick={onOpenAdvisoryModal}
-            aria-label={`Share advisory for ${shortPlace}`}
             className="btn hide-sm"
           >
             <ShareIcon className="icon" />
             <span>Share with society</span>
+            <span className="sr-only"> (advisory for {shortPlace})</span>
           </button>
         )}
       </div>
