@@ -1,6 +1,6 @@
 import { Type } from '@google/genai';
-import { createGeminiClient } from '../gemini-client';
-import { capTextLength, withTimeout } from '../gemini-utils';
+import { createGeminiClient } from '../gemini/client';
+import { capTextLength, withTimeout } from '../gemini/utils';
 
 /**
  * Default generator invoking the official @google/genai SDK with structured JSON output.

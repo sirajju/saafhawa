@@ -3,16 +3,16 @@ import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
 import { buildPlanPrompt } from './prompt-builder';
 import { getRuleBasedFallbackActions } from './fallback';
-import { defaultGeminiGenerator } from './gemini-client';
-import { resolvePlanConsistency } from './consistency';
-import { pruneCleanAirActions } from './consistency-scoring';
+import { defaultGeminiGenerator } from './plan-generator';
+import { resolvePlanConsistency } from './conflict-resolver';
+import { pruneCleanAirActions } from './action-scoring';
 import { buildPlannedActionsAndSummary } from './plan-impact-summary';
 import { buildForecastAdvice } from '../air-quality/forecast-advice';
-import { executeWithGeminiRetry } from '../gemini-executor';
-import { resolveGeminiModels } from '../gemini-client';
+import { executeWithGeminiRetry } from '../gemini/executor';
+import { resolveGeminiModels } from '../gemini/client';
 import { resolveGeminiApiKey } from '../env';
 import { FallbackReason } from '../constants';
-import { buildPlanCacheKey, getCachedPlan, setCachedPlan } from '../gemini-cache';
+import { buildPlanCacheKey, getCachedPlan, setCachedPlan } from '../gemini/cache';
 import { logServerError } from '../logger';
 import {
   GeminiPlanOutputSchema,

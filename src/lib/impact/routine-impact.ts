@@ -3,8 +3,8 @@ import {
   EQUIVALENCY_FACTORS,
   FILTRATION_AND_INFILTRATION_FACTORS,
   INHALATION_RATES_M3_PER_HOUR,
-  VEHICULAR_EMISSION_FACTORS,
-} from './factors';
+} from './exposure-factors';
+import { VEHICULAR_EMISSION_FACTORS } from './emission-factors';
 import { HouseholdProfile } from './types';
 import { calculateInhaledAirVolumeM3 } from './air-volume';
 import { evaluateRoutineOutdoorAction } from './routine-outdoor';

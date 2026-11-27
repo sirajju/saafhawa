@@ -170,5 +170,3 @@ export async function fetchHourlyForecast(
   const rawData: unknown = await response.json();
   return GoogleForecastResponseSchema.parse(rawData);
 }
-
-export { fetchTimeZone } from './timezone-client';

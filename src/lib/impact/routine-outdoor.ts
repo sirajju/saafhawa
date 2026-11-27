@@ -2,7 +2,7 @@ import { ActionDefinition } from './catalogue';
 import {
   FILTRATION_AND_INFILTRATION_FACTORS,
   INHALATION_RATES_M3_PER_HOUR,
-} from './factors';
+} from './exposure-factors';
 import { HouseholdProfile } from './types';
 import { calculateInhaledAirVolumeM3 } from './air-volume';
 import { ActionImpactEvaluation } from './routine-types';

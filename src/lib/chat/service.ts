@@ -1,19 +1,17 @@
 import type { GoogleGenAI, Content, Part } from '@google/genai';
-import { createGeminiClient, resolveGeminiModels } from '../gemini-client';
+import { createGeminiClient, resolveGeminiModels } from '../gemini/client';
 import { resolveGeminiApiKey } from '../env';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { AirQualityReport } from '../air-quality/types';
-import { capTextLength, withTimeout } from '../gemini-utils';
-import { executeWithGeminiRetry } from '../gemini-executor';
+import { capTextLength, withTimeout } from '../gemini/utils';
+import { executeWithGeminiRetry } from '../gemini/executor';
 import { logServerError } from '../logger';
 import { TIMERS } from '../constants';
-import { CHAT_TOOLS } from './tools';
+import { CHAT_TOOLS } from './tool-declarations';
 import { executeSingleToolCall } from './tool-runner';
 import { ChatResponse, ExecutedToolRecord, ChatRequest, ChatMessage } from './types';
 import { buildChatSystemInstruction } from './instruction';
 import { generateFallbackChatResponse } from './fallback';
-
-export { buildChatSystemInstruction, generateFallbackChatResponse };
 
 export interface ChatServiceOptions {
   models?: string[];

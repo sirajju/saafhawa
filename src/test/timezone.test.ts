@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchTimeZone } from '@/lib/air-quality/google-client';
+import { fetchTimeZone } from '@/lib/air-quality/timezone-client';
 import { formatHourInPlaceLocalTime, executeGetAirQualityTool } from '@/lib/chat/tools';
 import { airQualityCache } from '@/lib/air-quality/cache';
 

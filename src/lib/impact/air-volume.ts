@@ -1,4 +1,4 @@
-import { INHALATION_RATES_M3_PER_HOUR } from './factors';
+import { INHALATION_RATES_M3_PER_HOUR } from './exposure-factors';
 import { AirQualityContext, HouseholdProfile } from './types';
 
 /**

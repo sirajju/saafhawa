@@ -1,11 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import {
-  executeWithGeminiRetry,
-  parseGeminiQuotaError,
-  clearModelExhaustion,
-} from '@/lib/gemini-executor';
+import { executeWithGeminiRetry } from '@/lib/gemini/executor';
+import { parseGeminiQuotaError, clearModelExhaustion } from '@/lib/gemini/quota';
 import {
   buildPlanCacheKey,
   getCachedPlan,
@@ -14,8 +11,8 @@ import {
   getCachedAdvisory,
   setCachedAdvisory,
   clearGeminiCache,
-} from '@/lib/gemini-cache';
-import { pruneCleanAirActions } from '@/lib/plan/consistency-scoring';
+} from '@/lib/gemini/cache';
+import { pruneCleanAirActions } from '@/lib/plan/action-scoring';
 import { ACTION_CATALOGUE, ActionDefinition } from '@/lib/impact/catalogue';
 import { PlanResponse, GeminiSelectedAction } from '@/lib/plan/types';
 import { AdvisoryResponse } from '@/lib/community/types';

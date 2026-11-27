@@ -3,7 +3,7 @@
 import React from 'react';
 import { CloseIcon } from './ui/Icons';
 import { getShortPlaceName } from '@/lib/design-system';
-import { formatMeasurementTime } from '@/lib/air-quality/cpcb-aqi';
+import { formatMeasurementTime } from '@/lib/air-quality/time-utils';
 
 export interface ChatHeaderProps {
   headingId?: string;

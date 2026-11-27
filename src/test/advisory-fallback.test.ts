@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 describe('Community Advisory Fallback and Cache Bypassing', () => {
   it('returns generationMethod and fallbackReason, never caching template fallback', async () => {
     const { generateCommunityAdvisory } = await import('../lib/community/advisory-generator');
-    const { getCachedAdvisory, buildAdvisoryCacheKey } = await import('../lib/gemini-cache');
+    const { getCachedAdvisory, buildAdvisoryCacheKey } = await import('../lib/gemini/cache');
 
     const mockReport = {
       location: { name: 'Kozhikode', latitude: 11.25, longitude: 75.78, timeZone: 'Asia/Kolkata' },

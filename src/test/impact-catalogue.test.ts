@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
+import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
+import { calculateActionImpact } from '@/lib/impact/calculator';
+import { HouseholdProfile } from '@/lib/impact/types';
+import { INHALATION_RATES_M3_PER_HOUR } from '@/lib/impact/exposure-factors';
 import {
-  ACTION_CATALOGUE,
-  calculateActionImpact,
-  HouseholdProfile,
-  INHALATION_RATES_M3_PER_HOUR,
   VEHICULAR_EMISSION_FACTORS,
   BIOMASS_AND_OPEN_BURNING_FACTORS,
-} from '@/lib/impact';
+} from '@/lib/impact/emission-factors';
 
 describe('Impact Module - Action Catalogue & Factors', () => {
   it('contains ~20 actions across all three categories', () => {

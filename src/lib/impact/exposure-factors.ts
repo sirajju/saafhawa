@@ -1,12 +1,10 @@
 /**
  * ============================================================================
- * SAAFHAWA IMPACT FACTORS & SCIENTIFIC CONSTANTS
+ * SAAFHAWA INHALATION & EXPOSURE FACTORS
  * ============================================================================
  * Every factor is grounded in published literature, standards, or official data.
  * Unconfirmed empirical consensus is annotated with: // [NEEDS VERIFICATION]
  */
-
-export * from './emission-factors';
 
 export const INHALATION_RATES_M3_PER_HOUR = {
   // Source: US EPA Exposure Factors Handbook (2011 Edition), Table 6-1 (Resting / Sleep, Adults 21-65)

@@ -3,10 +3,12 @@ import {
   executeGetAirQualityTool,
   executeCalculateImpactTool,
   executeListActionsTool,
+} from '@/lib/chat/tools';
+import {
   AIR_QUALITY_TOOL_DECLARATION,
   CALCULATE_IMPACT_TOOL_DECLARATION,
   LIST_ACTIONS_TOOL_DECLARATION,
-} from '@/lib/chat/tools';
+} from '@/lib/chat/tool-declarations';
 import { ChatRequestSchema } from '@/lib/chat/types';
 import { AdvisoryRequestSchema } from '@/lib/community/types';
 import { MOCK_AIR_QUALITY, MOCK_PROFILE } from './chat-fixtures';

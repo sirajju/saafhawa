@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { resolveGeminiModels, DEFAULT_GEMINI_MODELS } from '@/lib/gemini-client';
-import { executeWithGeminiRetry } from '@/lib/gemini-executor';
-import { modelExhaustionMap, clearModelExhaustion } from '@/lib/gemini-quota';
+import { resolveGeminiModels, DEFAULT_GEMINI_MODELS } from '@/lib/gemini/client';
+import { executeWithGeminiRetry } from '@/lib/gemini/executor';
+import { modelExhaustionMap, clearModelExhaustion } from '@/lib/gemini/quota';
 import { generateHouseholdPlan } from '@/lib/plan/service';
 import { handleChatQuery } from '@/lib/chat/service';
 import { generateCommunityAdvisory } from '@/lib/community/advisory-generator';

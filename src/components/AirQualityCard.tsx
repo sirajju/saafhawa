@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CleanLocation, CurrentAirQuality } from '@/lib/air-quality/types';
-import { getAqiCategoryDetails } from '@/lib/impact/comparisons';
+import { getAqiCategoryDetails } from '@/lib/impact/category-details';
 import {
   getAqiCategoryCssVar,
   getAqiCategorySoftCssVar,
@@ -10,7 +10,7 @@ import {
 } from '@/lib/design-system';
 import { ForecastChart, ForecastPoint } from './ForecastChart';
 import { buildForecastAdvice, ForecastAdviceHousehold } from '@/lib/air-quality/forecast-advice';
-import { formatMeasurementTime } from '@/lib/air-quality/cpcb-aqi';
+import { formatMeasurementTime } from '@/lib/air-quality/time-utils';
 import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
 
 interface AirQualityCardProps {

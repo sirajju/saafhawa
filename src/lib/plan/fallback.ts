@@ -3,7 +3,7 @@ import { calculateActionImpact } from '../impact/calculator';
 import { AirQualityReport } from '../air-quality/types';
 import { GeminiSelectedAction, PlanRequest } from './types';
 import { FALLBACK_METADATA_MAP } from './metadata';
-import { resolvePlanConsistency } from './consistency';
+import { resolvePlanConsistency } from './conflict-resolver';
 
 /**
  * Fallback selection engine when Gemini is unavailable or returns an invalid output.

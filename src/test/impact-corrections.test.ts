@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   calculateActionImpact,
   calculateHouseholdImpact,
-  calculateBaselineDailyHouseholdDoseUg,
-  ACTION_CATALOGUE,
-  HouseholdProfile,
-} from '@/lib/impact';
+} from '@/lib/impact/calculator';
+import { calculateBaselineDailyHouseholdDoseUg } from '@/lib/impact/deduplication';
+import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
+import { HouseholdProfile } from '@/lib/impact/types';
 import { getExposureComparisonText } from '@/lib/impact/comparisons';
 
 const BASE_TEST_PROFILE: HouseholdProfile = {

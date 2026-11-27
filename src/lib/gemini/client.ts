@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { env, DEFAULT_GEMINI_MODELS } from './env';
+import { env, DEFAULT_GEMINI_MODELS } from '../env';
 
 export { DEFAULT_GEMINI_MODELS };
 export const DEFAULT_GEMINI_API_VERSION = 'v1beta';

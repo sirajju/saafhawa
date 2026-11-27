@@ -1,5 +1,5 @@
 import { ActionDefinition } from './catalogue';
-import { FILTRATION_AND_INFILTRATION_FACTORS } from './factors';
+import { FILTRATION_AND_INFILTRATION_FACTORS } from './exposure-factors';
 import { HouseholdProfile } from './types';
 import { calculateInhaledAirVolumeM3 } from './air-volume';
 import { ActionImpactEvaluation } from './routine-types';

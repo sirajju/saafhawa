@@ -2,9 +2,9 @@ import { ActionDefinition } from './catalogue';
 import {
   EQUIVALENCY_FACTORS,
   FILTRATION_AND_INFILTRATION_FACTORS,
-  INCENSE_AND_BURNING_FACTORS,
   INHALATION_RATES_M3_PER_HOUR,
-} from './factors';
+} from './exposure-factors';
+import { INCENSE_AND_BURNING_FACTORS } from './emission-factors';
 import { HouseholdProfile } from './types';
 import { calculateInhaledAirVolumeM3 } from './air-volume';
 import { evaluateIndoorFiltrationAction } from './indoor-filtration';

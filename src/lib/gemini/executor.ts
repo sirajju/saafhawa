@@ -1,25 +1,13 @@
 import {
-  QuotaAnalysis,
   modelExhaustionMap,
-  clearModelExhaustion,
   sanitizeErrorMessage,
   isFatalGeminiError,
   isGeminiConfigError,
   parseGeminiQuotaError,
   isTransientGeminiError,
-} from './gemini-quota';
-import { logServerWarning } from './logger';
-import { TIMERS } from './constants';
-
-export {
-  type QuotaAnalysis,
-  clearModelExhaustion,
-  sanitizeErrorMessage,
-  isFatalGeminiError,
-  isGeminiConfigError,
-  parseGeminiQuotaError,
-  isTransientGeminiError,
-};
+} from './quota';
+import { logServerWarning } from '../logger';
+import { TIMERS } from '../constants';
 
 export interface GeminiRetryOptions<T> {
   models?: string[];

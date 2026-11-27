@@ -3,7 +3,8 @@
 import React from 'react';
 import { PlanSummary } from '@/lib/plan/types';
 import { FallbackReason } from '@/lib/constants';
-import { EQUIVALENCY_FACTORS, VEHICULAR_EMISSION_FACTORS } from '@/lib/impact/factors';
+import { EQUIVALENCY_FACTORS } from '@/lib/impact/exposure-factors';
+import { VEHICULAR_EMISSION_FACTORS } from '@/lib/impact/emission-factors';
 
 interface TotalSavingsBannerProps {
   summary: PlanSummary;

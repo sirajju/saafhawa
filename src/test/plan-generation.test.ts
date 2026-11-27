@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  generateHouseholdPlan,
-  getRuleBasedFallbackActions,
-} from '@/lib/plan';
-import { clearGeminiCache } from '@/lib/gemini-cache';
+import { generateHouseholdPlan } from '@/lib/plan/service';
+import { getRuleBasedFallbackActions } from '@/lib/plan/fallback';
+import { clearGeminiCache } from '@/lib/gemini/cache';
 import { POST } from '@/app/api/plan/route';
 import { planRateLimiter } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';

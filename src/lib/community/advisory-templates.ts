@@ -1,5 +1,5 @@
 import { AirQualityReport } from '../air-quality/types';
-import { formatMeasurementTime } from '../air-quality/cpcb-aqi';
+import { formatMeasurementTime } from '../air-quality/time-utils';
 
 /**
  * High-quality template fallback for WhatsApp advisories in English and Hindi.

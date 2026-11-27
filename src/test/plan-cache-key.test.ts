@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPlanCacheKey } from '@/lib/gemini-cache';
+import { buildPlanCacheKey } from '@/lib/gemini/cache';
 import { MOCK_PROFILE } from './plan-fixtures';
 
 describe('Plan Cache Key Hashing', () => {

@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  buildPlanPrompt,
-  PlanRequestSchema,
-} from '@/lib/plan';
+import { buildPlanPrompt } from '@/lib/plan/prompt-builder';
+import { PlanRequestSchema } from '@/lib/plan/types';
 import { MOCK_AIR_QUALITY, MOCK_PROFILE } from './plan-fixtures';
 
 describe('Plan Module - Zod Validation', () => {

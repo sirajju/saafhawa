@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  buildChatSystemInstruction,
-  handleChatQuery,
-} from '@/lib/chat/service';
+import { handleChatQuery } from '@/lib/chat/service';
+import { buildChatSystemInstruction } from '@/lib/chat/instruction';
 import {
   SlidingWindowRateLimiter,
   getClientIp,

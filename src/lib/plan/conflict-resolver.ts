@@ -5,22 +5,12 @@ import { GeminiSelectedAction, PlanRequest } from './types';
 import { FALLBACK_METADATA_MAP } from './metadata';
 import {
   WORK_FROM_HOME_ACTION_ID,
-  COMMUTE_SWAP_ACTION_IDS,
   isCommuteSwapAction,
   isWorkFromHomeAction,
   isCleanAirContext,
   computeActionBenefit,
   scoreCandidateAction,
-} from './consistency-scoring';
-
-export {
-  WORK_FROM_HOME_ACTION_ID,
-  COMMUTE_SWAP_ACTION_IDS,
-  isCommuteSwapAction,
-  isWorkFromHomeAction,
-  computeActionBenefit,
-  scoreCandidateAction,
-};
+} from './action-scoring';
 
 /**
  * Enforces plan consistency:

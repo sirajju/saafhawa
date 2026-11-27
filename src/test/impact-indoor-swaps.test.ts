@@ -1,9 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import {
-  ACTION_CATALOGUE,
-  calculateActionImpact,
-  HouseholdProfile,
-} from '@/lib/impact';
+import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
+import { calculateActionImpact } from '@/lib/impact/calculator';
+import { HouseholdProfile } from '@/lib/impact/types';
 
 describe('Impact Module - Indoor Air Quality Arithmetic', () => {
   const profile: HouseholdProfile = {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GoogleGenAI } from '@google/genai';
-import { createGeminiClient, DEFAULT_GEMINI_API_VERSION } from '@/lib/gemini-client';
+import { createGeminiClient, DEFAULT_GEMINI_API_VERSION } from '@/lib/gemini/client';
 import { generateHouseholdPlan } from '@/lib/plan/service';
 import { PlanRequest } from '@/lib/plan/types';
 import { AirQualityReport } from '@/lib/air-quality/types';

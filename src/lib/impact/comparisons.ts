@@ -1,7 +1,6 @@
 import { ExposureReduction, EmissionReduction } from './types';
-import { EQUIVALENCY_FACTORS, VEHICULAR_EMISSION_FACTORS } from './factors';
-
-export { getCategoryBadgeDetails, getAqiCategoryDetails } from './category-details';
+import { EQUIVALENCY_FACTORS } from './exposure-factors';
+import { VEHICULAR_EMISSION_FACTORS } from './emission-factors';
 
 /**
  * Returns plain-language, relatable comparisons for scientific exposure and emission numbers.

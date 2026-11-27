@@ -1,4 +1,4 @@
-import { redact } from './logger';
+import { redact } from '../logger';
 
 export interface QuotaAnalysis {
   isQuota: boolean;

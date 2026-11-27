@@ -1,5 +1,5 @@
-import { PlanRequest, PlanResponse } from './plan/types';
-import { AdvisoryResponse } from './community/types';
+import { PlanRequest, PlanResponse } from '../plan/types';
+import { AdvisoryResponse } from '../community/types';
 
 interface CacheEntry<T> {
   data: T;

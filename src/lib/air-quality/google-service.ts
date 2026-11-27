@@ -1,11 +1,11 @@
 import {
   fetchCurrentConditions,
   fetchHourlyForecast,
-  fetchTimeZone,
   geocodePlace,
   GeocodeLocationResult,
   ClientRequestOptions,
 } from './google-client';
+import { fetchTimeZone } from './timezone-client';
 import { AirQualityReport, AirQualityReportSchema, HourlyForecastPoint } from './types';
 import { extractPollutant, extractPrimaryIndex } from './index-extractor';
 

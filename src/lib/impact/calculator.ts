@@ -12,9 +12,6 @@ import { evaluateIndoorImpact } from './indoor-impact';
 import { evaluateSwapsImpact } from './swaps-impact';
 import { calculateDeduplicatedTotals } from './deduplication';
 
-export { calculateInhaledAirVolumeM3, extractAirQualityParameters } from './air-volume';
-export { calculateBaselineDailyHouseholdDoseUg, calculateDeduplicatedTotals } from './deduplication';
-
 /**
  * Evaluates the impact of a specific action for a household.
  */

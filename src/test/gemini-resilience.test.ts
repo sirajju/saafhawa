@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { executeWithGeminiRetry } from '@/lib/gemini/executor';
 import {
-  executeWithGeminiRetry,
   isFatalGeminiError,
   isGeminiConfigError,
   isTransientGeminiError,
   sanitizeErrorMessage,
-} from '@/lib/gemini-executor';
+} from '@/lib/gemini/quota';
 import { getClientIp } from '@/lib/rate-limit';
 
 describe('Gemini Resilience & Retry Logic', () => {

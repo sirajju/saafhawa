@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  calculateHouseholdImpact,
-  HouseholdProfile,
-} from '@/lib/impact';
+import { calculateHouseholdImpact } from '@/lib/impact/calculator';
+import { HouseholdProfile } from '@/lib/impact/types';
 
 describe('Impact Module - Edge Cases', () => {
   it('handles household with NO car: marks car-specific swaps as non-applicable', () => {

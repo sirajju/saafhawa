@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { generateHouseholdPlan, getRuleBasedFallbackActions } from '@/lib/plan';
-import { resolvePlanConsistency, WORK_FROM_HOME_ACTION_ID } from '@/lib/plan/consistency';
+import { generateHouseholdPlan } from '@/lib/plan/service';
+import { getRuleBasedFallbackActions } from '@/lib/plan/fallback';
+import { resolvePlanConsistency } from '@/lib/plan/conflict-resolver';
+import { WORK_FROM_HOME_ACTION_ID } from '@/lib/plan/action-scoring';
 import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
 import { GeminiSelectedAction } from '@/lib/plan/types';
 import { MOCK_AIR_QUALITY, TEST_PROFILE_CAR, TEST_PROFILE_TWO_WHEELER } from './plan-fixtures';
