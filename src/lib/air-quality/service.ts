@@ -7,7 +7,7 @@ import {
   type OpenMeteoLocationResult,
 } from './open-meteo-client';
 import { fetchWaqiNearestStation } from './waqi-client';
-import { type AirQualityReport, AirQualityReportSchema } from './types';
+import { type AirQualityReport, AirQualityReportSchema, AirQualityQuerySchema } from './types';
 import { extractPrimaryIndex, extractPollutant, type ExtractedIndex } from './index-extractor';
 import { logServerWarning } from '../logger';
 import { env } from '../env';
@@ -101,7 +101,7 @@ export async function getAirQualityByLocation(
   rawPlace: string,
   options: GetAirQualityOptions = {}
 ): Promise<AirQualityReport> {
-  const place = rawPlace.trim();
+  const { place } = AirQualityQuerySchema.parse({ place: rawPlace });
   const cacheKey = normalizeLocationKey(place);
 
   if (!options.bypassCache) {

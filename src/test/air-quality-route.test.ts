@@ -117,4 +117,14 @@ describe('Air Quality - API Route Integration', () => {
 
     vi.unstubAllGlobals();
   });
+
+  it('rejects place parameter longer than 120 characters with validation error', async () => {
+    const tooLongPlace = 'A'.repeat(125);
+    const req = new NextRequest(`http://localhost:3000/api/air-quality?place=${tooLongPlace}`);
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe('Invalid Request');
+  });
 });
