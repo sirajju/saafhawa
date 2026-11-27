@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { z } from 'zod';
 
 export const DEFAULT_GEMINI_MODELS: readonly string[] = [

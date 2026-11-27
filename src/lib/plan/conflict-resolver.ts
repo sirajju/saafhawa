@@ -1,4 +1,3 @@
-/* eslint-disable complexity, max-lines-per-function */
 import { ACTION_CATALOGUE, type ActionDefinition } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { type AirQualityContext } from '../impact/types';

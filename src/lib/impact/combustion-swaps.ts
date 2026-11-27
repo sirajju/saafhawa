@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 import { type ActionDefinition } from './catalogue';
 import { BIOMASS_AND_OPEN_BURNING_FACTORS, INDIAN_POWER_GRID_FACTORS } from './emission-factors';
 import { type HouseholdProfile } from './types';

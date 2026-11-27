@@ -1,4 +1,3 @@
-/* eslint-disable complexity, max-lines-per-function */
 import { calculateCpcbAqi } from './cpcb-aqi';
 import { parseDateTimeToIso, getTimeZoneOffsetSeconds } from './time-utils';
 import { AirQualityError, type CurrentAirQuality, type HourlyForecastPoint } from './types';

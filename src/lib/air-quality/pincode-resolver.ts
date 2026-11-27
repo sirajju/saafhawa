@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { LocationNotFoundError, ProviderUnavailableError, AirQualityError } from './types';
 import { safeFetch } from './safe-fetch';
 

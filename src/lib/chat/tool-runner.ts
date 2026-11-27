@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { type FunctionCall } from '@google/genai';
 import { type AirQualityReport } from '../air-quality/types';
 import {

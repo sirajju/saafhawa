@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 import { type AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/time-utils';
 

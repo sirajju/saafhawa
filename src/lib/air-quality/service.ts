@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { airQualityCache, normalizeLocationKey } from './cache';
 import { type ClientRequestOptions } from './google-client';
 import { fetchViaGoogle } from './google-service';

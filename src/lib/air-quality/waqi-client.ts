@@ -1,4 +1,3 @@
-/* eslint-disable complexity, max-lines-per-function */
 import { calculateCpcbAqi } from './cpcb-aqi';
 import { type CurrentAirQuality, AirQualityError } from './types';
 import { safeFetch } from './safe-fetch';

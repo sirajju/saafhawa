@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { AirQualityError, LocationNotFoundError } from './types';
 import { type OpenMeteoGeocodingResponse, type OpenMeteoLocationResult } from './open-meteo-types';
 import {

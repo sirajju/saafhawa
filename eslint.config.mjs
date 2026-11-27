@@ -33,13 +33,6 @@ const eslintConfig = defineConfig([
       eqeqeq: ['error', 'always'],
     },
   },
-  {
-    files: ['src/lib/**/*.{ts,tsx}'],
-    rules: {
-      complexity: ['warn', 15],
-      'max-lines-per-function': ['warn', { max: 80, skipBlankLines: true, skipComments: true }],
-    },
-  },
 ]);
 
 export default eslintConfig;

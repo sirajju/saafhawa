@@ -1,4 +1,3 @@
-/* eslint-disable complexity, max-lines-per-function */
 import { createGeminiClient, resolveGeminiModels } from '../gemini/client';
 import { resolveGeminiApiKey } from '../env';
 import { getAirQualityByLocation } from '../air-quality/service';

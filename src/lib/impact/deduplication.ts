@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 import {
   FILTRATION_AND_INFILTRATION_FACTORS,
   INHALATION_RATES_M3_PER_HOUR,

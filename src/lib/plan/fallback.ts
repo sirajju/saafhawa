@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { ACTION_CATALOGUE, type ActionDefinition } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { type ActionImpactResult } from '../impact/types';

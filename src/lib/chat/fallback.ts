@@ -1,4 +1,3 @@
-/* eslint-disable complexity, max-lines-per-function */
 import { type AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/time-utils';
 import { type ChatRequest, type ChatResponse, type ExecutedToolRecord } from './types';

@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { redact } from '../logger';
 
 export interface QuotaAnalysis {

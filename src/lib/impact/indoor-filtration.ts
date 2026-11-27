@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 import { type ActionDefinition } from './catalogue';
 import { FILTRATION_AND_INFILTRATION_FACTORS } from './exposure-factors';
 import { type HouseholdProfile } from './types';

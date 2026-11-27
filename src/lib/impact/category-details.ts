@@ -1,4 +1,3 @@
-/* eslint-disable complexity, max-lines-per-function */
 import { AQI_UNAVAILABLE } from '../constants';
 
 /**

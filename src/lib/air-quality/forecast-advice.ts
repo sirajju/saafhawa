@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { formatHourInPlaceLocalTime } from '../chat/tools';
 import {
   type ForecastAdvicePoint,

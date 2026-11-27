@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 /**
  * Free server-side reverse geocoding using OpenStreetMap Nominatim.
  * Resolves GPS coordinates into readable locality and city (e.g. "Kozhikode, Kerala").

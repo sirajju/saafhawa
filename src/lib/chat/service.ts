@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import type { GoogleGenAI, Content, Part } from '@google/genai';
 import { createGeminiClient, resolveGeminiModels } from '../gemini/client';
 import { resolveGeminiApiKey } from '../env';

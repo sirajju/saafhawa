@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 import { ACTION_CATALOGUE, type ActionDefinition } from '../impact/catalogue';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { type AirQualityReport } from '../air-quality/types';

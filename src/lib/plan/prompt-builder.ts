@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { ACTION_CATALOGUE, type ActionDefinition } from '../impact/catalogue';
 import { type AirQualityReport } from '../air-quality/types';
 import { type PlanRequest } from './types';
