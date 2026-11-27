@@ -4,18 +4,25 @@ import { type ChatRequest, type ChatResponse, type ExecutedToolRecord } from './
 
 type ChatIntent = 'medical' | 'outdoor' | 'purifier' | 'general';
 
-const INTENT_KEYWORDS: Record<Exclude<ChatIntent, 'general'>, string[]> = {
-  medical: ['doctor', 'cough', 'chest', 'breath', 'medicine', 'inhaler'],
-  outdoor: ['play', 'outside', 'run', 'exercise', 'walk'],
-  purifier: ['purifier', 'filter', 'box fan'],
-};
+const MEDICAL_KEYWORDS = ['doctor', 'cough', 'chest', 'breath', 'medicine', 'inhaler'];
+const OUTDOOR_KEYWORDS = ['play', 'outside', 'run', 'exercise', 'walk'];
+const PURIFIER_KEYWORDS = ['purifier', 'filter', 'box fan'];
 
-export function detectIntent(query: string): ChatIntent {
+export function detectIntent(query: string, hasReport: boolean = false): ChatIntent {
   const lower = query.toLowerCase();
-  for (const [intent, keywords] of Object.entries(INTENT_KEYWORDS) as [
-    Exclude<ChatIntent, 'general'>,
-    string[],
-  ][]) {
+  const order: Array<{ intent: Exclude<ChatIntent, 'general'>; keywords: string[] }> = hasReport
+    ? [
+        { intent: 'outdoor', keywords: OUTDOOR_KEYWORDS },
+        { intent: 'medical', keywords: MEDICAL_KEYWORDS },
+        { intent: 'purifier', keywords: PURIFIER_KEYWORDS },
+      ]
+    : [
+        { intent: 'medical', keywords: MEDICAL_KEYWORDS },
+        { intent: 'outdoor', keywords: OUTDOOR_KEYWORDS },
+        { intent: 'purifier', keywords: PURIFIER_KEYWORDS },
+      ];
+
+  for (const { intent, keywords } of order) {
     if (keywords.some((k) => lower.includes(k))) {
       return intent;
     }
@@ -50,11 +57,14 @@ export async function generateFallbackChatResponse(
     }
   }
 
-  const intent = detectIntent(request.message);
+  const hasValidReport = Boolean(
+    report && report.current.aqi !== null && report.current.aqi !== undefined
+  );
+  const intent = detectIntent(request.message, hasValidReport);
   const hasAsthma = Boolean(request.householdProfile?.hasAsthmaOrRespiratoryCondition);
 
   // 1. Honesty on failed air quality lookup: never invent AQI numbers or categories
-  if (!report || report.current.aqi === null || report.current.aqi === undefined) {
+  if (!hasValidReport || !report) {
     let reply =
       "I couldn't get air quality for this place right now. Here is general guidance for your household:\n\n";
 
