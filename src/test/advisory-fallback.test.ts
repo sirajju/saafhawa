@@ -1,7 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { AirQualityReport } from '../lib/air-quality/types';
 
 describe('Community Advisory Fallback and Cache Bypassing', () => {
+  beforeEach(() => {
+    vi.stubEnv('GEMINI_API_KEY', '');
+    vi.stubEnv('AI_API_KEY', '');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('returns generationMethod and fallbackReason, never caching template fallback', async () => {
     const { generateCommunityAdvisory } = await import('../lib/community/advisory-generator');
     const { getCachedAdvisory, buildAdvisoryCacheKey } = await import('../lib/gemini/cache');
