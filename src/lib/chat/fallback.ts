@@ -2,6 +2,24 @@ import { AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/time-utils';
 import { ChatRequest, ChatResponse, ExecutedToolRecord } from './types';
 
+type ChatIntent = 'medical' | 'outdoor' | 'purifier' | 'general';
+
+const INTENT_KEYWORDS: Record<Exclude<ChatIntent, 'general'>, string[]> = {
+  medical: ['doctor', 'cough', 'chest', 'breath', 'medicine', 'inhaler'],
+  outdoor: ['play', 'outside', 'run', 'exercise', 'walk'],
+  purifier: ['purifier', 'filter', 'box fan'],
+};
+
+export function detectIntent(query: string): ChatIntent {
+  const lower = query.toLowerCase();
+  for (const [intent, keywords] of Object.entries(INTENT_KEYWORDS) as [Exclude<ChatIntent, 'general'>, string[]][]) {
+    if (keywords.some((k) => lower.includes(k))) {
+      return intent;
+    }
+  }
+  return 'general';
+}
+
 /**
  * Fallback answer generator when Gemini API is unavailable.
  * Answers honestly without inventing fake numbers or defaults.
@@ -29,21 +47,21 @@ export async function generateFallbackChatResponse(
     }
   }
 
-  const query = request.message.toLowerCase();
+  const intent = detectIntent(request.message);
   const hasAsthma = Boolean(request.householdProfile?.hasAsthmaOrRespiratoryCondition);
 
   // 1. Honesty on failed air quality lookup: never invent AQI numbers or categories
   if (!report || report.current.aqi === null || report.current.aqi === undefined) {
     let reply = "I couldn't get air quality for this place right now. Here is general guidance for your household:\n\n";
 
-    if (query.includes('doctor') || query.includes('cough') || query.includes('chest') || query.includes('breath') || query.includes('medicine') || query.includes('inhaler')) {
+    if (intent === 'medical') {
       reply += `⚠️ **Health & Medical Note:** If you or a family member is experiencing persistent coughing, wheezing, or difficulty breathing, **please consult a qualified medical doctor immediately**.\n\n` +
         `🛡️ **Immediate Environmental Precautions:**\n` +
         `• Rest in an enclosed room with an air purifier running if available.\n` +
         `• Keep doors, windows, and draft gaps closed.\n` +
         `• Avoid indoor smoke, incense sticks, or frying food.\n` +
         `• Keep prescribed emergency inhalers and medications readily accessible.`;
-    } else if (query.includes('play') || query.includes('outside') || query.includes('run') || query.includes('exercise') || query.includes('walk')) {
+    } else if (intent === 'outdoor') {
       reply += `• **Outdoor Activities:** Check official local monitors or visual smog conditions before strenuous outdoor exercise${hasAsthma ? ', especially for sensitive family members with asthma' : ''}.\n` +
         `• If haze or smoke is visible outside, keep workouts and active play indoors, or schedule them for midday when sunlight helps disperse surface pollution.`;
     } else {
@@ -66,7 +84,7 @@ export async function generateFallbackChatResponse(
 
   // 2. Air quality scaling: Good (<=50) and Satisfactory (51-100)
   if (aqi <= 100) {
-    if (query.includes('play') || query.includes('outside') || query.includes('run') || query.includes('exercise') || query.includes('walk')) {
+    if (intent === 'outdoor') {
       if (aqi <= 50) {
         reply = `In **${locName}**, air quality is **${category}** with an AQI of **${aqi}**${pm25Text ? ` (${pm25Text})` : ''}.\n\n` +
           `✅ **Recommendation:** Outdoor play, walking, and exercise are **safe and encouraged** for everyone today.\n\n` +
@@ -76,10 +94,10 @@ export async function generateFallbackChatResponse(
           `✅ **Recommendation:** Air quality is satisfactory and fine for normal outdoor activities.${hasAsthma ? ' Sensitive family members with asthma should take it easy during heavy or prolonged exertion.' : ''}\n\n` +
           `No special masks or window sealing are required today.`;
       }
-    } else if (query.includes('doctor') || query.includes('cough') || query.includes('chest') || query.includes('breath') || query.includes('medicine') || query.includes('inhaler')) {
+    } else if (intent === 'medical') {
       reply = `⚠️ **Health & Medical Note:** If you or a family member is experiencing persistent coughing, wheezing, or difficulty breathing, **please consult a qualified medical doctor immediately**.\n\n` +
         `Even in satisfactory air (AQI ${aqi}), individual triggers can cause irritation. Keep prescribed rescue medications handy.`;
-    } else if (query.includes('purifier') || query.includes('filter') || query.includes('box fan')) {
+    } else if (intent === 'purifier') {
       reply = `In **${locName}**, outdoor air quality is **${category}** (AQI **${aqi}**).\n\n` +
         `• **Ventilation:** Outdoor air is safe today, so you can open windows for natural airflow.\n` +
         `• **Air Purifiers:** While purifiers are valuable during winter inversions, they are not urgently required when AQI is satisfactory.\n` +
@@ -94,7 +112,7 @@ export async function generateFallbackChatResponse(
     }
   } else {
     // 3. Elevated pollution (AQI > 100): Moderate, Poor, Very Poor, Severe
-    if (query.includes('play') || query.includes('outside') || query.includes('run') || query.includes('exercise') || query.includes('walk')) {
+    if (intent === 'outdoor') {
       if (aqi > 250 || (typeof pm25 === 'number' && pm25 > 120)) {
         reply = `In **${locName}**, air quality is in the **${category}** category with an AQI of **${aqi}** (${pm25Text}).\n\n` +
           `🚫 **Recommendation:** Strenuous outdoor play or exercise is **not safe** today, especially for children${hasAsthma ? ' and anyone with asthma' : ''}. Cold winter temperature inversions concentrate toxic particulates near the ground.\n\n` +
@@ -102,14 +120,14 @@ export async function generateFallbackChatResponse(
       } else {
         reply = `The AQI reading for **${locName}** is **${aqi}** (${category}). While lighter outdoor activities are possible, sensitive groups${hasAsthma ? ' (including asthma sufferers)' : ''} should limit prolonged exertion and wear an N95 mask.`;
       }
-    } else if (query.includes('doctor') || query.includes('cough') || query.includes('chest') || query.includes('breath') || query.includes('medicine') || query.includes('inhaler')) {
+    } else if (intent === 'medical') {
       reply = `⚠️ **Health & Medical Note:** If you or a family member is experiencing persistent coughing, wheezing, or difficulty breathing, **please consult a qualified medical doctor immediately**.\n\n` +
         `🛡️ **Immediate Environmental Precautions:**\n` +
         `• Move to an enclosed room with a HEPA air purifier or DIY Corsi-Rosenthal box running.\n` +
         `• Keep doors, windows, and draft gaps tightly sealed.\n` +
         `• Avoid dry sweeping, incense sticks, or frying food indoors.\n` +
         `• Keep all prescribed emergency inhalers and medications readily accessible.`;
-    } else if (query.includes('purifier') || query.includes('filter') || query.includes('box fan')) {
+    } else if (intent === 'purifier') {
       reply = `Under smog conditions (AQI ${aqi}), indoor air filtration is essential.\n\n` +
         `• **HEPA Air Purifier:** Running a HEPA purifier in sleeping areas reduces indoor PM2.5 by ~75% over 8 hours.\n` +
         `• **DIY Box-Fan Filter:** If purifiers are too costly, a 20-inch box fan taped to four MERV-13 filters (Corsi-Rosenthal box) provides up to 68% living area particulate reduction at a fraction of the cost.\n` +

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ActionCategory, ExposureReduction, EmissionReduction } from '../impact/types';
-import { CleanLocation, CurrentAirQuality, HourlyForecastPoint } from '../air-quality/types';
+import { CleanLocation, CurrentAirQuality, HourlyForecastPoint, AirQualityReport } from '../air-quality/types';
 import { VALIDATION_LIMITS, VALIDATION_MESSAGES, FallbackReason } from '../constants';
 
 // ============================================================================
@@ -103,4 +103,19 @@ export interface PlanResponse {
   fallbackReason?: FallbackReason;
   dailyQuotaResetTime?: string;
   modelUsed?: string;
+}
+
+export interface GeneratePlanOptions {
+  models?: string[];
+  model?: string;
+  fallbackModel?: string;
+  apiKey?: string;
+  airQualityFetcher?: (place: string) => Promise<AirQualityReport>;
+  geminiGenerator?: (
+    systemInstruction: string,
+    userPrompt: string,
+    model: string,
+    apiKey: string,
+    timeoutMs?: number
+  ) => Promise<string | null>;
 }

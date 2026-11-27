@@ -69,7 +69,6 @@ export async function executeWithGeminiRetry<T>(
         }
       } catch (err: unknown) {
         lastError = err;
-        sanitizeErrorMessage(err, options.apiKey);
 
         if (isFatalGeminiError(err)) {
           logServerWarning(label, `Fatal auth error: ${sanitizeErrorMessage(err, options.apiKey)}`);
