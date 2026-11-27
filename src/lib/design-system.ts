@@ -82,18 +82,21 @@ export function getAqiCategorySoftCssVar(
   return 'var(--aqi-good-soft)';
 }
 
+/** Neutral label when no place is known yet; SaafHawa covers all of India. */
+const DEFAULT_PLACE_LABEL = 'your area';
+
 /**
  * Strips noisy administrative suffixes so the user sees a calm, clean short place name
  * e.g. "Connaught Place, New Delhi, Delhi 110001, India" -> "Delhi" or "Connaught Place"
  */
 export function getShortPlaceName(rawPlace?: string | null): string {
-  if (!rawPlace || !rawPlace.trim()) return 'Delhi';
+  if (!rawPlace || !rawPlace.trim()) return DEFAULT_PLACE_LABEL;
   const clean = rawPlace.replace(/·\s*Station:.*$/i, '').trim();
   const parts = clean
     .split(',')
     .map((p) => p.trim())
     .filter(Boolean);
-  if (parts.length === 0) return 'Delhi';
+  if (parts.length === 0) return DEFAULT_PLACE_LABEL;
 
   // If pincode alone, return it
   if (/^\d{6}$/.test(parts[0])) return parts[0];
