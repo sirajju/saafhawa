@@ -166,7 +166,7 @@ _(Note: Live network chat queries are tagged `@live` and run via `npm run test:e
 | `src/test/plan-schema.test.ts`                       | Strict coordinates format validation and empty onboarding defaults                  |
 | `src/test/plan-validation.test.ts`                   | Zod schema validation, coordinate format check, place length                        |
 | `src/test/prompt-builder.test.ts`                    | Structured prompt generation with clinical rules and occupant profile               |
-| `src/test/quota-and-cache.test.tsx`                  | 30-min plan caching, community advisory caching, daily quota UI                     |
+| `src/test/quota-and-cache.test.ts`                   | 30-min plan caching, community advisory caching, daily quota UI                     |
 | `src/test/rate-limit-proxy.test.ts`                  | Ingress proxy parsing, TRUSTED_PROXY_HOPS, sliding window capping                   |
 | `src/test/reverse-geocode-route.test.ts`             | GET /api/reverse-geocode endpoint, 30 req/min rate limit                            |
 | `src/test/reverse-geocoder.test.ts`                  | Server-side Nominatim reverse geocoding with 1 req/s rate limiter and cache         |

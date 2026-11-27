@@ -8,8 +8,8 @@ This document details the efficiency and resource optimization strategies implem
 
 - **Air Quality Telemetry Cache:** Live air quality reports are cached in memory for 15 minutes (900,000 ms) using a FIFO eviction queue capped at 300 entries ([`src/lib/air-quality/cache.ts`](../src/lib/air-quality/cache.ts)), eliminating redundant upstream API calls.
 - **Reverse Geocoding Cache:** Reverse geocode coordinate lookups are cached up to 50 entries with a 1 req/sec sliding limiter to strictly adhere to OpenStreetMap Nominatim fair use ([`src/lib/air-quality/reverse-geocoder.ts`](../src/lib/air-quality/reverse-geocoder.ts)).
-- **Gemini Plan Cache (30-min TTL):** Generated household plans are cached for 30 minutes using a composite key: `plan:${place}:${hour}:${stableProfileJson}` ([`src/lib/gemini-cache.ts`](../src/lib/gemini-cache.ts)). Identical household profiles queried in the same hour are served instantly from memory, preserving free-tier AI quotas.
-- **Gemini Community Advisory Cache (30-min TTL):** Broadcast advisories are cached for 30 minutes using `adv:${place}:${audience}:${language}:${hour}` ([`src/lib/gemini-cache.ts`](../src/lib/gemini-cache.ts)), avoiding repetitive generative calls across audience and language toggles.
+- **Gemini Plan Cache (30-min TTL):** Generated household plans are cached for 30 minutes using a composite key: `plan:${place}:${hour}:${stableProfileJson}` ([`src/lib/gemini/cache.ts`](../src/lib/gemini/cache.ts)). Identical household profiles queried in the same hour are served instantly from memory, preserving free-tier AI quotas.
+- **Gemini Community Advisory Cache (30-min TTL):** Broadcast advisories are cached for 30 minutes using `adv:${place}:${audience}:${language}:${hour}` ([`src/lib/gemini/cache.ts`](../src/lib/gemini/cache.ts)), avoiding repetitive generative calls across audience and language toggles.
 
 ---
 

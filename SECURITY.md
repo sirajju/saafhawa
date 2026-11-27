@@ -17,7 +17,7 @@ This document details the security architecture and controls implemented in **Sa
 
 - **64 KB Hard Payload Cap:** All POST endpoints enforce a 65,536-byte (64 KB) body size cap via `readJsonBodyWithLimit`. Declared `Content-Length` > 64 KB is rejected upfront with HTTP 413, and actual body bytes are measured with `TextEncoder` before JSON parsing: [`src/lib/security.ts`](src/lib/security.ts).
 - **Content-Type Strictness (HTTP 415):** In `readJsonBodyWithLimit`, all incoming POST requests must have a `Content-Type` header starting with `application/json`. Requests with missing or alternative content types (such as `text/plain` or `application/x-www-form-urlencoded`) are rejected with HTTP 415 Unsupported Media Type, preventing cross-origin simple-request CSRF abuse from consuming Gemini quota.
-- **Execution Timeouts:** Gemini API calls are bounded by 15-second timeouts with retries constrained to keep total attempt latency under 25 seconds: [`src/lib/gemini-utils.ts`](src/lib/gemini-utils.ts).
+- **Execution Timeouts:** Gemini API calls are bounded by 15-second timeouts with retries constrained to keep total attempt latency under 25 seconds: [`src/lib/gemini/utils.ts`](src/lib/gemini/utils.ts).
 - **Output Length Bounds:** Model output strings are strictly capped (2,500 characters for advisories, 3,000 characters for chat responses) to mitigate prompt injection buffer overflows.
 
 ---
