@@ -9,6 +9,7 @@ import {
   isTransientGeminiError,
 } from './gemini-quota';
 import { logServerWarning } from './logger';
+import { TIMERS } from './constants';
 
 export {
   type QuotaAnalysis,
@@ -45,7 +46,7 @@ export async function executeWithGeminiRetry<T>(
   options: GeminiRetryOptions<T>
 ): Promise<GeminiExecutionResult<T>> {
   const label = options.label || 'Gemini';
-  const deadline = Date.now() + Math.min(24000, options.totalTimeoutMs ?? 24000);
+  const deadline = Date.now() + Math.min(TIMERS.GEMINI_TOTAL_TIMEOUT_MS, options.totalTimeoutMs ?? TIMERS.GEMINI_TOTAL_TIMEOUT_MS);
   const candidateModels: string[] = options.models && options.models.length > 0
     ? options.models.map((m) => m.trim()).filter(Boolean)
     : [options.primaryModel, options.fallbackModel].filter((m): m is string => Boolean(m && m.trim()));
@@ -73,7 +74,7 @@ export async function executeWithGeminiRetry<T>(
       if (remainingMs < 1000) break;
 
       try {
-        const timeoutForCall = Math.min(12000, remainingMs);
+        const timeoutForCall = Math.min(TIMERS.GEMINI_CALL_TIMEOUT_MS, remainingMs);
         const data = await options.fn(model, timeoutForCall);
         if (data !== null && data !== undefined) {
           return { data, modelUsed: model, failedDueToBusy: false };

@@ -2,12 +2,13 @@
 
 import React from 'react';
 import { PlanSummary } from '@/lib/plan/types';
+import { FallbackReason } from '@/lib/constants';
 import { EQUIVALENCY_FACTORS, VEHICULAR_EMISSION_FACTORS } from '@/lib/impact/factors';
 
 interface TotalSavingsBannerProps {
   summary: PlanSummary;
   generationMethod?: 'gemini' | 'rule_based_fallback';
-  fallbackReason?: 'gemini_busy' | 'no_key' | 'model_error' | 'daily_quota_exhausted';
+  fallbackReason?: FallbackReason;
   dailyQuotaResetTime?: string;
   onRetry?: () => void;
 }

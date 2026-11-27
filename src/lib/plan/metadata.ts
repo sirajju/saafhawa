@@ -1,11 +1,12 @@
 import { PlanRequest } from './types';
+import { ActionId } from '../impact/action-ids';
 
 export interface ActionPriorityMetadata {
   getSuggestedTimeOfDay: (profile: PlanRequest, cleanestWindowText?: string) => string;
   generateReason: (profile: PlanRequest, cleanestWindowText?: string) => string;
 }
 
-export const FALLBACK_METADATA_MAP: Record<string, ActionPriorityMetadata> = {
+export const FALLBACK_METADATA_MAP: Record<ActionId, ActionPriorityMetadata> = {
   wear_n95_mask_outside: {
     getSuggestedTimeOfDay: (p) => (p.commutersCount > 0 ? 'Morning & Evening Commute' : 'Any outdoor walks or errands'),
     generateReason: (p) => {

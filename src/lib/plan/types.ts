@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ActionCategory, ExposureReduction, EmissionReduction } from '../impact/types';
 import { CleanLocation, CurrentAirQuality, HourlyForecastPoint } from '../air-quality/types';
-import { VALIDATION_LIMITS, VALIDATION_MESSAGES } from '../constants';
+import { VALIDATION_LIMITS, VALIDATION_MESSAGES, FallbackReason } from '../constants';
 
 // ============================================================================
 // Plan Request Schema
@@ -100,7 +100,7 @@ export interface PlanResponse {
   actions: PlannedAction[];
   summary: PlanSummary;
   generationMethod: 'gemini' | 'rule_based_fallback';
-  fallbackReason?: 'gemini_busy' | 'daily_quota_exhausted' | 'no_key' | 'model_error';
+  fallbackReason?: FallbackReason;
   dailyQuotaResetTime?: string;
   modelUsed?: string;
 }

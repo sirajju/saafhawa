@@ -1,9 +1,11 @@
+import { ActionId } from './action-ids';
+
 export interface ActionCostInfo {
   costRupees: number;
   costLabel: string;
 }
 
-export function getActionCost(actionId: string): ActionCostInfo {
+export function getActionCost(actionId: ActionId | string): ActionCostInfo {
   switch (actionId) {
     case 'wear_n95_mask_outside':
       return { costRupees: 250, costLabel: 'Approx. ₹250 (pack of certified N95 masks)' };

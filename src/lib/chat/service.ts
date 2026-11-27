@@ -6,6 +6,7 @@ import { AirQualityReport } from '../air-quality/types';
 import { capTextLength, withTimeout } from '../gemini-utils';
 import { executeWithGeminiRetry } from '../gemini-executor';
 import { logServerError } from '../logger';
+import { TIMERS } from '../constants';
 import { CHAT_TOOLS } from './tools';
 import { executeSingleToolCall } from './tool-runner';
 import { ChatResponse, ExecutedToolRecord, ChatRequest, ChatMessage } from './types';
@@ -33,7 +34,7 @@ async function runGeminiConversation(
   systemInstruction: string,
   fetcher: (place: string) => Promise<AirQualityReport>,
   toolsExecuted: ExecutedToolRecord[],
-  totalBudgetMs: number = 20000
+  totalBudgetMs: number = TIMERS.CHAT_BUDGET_MS
 ): Promise<string> {
   const contents: Content[] = [];
   const history = request.conversationHistory || [];
@@ -42,7 +43,7 @@ async function runGeminiConversation(
   }
   contents.push({ role: 'user', parts: [{ text: request.message }] });
 
-  const deadline = Date.now() + Math.min(20000, totalBudgetMs);
+  const deadline = Date.now() + Math.min(TIMERS.CHAT_BUDGET_MS, totalBudgetMs);
 
   const getTimeoutForRound = (roundIndex: number, maxRounds: number) => {
     const remainingMs = deadline - Date.now();
@@ -124,7 +125,7 @@ export async function handleChatQuery(
     models,
     apiKey,
     label: 'ChatService',
-    totalTimeoutMs: 20000,
+    totalTimeoutMs: TIMERS.CHAT_BUDGET_MS,
     fn: async (activeModel, timeoutMs) => {
       return runGeminiConversation(ai, activeModel, request, systemInstruction, fetcher, toolsExecuted, timeoutMs);
     },

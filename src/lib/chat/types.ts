@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PlanRequestSchema } from '../plan/types';
+import { FallbackReason } from '../constants';
 
 export const ChatMessageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system']),
@@ -55,7 +56,7 @@ export interface ExecutedToolRecord {
 export interface ChatResponse {
   reply: string;
   toolsExecuted: ExecutedToolRecord[];
-  fallbackReason?: 'gemini_busy' | 'daily_quota_exhausted' | 'no_key' | 'model_error';
+  fallbackReason?: FallbackReason;
   dailyQuotaResetTime?: string;
   modelUsed?: string;
 }

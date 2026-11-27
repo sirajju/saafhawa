@@ -3,12 +3,13 @@
 import React from 'react';
 import { RefreshIcon } from './ui/Icons';
 import { SafeMarkdown } from './chat/SafeMarkdown';
+import { FallbackReason } from '@/lib/constants';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   toolsSummary?: string[];
-  fallbackReason?: 'gemini_busy' | 'no_key' | 'model_error' | 'daily_quota_exhausted';
+  fallbackReason?: FallbackReason;
   dailyQuotaResetTime?: string;
   isGreeting?: boolean;
   isError?: boolean;

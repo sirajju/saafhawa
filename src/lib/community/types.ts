@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { FallbackReason } from '../constants';
 
 export const AdvisoryRequestSchema = z.object({
   place: z
@@ -25,5 +26,5 @@ export interface AdvisoryResponse {
   };
   modelUsed?: string;
   generationMethod?: 'gemini' | 'template';
-  fallbackReason?: 'no_key' | 'gemini_busy' | 'daily_quota_exhausted' | 'model_error';
+  fallbackReason?: FallbackReason;
 }

@@ -11,6 +11,7 @@ import { buildForecastAdvice } from '../air-quality/forecast-advice';
 import { executeWithGeminiRetry } from '../gemini-executor';
 import { resolveGeminiModels } from '../gemini-client';
 import { resolveGeminiApiKey } from '../env';
+import { FallbackReason } from '../constants';
 import { buildPlanCacheKey, getCachedPlan, setCachedPlan } from '../gemini-cache';
 import { logServerError } from '../logger';
 import {
@@ -74,7 +75,7 @@ export async function generateHouseholdPlan(
 
   let selectedActions: GeminiSelectedAction[] = [];
   let generationMethod: 'gemini' | 'rule_based_fallback' = 'gemini';
-  let fallbackReason: 'gemini_busy' | 'daily_quota_exhausted' | 'no_key' | 'model_error' | undefined = undefined;
+  let fallbackReason: FallbackReason | undefined = undefined;
   let dailyQuotaResetTime: string | undefined = undefined;
   let modelUsed: string | undefined = undefined;
 

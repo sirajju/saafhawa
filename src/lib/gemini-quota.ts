@@ -1,3 +1,5 @@
+import { redact } from './logger';
+
 export interface QuotaAnalysis {
   isQuota: boolean;
   isDailyQuota: boolean;
@@ -14,11 +16,8 @@ export function clearModelExhaustion(): void {
 }
 
 export function sanitizeErrorMessage(error: unknown, apiKey?: string): string {
-  let msg = error instanceof Error ? error.message : String(error || 'Unknown error');
-  if (apiKey && apiKey.length > 5) {
-    msg = msg.replaceAll(apiKey, '[REDACTED_API_KEY]');
-  }
-  return msg.replace(/key=[a-zA-Z0-9_\-]+/gi, 'key=[REDACTED]');
+  const msg = error instanceof Error ? error.message : String(error || 'Unknown error');
+  return redact(msg, apiKey);
 }
 
 export function isFatalGeminiError(error: unknown): boolean {

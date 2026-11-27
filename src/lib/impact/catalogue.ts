@@ -1,10 +1,12 @@
 import { ActionCategory } from './types';
 import { getActionCost } from './action-costs';
+import { ACTION_IDS, ActionId } from './action-ids';
 
-export { getActionCost };
+export { getActionCost, ACTION_IDS };
+export type { ActionId };
 
 export interface ActionDefinition {
-  id: string;
+  id: ActionId;
   title: string;
   description: string;
   category: ActionCategory;

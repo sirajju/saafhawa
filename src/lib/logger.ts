@@ -34,6 +34,19 @@ export function isNextControlFlowError(error: unknown): boolean {
 }
 
 /**
+ * Safe credential redactor for logs and error messages.
+ */
+export function redact(text: string, apiKey?: string): string {
+  let sanitized = text;
+  if (apiKey && apiKey.length > 5) {
+    sanitized = sanitized.replaceAll(apiKey, '[REDACTED_API_KEY]');
+  }
+  return sanitized
+    .replace(/(key|token|apiKey|secret)=([^&\s]+)/gi, '$1=[REDACTED]')
+    .replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED_KEY]');
+}
+
+/**
  * Safe server-side error logger that redacts API keys and secrets.
  * Next.js internal control-flow errors are ignored to prevent noisy build prerender logs.
  */
@@ -42,29 +55,13 @@ export function logServerError(context: string, error: unknown, apiKey?: string)
     return;
   }
 
-  let rawMsg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-  if (apiKey && apiKey.length > 5) {
-    rawMsg = rawMsg.replaceAll(apiKey, '[REDACTED_API_KEY]');
-  }
-  // Redact any query param keys, bearer tokens, or Google API keys (AIza...)
-  const sanitized = rawMsg
-    .replace(/(key|token|apiKey|secret)=([^&\s]+)/gi, '$1=[REDACTED]')
-    .replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED_KEY]');
-
-  console.error(`[${context}]`, sanitized);
+  const rawMsg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  console.error(`[${context}]`, redact(rawMsg, apiKey));
 }
 
 /**
  * Safe server-side warning logger that redacts API keys and secrets.
  */
 export function logServerWarning(context: string, message: string, apiKey?: string): void {
-  let rawMsg = message;
-  if (apiKey && apiKey.length > 5) {
-    rawMsg = rawMsg.replaceAll(apiKey, '[REDACTED_API_KEY]');
-  }
-  const sanitized = rawMsg
-    .replace(/(key|token|apiKey|secret)=([^&\s]+)/gi, '$1=[REDACTED]')
-    .replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED_KEY]');
-
-  console.warn(`[${context}]`, sanitized);
+  console.warn(`[${context}]`, redact(message, apiKey));
 }

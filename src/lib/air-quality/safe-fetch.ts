@@ -1,6 +1,7 @@
 import { ProviderUnavailableError } from './types';
+import { TIMERS } from '../constants';
 
-export const DEFAULT_REQUEST_TIMEOUT_MS = 12000;
+export const DEFAULT_REQUEST_TIMEOUT_MS = TIMERS.DEFAULT_FETCH_TIMEOUT_MS;
 
 export interface ClientRequestOptions {
   timeoutMs?: number;
