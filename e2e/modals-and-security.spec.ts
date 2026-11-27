@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 import { MOCK_PLAN } from './fixtures/mock-plan';
 
 test.describe('Modals, Chat & Security Headers', () => {
-  test('mobile floating Ask Assistant button opens full-height chat sheet with suggested chips', async ({ page }) => {
+  test('mobile floating Ask Assistant button opens full-height chat sheet with suggested chips', async ({
+    page,
+  }) => {
     await page.route('**/api/plan', async (route) => {
       await route.fulfill({
         status: 200,
@@ -38,7 +40,9 @@ test.describe('Modals, Chat & Security Headers', () => {
     await expect(dialog).not.toBeVisible();
   });
 
-  test('community advisory modal displays WhatsApp preview card and copy button', async ({ page }) => {
+  test('community advisory modal displays WhatsApp preview card and copy button', async ({
+    page,
+  }) => {
     await page.route('**/api/plan', async (route) => {
       await route.fulfill({
         status: 200,
@@ -51,7 +55,8 @@ test.describe('Modals, Chat & Security Headers', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
-          advisoryText: '🚨 Community Clean Air Advisory: Connaught Place\nAQI: 342 (Very Poor)\n• Wear N95 masks\n• Avoid morning exercise\n• Keep windows closed',
+          advisoryText:
+            '🚨 Community Clean Air Advisory: Connaught Place\nAQI: 342 (Very Poor)\n• Wear N95 masks\n• Avoid morning exercise\n• Keep windows closed',
           audience: 'housing_society',
           language: 'en',
         }),
@@ -80,7 +85,9 @@ test.describe('Modals, Chat & Security Headers', () => {
     await expect(dialog).not.toBeVisible();
   });
 
-  test('serves strict security headers without unsafe-eval and without x-powered-by', async ({ request }) => {
+  test('serves strict security headers without unsafe-eval and without x-powered-by', async ({
+    request,
+  }) => {
     const response = await request.get('/');
     expect(response.status()).toBe(200);
 

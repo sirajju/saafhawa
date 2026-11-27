@@ -1,4 +1,4 @@
-import { safeFetch, ClientRequestOptions } from './safe-fetch';
+import { safeFetch, type ClientRequestOptions } from './safe-fetch';
 
 const TIMEZONE_BASE_URL = 'https://maps.googleapis.com/maps/api/timezone/json';
 

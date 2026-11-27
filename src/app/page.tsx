@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { OnboardingForm } from '@/components/OnboardingForm';
 import { LoadingState } from '@/components/LoadingState';
@@ -9,7 +9,7 @@ import { PlanDashboard } from '@/components/PlanDashboard';
 import { ViewSwitch } from '@/components/ViewSwitch';
 import { Footer } from '@/components/Footer';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { PlanRequest, PlanResponse } from '@/lib/plan/types';
+import { type PlanRequest, type PlanResponse } from '@/lib/plan/types';
 
 const STORAGE_KEY = 'saafhawa_profile';
 
@@ -42,7 +42,9 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errData = await response.json().catch(() => null);
-        throw new Error(errData?.message || `Unable to generate smog plan (HTTP ${response.status})`);
+        throw new Error(
+          errData?.message || `Unable to generate smog plan (HTTP ${response.status})`
+        );
       }
 
       const planData: PlanResponse = await response.json();
@@ -91,10 +93,11 @@ export default function HomePage() {
       // Local storage safety
     }
     setProfile(newProfile);
-    fetchPlan(newProfile);
+    void fetchPlan(newProfile);
   };
 
-  const currentPlaceName = plan && currentView === 'dash' ? (plan.location.name || profile?.place || '') : '';
+  const currentPlaceName =
+    plan && currentView === 'dash' ? plan.location.name || profile?.place || '' : '';
   const lookupPlace =
     profile?.coordinates ||
     (plan ? `${plan.location.latitude}, ${plan.location.longitude}` : profile?.place || '');
@@ -112,10 +115,7 @@ export default function HomePage() {
         </div>
 
         {isOnboarding && !isLoading && (
-          <OnboardingForm
-            initialProfile={profile}
-            onSubmit={handleProfileSubmit}
-          />
+          <OnboardingForm initialProfile={profile} onSubmit={handleProfileSubmit} />
         )}
 
         {isLoading && <LoadingState />}

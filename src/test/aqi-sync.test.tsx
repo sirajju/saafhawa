@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ForecastChart, ForecastPoint } from '@/components/ForecastChart';
+import { ForecastChart, type ForecastPoint } from '@/components/ForecastChart';
 import { AirQualityCard } from '@/components/AirQualityCard';
-import { CurrentAirQuality, CleanLocation } from '@/lib/air-quality/types';
+import { type CurrentAirQuality, type CleanLocation } from '@/lib/air-quality/types';
 
 describe('AQI Agreement between Big Number Headline and Forecast Chart', () => {
   const mockHourlyForecast: ForecastPoint[] = [
@@ -61,11 +60,7 @@ describe('AQI Agreement between Big Number Headline and Forecast Chart', () => {
     };
 
     render(
-      <AirQualityCard
-        location={location}
-        current={current}
-        hourlyForecast={mockHourlyForecast}
-      />
+      <AirQualityCard location={location} current={current} hourlyForecast={mockHourlyForecast} />
     );
 
     // Big headline shows 161

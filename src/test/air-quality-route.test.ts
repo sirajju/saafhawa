@@ -68,7 +68,9 @@ describe('Air Quality - API Route Integration', () => {
           json: async () => [
             {
               Status: 'Success',
-              PostOffice: [{ District: 'Central Delhi', State: 'Delhi', Division: 'New Delhi Central' }],
+              PostOffice: [
+                { District: 'Central Delhi', State: 'Delhi', Division: 'New Delhi Central' },
+              ],
             },
           ],
         });

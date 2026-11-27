@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { generateHouseholdPlan } from '@/lib/plan/service';
-import { PlanRequest } from '@/lib/plan/types';
+import { type PlanRequest } from '@/lib/plan/types';
 import { MOCK_AIR_QUALITY, MOCK_PROFILE } from './plan-fixtures';
 
 const BASE_PROFILE: PlanRequest = { ...MOCK_PROFILE, place: 'Delhi' };
@@ -32,7 +32,7 @@ describe('Household Personalization & Explainability', () => {
       expect(action.costLabel).toBeDefined();
     }
 
-    const text = plan.actions.map(a => `${a.title} ${a.reason} ${a.basisExplanation}`).join(' ');
+    const text = plan.actions.map((a) => `${a.title} ${a.reason} ${a.basisExplanation}`).join(' ');
     expect(text).toMatch(/car|alone|solo|commute/i);
   });
 
@@ -52,7 +52,7 @@ describe('Household Personalization & Explainability', () => {
       apiKey: '',
     });
 
-    const actionIds = plan.actions.map(a => a.actionId);
+    const actionIds = plan.actions.map((a) => a.actionId);
     expect(actionIds).not.toContain('induction_cooktop_swap');
     expect(actionIds).not.toContain('electric_radiator_winter_swap');
     expect(actionIds).not.toContain('diy_corsi_rosenthal_box');
@@ -64,8 +64,8 @@ describe('Household Personalization & Explainability', () => {
       expect(action.reason.toLowerCase()).not.toContain('women and children');
     }
 
-    const hasSeniorAction = actionIds.some(id =>
-      id === 'senior_indoor_morning_walk' || id === 'seniors_avoid_strenuous_outdoor'
+    const hasSeniorAction = actionIds.some(
+      (id) => id === 'senior_indoor_morning_walk' || id === 'seniors_avoid_strenuous_outdoor'
     );
     expect(hasSeniorAction).toBe(true);
   });
@@ -85,10 +85,10 @@ describe('Household Personalization & Explainability', () => {
       apiKey: '',
     });
 
-    const reasons = plan.actions.map(a => a.reason).join(' ');
+    const reasons = plan.actions.map((a) => a.reason).join(' ');
     expect(reasons.toLowerCase()).toMatch(/airway|bronchial|asthma|hyper-reactive/i);
 
-    const basisExplanations = plan.actions.map(a => a.basisExplanation).join(' ');
+    const basisExplanations = plan.actions.map((a) => a.basisExplanation).join(' ');
     expect(basisExplanations.toLowerCase()).toMatch(/asthma|children|child/i);
   });
 
@@ -123,9 +123,10 @@ describe('Household Personalization & Explainability', () => {
       { airQualityFetcher: vi.fn().mockResolvedValue(mockAqWithForecast), apiKey: '' }
     );
 
-    const ventAction = plan.actions.find(a =>
-      a.actionId === 'ventilate_at_cleanest_afternoon_hour' ||
-      a.actionId === 'shift_outdoor_exercise_to_cleanest_hour'
+    const ventAction = plan.actions.find(
+      (a) =>
+        a.actionId === 'ventilate_at_cleanest_afternoon_hour' ||
+        a.actionId === 'shift_outdoor_exercise_to_cleanest_hour'
     );
     if (ventAction) {
       expect(ventAction.suggestedTimeOfDay).toContain('1 PM to 4 PM');

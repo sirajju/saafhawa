@@ -1,4 +1,5 @@
-import { AirQualityReport } from '../air-quality/types';
+/* eslint-disable max-lines-per-function */
+import { type AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/time-utils';
 
 /**
@@ -24,8 +25,7 @@ export function generateTemplateAdvisory(
   if (language === 'hi') {
     if (audience === 'school_group') {
       const headline = `🏫 स्कूल एवं अभिभावक समूह: वायु प्रदूषण सुरक्षा परामर्श (${loc})`;
-      const advisoryText =
-`*${headline}*
+      const advisoryText = `*${headline}*
 📅 दिनांक: ${new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 क्षेत्र: ${loc}
 📊 *डेटा स्रोत:* ${source} (मापा गया समय: ${measuredTime})
@@ -45,8 +45,7 @@ _साफ़ हवा (SaafHawa) द्वारा जनहित में 
       return { headline, advisoryText };
     } else {
       const headline = `🏘️ आवासीय सोसायटी / RWA शीतकालीन स्मॉग परामर्श (${loc})`;
-      const advisoryText =
-`*${headline}*
+      const advisoryText = `*${headline}*
 📅 दिनांक: ${new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 क्षेत्र: ${loc}
 📊 *डेटा स्रोत:* ${source} (मापा गया समय: ${measuredTime})
@@ -70,8 +69,7 @@ _साफ़ हवा (SaafHawa) द्वारा जनहित में 
   // English Advisories
   if (audience === 'school_group') {
     const headline = `🏫 School & Parent Smog Advisory (${loc})`;
-    const advisoryText =
-`*${headline}*
+    const advisoryText = `*${headline}*
 📅 Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 Area: ${loc}
 📊 *Data Source:* ${source} (Measured: ${measuredTime})
@@ -91,8 +89,7 @@ _Shared via SaafHawa Community Defense — Please forward to class & parent What
     return { headline, advisoryText };
   } else {
     const headline = `🏘️ Housing Society / RWA Clean Air Advisory (${loc})`;
-    const advisoryText =
-`*${headline}*
+    const advisoryText = `*${headline}*
 📅 Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
 📍 Location: ${loc}
 📊 *Data Source:* ${source} (Measured: ${measuredTime})

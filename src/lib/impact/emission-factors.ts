@@ -22,7 +22,7 @@ export const VEHICULAR_EMISSION_FACTORS = {
 
   // Source: CPCB & ARAI Indian Driving Cycle (In-use mixed fleet BS-IV / BS-VI)
   // Combined tailpipe + non-exhaust PM2.5 grams per vehicle-km
-  DIESEL_CAR_PM25_G_PER_KM: 0.070,
+  DIESEL_CAR_PM25_G_PER_KM: 0.07,
 
   // Source: ARAI Two-Wheeler Fuel Economy Baseline & TERI (2021)
   // Motorcycle / Scooter: CO2 grams per vehicle-km
@@ -50,7 +50,7 @@ export const VEHICULAR_EMISSION_FACTORS = {
 
   // Source: Goel, R. & Kumar, P., Atmospheric Environment (2015) "Characterisation of particulate emissions and commuter exposure in Indian cities"
   // [NEEDS VERIFICATION] - Ratio of in-cabin PM2.5 to background ambient in Indian traffic without HEPA filtration
-  CAR_CABIN_EXPOSURE_RATIO: 0.70,
+  CAR_CABIN_EXPOSURE_RATIO: 0.7,
 
   // Source: Apte, J. S. et al., Atmospheric Environment (2011) "High-resolution air pollution mapping and commuter exposure on two-wheelers in India"
   // Two-wheeler riders experience elevated PM2.5 concentrations due to direct immersion in preceding exhaust plumes.
@@ -58,7 +58,7 @@ export const VEHICULAR_EMISSION_FACTORS = {
 
   // Source: DMRC Air Quality Monitoring in Underground and Elevated Air-Conditioned Coaches
   // [NEEDS VERIFICATION] - Ratio of metro coach PM2.5 concentration relative to outdoor street-level smog.
-  METRO_IN_TRANSIT_EXPOSURE_RATIO: 0.30,
+  METRO_IN_TRANSIT_EXPOSURE_RATIO: 0.3,
 
   // Typical average urban transit speed in congested Indian metropolitan traffic (km/h)
   // [NEEDS VERIFICATION] - Used to estimate commute duration from distance.

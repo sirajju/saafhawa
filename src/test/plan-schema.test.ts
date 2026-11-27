@@ -9,11 +9,18 @@ describe('Plan and Request Schemas Validation', () => {
   it('validates coordinates format as "lat, lon" with max length 50', () => {
     const valid = PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: '12.9716, 77.5946' });
     expect(valid.coordinates).toBe('12.9716, 77.5946');
-    const validNegative = PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: '-33.8688, 151.2093' });
+    const validNegative = PlanRequestSchema.parse({
+      ...MOCK_PROFILE,
+      coordinates: '-33.8688, 151.2093',
+    });
     expect(validNegative.coordinates).toBe('-33.8688, 151.2093');
 
-    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: 'InvalidCityName' })).toThrow(/lat, lon/);
-    expect(() => PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: '12.97, 77.59' + '0'.repeat(45) })).toThrow(/50 characters/);
+    expect(() =>
+      PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: 'InvalidCityName' })
+    ).toThrow(/lat, lon/);
+    expect(() =>
+      PlanRequestSchema.parse({ ...MOCK_PROFILE, coordinates: '12.97, 77.59' + '0'.repeat(45) })
+    ).toThrow(/50 characters/);
   });
 
   it('onboarding starts with empty place and schemas require place without 110001 defaults', () => {

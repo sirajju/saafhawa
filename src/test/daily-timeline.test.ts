@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getTimeSlotForAction, isTimeSlotPassed } from '@/components/dashboard/DailyTimeline';
-import { PlannedAction } from '@/lib/plan/types';
+import { type PlannedAction } from '@/lib/plan/types';
 
 describe('Daily Timeline - Grouping & Past Time Marking', () => {
   const makeAction = (id: string, timeOfDay: string): PlannedAction => ({
@@ -34,8 +34,12 @@ describe('Daily Timeline - Grouping & Past Time Marking', () => {
 
   it('correctly maps morning, afternoon, evening, and night actions', () => {
     expect(getTimeSlotForAction(makeAction('wear_mask', 'Morning Commute'))).toBe('morning');
-    expect(getTimeSlotForAction(makeAction('shift_exercise', 'Afternoon 1 PM - 3 PM'))).toBe('afternoon');
-    expect(getTimeSlotForAction(makeAction('post_commute_saline', 'Evening Post-Commute'))).toBe('evening');
+    expect(getTimeSlotForAction(makeAction('shift_exercise', 'Afternoon 1 PM - 3 PM'))).toBe(
+      'afternoon'
+    );
+    expect(getTimeSlotForAction(makeAction('post_commute_saline', 'Evening Post-Commute'))).toBe(
+      'evening'
+    );
     expect(getTimeSlotForAction(makeAction('run_hepa_bedroom', 'Night / Bedtime'))).toBe('night');
   });
 

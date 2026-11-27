@@ -32,9 +32,13 @@ export async function safeFetch(
     return response;
   } catch (err: unknown) {
     if (err instanceof Error && (err.name === 'AbortError' || err.message.includes('timed out'))) {
-      throw new ProviderUnavailableError('Air quality service request timed out. Please try again shortly.');
+      throw new ProviderUnavailableError(
+        'Air quality service request timed out. Please try again shortly.'
+      );
     }
-    throw new ProviderUnavailableError('Unable to connect to air quality provider. Please check your connection.');
+    throw new ProviderUnavailableError(
+      'Unable to connect to air quality provider. Please check your connection.'
+    );
   } finally {
     clearTimeout(timeoutId);
   }

@@ -1,15 +1,15 @@
 import {
-  GoogleCurrentConditionsResponse,
+  type GoogleCurrentConditionsResponse,
   GoogleCurrentConditionsResponseSchema,
-  GoogleForecastResponse,
+  type GoogleForecastResponse,
   GoogleForecastResponseSchema,
-  GoogleGeocodingResponse,
+  type GoogleGeocodingResponse,
   GoogleGeocodingResponseSchema,
   LocationNotFoundError,
   QuotaExceededError,
   AirQualityError,
 } from './types';
-import { safeFetch, ClientRequestOptions, DEFAULT_REQUEST_TIMEOUT_MS } from './safe-fetch';
+import { safeFetch, type ClientRequestOptions, DEFAULT_REQUEST_TIMEOUT_MS } from './safe-fetch';
 import { computeForecastPeriod } from './forecast-period';
 
 export { DEFAULT_REQUEST_TIMEOUT_MS, computeForecastPeriod };

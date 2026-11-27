@@ -42,7 +42,9 @@ describe('Plan Module - Gemini Generation & Fallback', () => {
   });
 
   it('falls back to rule-based selection when Gemini API fails or throws', async () => {
-    const mockFailingGenerator = vi.fn().mockRejectedValue(new Error('Gemini API 503 Quota/Unavailable'));
+    const mockFailingGenerator = vi
+      .fn()
+      .mockRejectedValue(new Error('Gemini API 503 Quota/Unavailable'));
     const mockAirQualityFetcher = vi.fn().mockResolvedValue(MOCK_AIR_QUALITY);
 
     const plan = await generateHouseholdPlan(MOCK_PROFILE, {

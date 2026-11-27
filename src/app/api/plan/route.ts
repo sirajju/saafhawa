@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { generateHouseholdPlan } from '@/lib/plan/service';
 import { PlanRequestSchema } from '@/lib/plan/types';
 import { VALIDATION_MESSAGES } from '@/lib/constants';
@@ -37,6 +37,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    return toErrorResponse('API:plan', error, 'An unexpected error occurred while generating your daily smog plan.');
+    return toErrorResponse(
+      'API:plan',
+      error,
+      'An unexpected error occurred while generating your daily smog plan.'
+    );
   }
 }

@@ -1,8 +1,9 @@
-import { ACTION_CATALOGUE, ActionDefinition } from '../impact/catalogue';
+/* eslint-disable complexity */
+import { ACTION_CATALOGUE, type ActionDefinition } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
-import { ActionImpactResult } from '../impact/types';
-import { AirQualityReport } from '../air-quality/types';
-import { GeminiSelectedAction, PlanRequest } from './types';
+import { type ActionImpactResult } from '../impact/types';
+import { type AirQualityReport } from '../air-quality/types';
+import { type GeminiSelectedAction, type PlanRequest } from './types';
 import { FALLBACK_METADATA_MAP } from './metadata';
 import { resolvePlanConsistency } from './conflict-resolver';
 
@@ -24,7 +25,13 @@ function checkIsCleanAir(airQuality: AirQualityReport): boolean {
           .map((p) => p.aqi)
       )
     : aqiNum;
-  return aqiNum !== null && aqiNum !== undefined && aqiNum <= 100 && maxForecast !== null && maxForecast <= 100;
+  return (
+    aqiNum !== null &&
+    aqiNum !== undefined &&
+    aqiNum <= 100 &&
+    maxForecast !== null &&
+    maxForecast <= 100
+  );
 }
 
 function filterApplicableActions(
@@ -75,13 +82,23 @@ function computeProfileBoosts(id: string, profile: PlanRequest, isZeroCost: bool
     if (id === 'keep_children_indoors_morning_smog') boost += 45;
     if (id === 'wear_n95_mask_outside') boost += 20;
   }
-  if (profile.usesIncenseOrMosquitoCoils && id === 'eliminate_incense_and_mosquito_coils') boost += 40;
+  if (profile.usesIncenseOrMosquitoCoils && id === 'eliminate_incense_and_mosquito_coils')
+    boost += 40;
   if (profile.hasKitchenChimneyOrExhaust && id === 'use_exhaust_fan_cooking') boost += 30;
-  if ((profile.primaryCommuteMode === 'petrol_car' || profile.primaryCommuteMode === 'diesel_car') && id === 'swap_car_for_metro') boost += 25;
-  if (profile.primaryCommuteMode === 'two_wheeler' && id === 'swap_two_wheeler_for_metro_or_bus') boost += 35;
+  if (
+    (profile.primaryCommuteMode === 'petrol_car' || profile.primaryCommuteMode === 'diesel_car') &&
+    id === 'swap_car_for_metro'
+  )
+    boost += 25;
+  if (profile.primaryCommuteMode === 'two_wheeler' && id === 'swap_two_wheeler_for_metro_or_bus')
+    boost += 35;
   if (profile.canWorkFromHome && id === 'work_from_home_on_smog_days') boost += 30;
   if (profile.cookingFuel === 'biomass') {
-    if (id === 'cook_with_kitchen_cross_ventilation' || id === 'keep_vulnerable_out_of_chulha_kitchen') boost += 55;
+    if (
+      id === 'cook_with_kitchen_cross_ventilation' ||
+      id === 'keep_vulnerable_out_of_chulha_kitchen'
+    )
+      boost += 55;
     if (id === 'use_dry_seasoned_chulha_fuel') boost += 50;
     if (!isZeroCost && id === 'swap_biomass_cookstove_to_induction') boost += 50;
   }
@@ -89,7 +106,10 @@ function computeProfileBoosts(id: string, profile: PlanRequest, isZeroCost: bool
   return boost;
 }
 
-function scoreCandidateActions(applicableActions: ActionWithImpact[], profile: PlanRequest): ScoredAction[] {
+function scoreCandidateActions(
+  applicableActions: ActionWithImpact[],
+  profile: PlanRequest
+): ScoredAction[] {
   const isZeroCost = profile.budget === 'zero_cost';
   const scored = applicableActions.map((item) => {
     let score = 10;
@@ -127,8 +147,12 @@ function mapActionsWithMetadata(
 ): GeminiSelectedAction[] {
   return selected.map((item) => {
     const meta = FALLBACK_METADATA_MAP[item.action.id];
-    const timeOfDay = meta ? meta.getSuggestedTimeOfDay(profile, cleanestWindowText) : 'Throughout the day';
-    const reason = meta ? meta.generateReason(profile, cleanestWindowText) : item.action.description;
+    const timeOfDay = meta
+      ? meta.getSuggestedTimeOfDay(profile, cleanestWindowText)
+      : 'Throughout the day';
+    const reason = meta
+      ? meta.generateReason(profile, cleanestWindowText)
+      : item.action.description;
     return {
       actionId: item.action.id,
       suggestedTimeOfDay: timeOfDay,

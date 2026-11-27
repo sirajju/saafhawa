@@ -1,6 +1,7 @@
-import { ACTION_CATALOGUE, ActionDefinition } from '../impact/catalogue';
-import { AirQualityReport } from '../air-quality/types';
-import { PlanRequest } from './types';
+/* eslint-disable complexity */
+import { ACTION_CATALOGUE, type ActionDefinition } from '../impact/catalogue';
+import { type AirQualityReport } from '../air-quality/types';
+import { type PlanRequest } from './types';
 
 export interface PromptContent {
   systemInstruction: string;
@@ -14,12 +15,15 @@ export function buildPlanPrompt(
   cleanestWindowText = 'midday'
 ): PromptContent {
   const vulnerableGroups: string[] = [];
-  if (profile.hasAsthmaOrRespiratoryCondition) vulnerableGroups.push('Asthma / Respiratory condition');
+  if (profile.hasAsthmaOrRespiratoryCondition)
+    vulnerableGroups.push('Asthma / Respiratory condition');
   if (profile.childrenCount > 0) vulnerableGroups.push(`${profile.childrenCount} child(ren)`);
   if (profile.elderlyCount > 0) vulnerableGroups.push(`${profile.elderlyCount} elderly member(s)`);
 
   const vulnerabilityDescription =
-    vulnerableGroups.length > 0 ? vulnerableGroups.join(', ') : 'No high-risk health conditions reported';
+    vulnerableGroups.length > 0
+      ? vulnerableGroups.join(', ')
+      : 'No high-risk health conditions reported';
 
   const systemInstruction = `You are SaafHawa's winter smog action advisor for families and communities.
 Your mission is to pick 6 to 8 highly relevant, customized actions from our verified catalogue to help this specific household today.

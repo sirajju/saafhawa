@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { PlannedAction } from '@/lib/plan/types';
+import { useState } from 'react';
+import { type PlannedAction } from '@/lib/plan/types';
 import { CheckIcon } from '@/components/ui/Icons';
 
 interface DailyTimelineItemProps {
@@ -10,15 +10,12 @@ interface DailyTimelineItemProps {
   onToggle: () => void;
 }
 
-export function DailyTimelineItem({
-  action,
-  isDone,
-  onToggle,
-}: DailyTimelineItemProps) {
+export function DailyTimelineItem({ action, isDone, onToggle }: DailyTimelineItemProps) {
   const [showDetails, setShowDetails] = useState(false);
   const doseAvoided = action.exposureReduction?.pm25InhaledDoseAvoidedUg;
   const co2SavedGrams = action.emissionReduction?.co2SavedGrams;
-  const co2SavedKg = typeof co2SavedGrams === 'number' && co2SavedGrams > 0 ? co2SavedGrams / 1000 : null;
+  const co2SavedKg =
+    typeof co2SavedGrams === 'number' && co2SavedGrams > 0 ? co2SavedGrams / 1000 : null;
   const pm25Saved = action.emissionReduction?.pm25SavedGrams;
 
   return (
@@ -68,17 +65,22 @@ export function DailyTimelineItem({
           )}
         </div>
 
-        <button
-          type="button"
-          className="details"
-          onClick={() => setShowDetails(!showDetails)}
-        >
+        <button type="button" className="details" onClick={() => setShowDetails(!showDetails)}>
           <span>{showDetails ? 'Hide details' : 'How we calculated this'}</span>
           <span className="sr-only">Details</span>
         </button>
 
         {showDetails && (
-          <div style={{ marginTop: 8, fontSize: 13, color: 'var(--ink-2)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 13,
+              color: 'var(--ink-2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4,
+            }}
+          >
             <p>{action.description}</p>
             {action.methodologyNotes && (
               <p className="caption">Calculation basis: {action.methodologyNotes}</p>

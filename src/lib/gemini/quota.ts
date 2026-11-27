@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import { redact } from '../logger';
 
 export interface QuotaAnalysis {
@@ -59,8 +60,8 @@ export function parseGeminiQuotaError(error: unknown): QuotaAnalysis {
     error instanceof Error
       ? error.message
       : error && typeof error === 'object' && 'message' in error
-      ? String((error as { message: unknown }).message)
-      : String(error || '');
+        ? String((error as { message: unknown }).message)
+        : String(error || '');
   const lower = rawMsg.toLowerCase();
   const errObj = error as {
     status?: number;
@@ -72,8 +73,8 @@ export function parseGeminiQuotaError(error: unknown): QuotaAnalysis {
   const details = Array.isArray(errObj.details)
     ? errObj.details
     : Array.isArray(errObj.errorDetails)
-    ? errObj.errorDetails
-    : [];
+      ? errObj.errorDetails
+      : [];
 
   const is429 =
     errObj.status === 429 ||

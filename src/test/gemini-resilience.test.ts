@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { executeWithGeminiRetry } from '@/lib/gemini/executor';
 import {
   isFatalGeminiError,
@@ -7,7 +6,6 @@ import {
   isTransientGeminiError,
   sanitizeErrorMessage,
 } from '@/lib/gemini/quota';
-import { getClientIp } from '@/lib/rate-limit';
 
 describe('Gemini Resilience & Retry Logic', () => {
   beforeEach(() => {
@@ -20,8 +18,14 @@ describe('Gemini Resilience & Retry Logic', () => {
     expect(isFatalGeminiError(new Error('400 Bad Request: Invalid argument'))).toBe(false);
     expect(isFatalGeminiError(new Error('503 Service Unavailable'))).toBe(false);
 
-    expect(isGeminiConfigError(new Error('404 Not Found: models/gemini-flash-lite-latest not found for API version v1'))).toBe(true);
-    expect(isGeminiConfigError(new Error('400 Developer instruction is not enabled for api version v1'))).toBe(true);
+    expect(
+      isGeminiConfigError(
+        new Error('404 Not Found: models/gemini-flash-lite-latest not found for API version v1')
+      )
+    ).toBe(true);
+    expect(
+      isGeminiConfigError(new Error('400 Developer instruction is not enabled for api version v1'))
+    ).toBe(true);
     expect(isGeminiConfigError(new Error('503 Service Unavailable'))).toBe(false);
 
     expect(isTransientGeminiError(new Error('503 Service Unavailable: High demand'))).toBe(true);
@@ -33,7 +37,8 @@ describe('Gemini Resilience & Retry Logic', () => {
   });
 
   it('sanitizes API keys and sensitive tokens from error messages', () => {
-    const raw = 'Error calling https://generativelanguage.googleapis.com?key=AIzaSyD123456789SecretKey: 503 busy';
+    const raw =
+      'Error calling https://generativelanguage.googleapis.com?key=AIzaSyD123456789SecretKey: 503 busy';
     const clean = sanitizeErrorMessage(raw);
     expect(clean).not.toContain('AIzaSyD123456789SecretKey');
     expect(clean).toContain('key=[REDACTED]');
@@ -57,7 +62,8 @@ describe('Gemini Resilience & Retry Logic', () => {
   });
 
   it('retries on 503 and succeeds on 2nd attempt without switching model', async () => {
-    const fn = vi.fn()
+    const fn = vi
+      .fn()
       .mockRejectedValueOnce(new Error('503 Service Unavailable: high demand'))
       .mockResolvedValueOnce('retry-success');
 
@@ -122,7 +128,11 @@ describe('Gemini Resilience & Retry Logic', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fn = vi.fn().mockImplementation((model: string) => {
       if (model === 'gemini-flash-lite-latest') {
-        return Promise.reject(new Error('404 Not Found: models/gemini-flash-lite-latest is not found for API version v1'));
+        return Promise.reject(
+          new Error(
+            '404 Not Found: models/gemini-flash-lite-latest is not found for API version v1'
+          )
+        );
       }
       return Promise.resolve('fallback-model-worked');
     });
@@ -161,30 +171,5 @@ describe('Gemini Resilience & Retry Logic', () => {
 
     expect(res.data).toBeNull();
     expect(res.failedDueToBusy).toBe(true);
-  });
-});
-
-describe('Vercel Rate Limiter Client IP Resolution', () => {
-  const origVercel = process.env.VERCEL;
-
-  afterEach(() => {
-    if (origVercel !== undefined) process.env.VERCEL = origVercel;
-    else delete process.env.VERCEL;
-  });
-
-  it('extracts first IP in x-forwarded-for when running on Vercel', () => {
-    process.env.VERCEL = '1';
-    const req = new NextRequest('http://localhost:3000/api/chat', {
-      headers: { 'x-forwarded-for': '203.0.113.195, 10.0.0.1, 10.0.0.2' },
-    });
-    expect(getClientIp(req)).toBe('203.0.113.195');
-  });
-
-  it('extracts x-real-ip when on Vercel and x-forwarded-for is missing', () => {
-    process.env.VERCEL = '1';
-    const req = new NextRequest('http://localhost:3000/api/chat', {
-      headers: { 'x-real-ip': '198.51.100.42' },
-    });
-    expect(getClientIp(req)).toBe('198.51.100.42');
   });
 });

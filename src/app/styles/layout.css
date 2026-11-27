@@ -38,7 +38,7 @@ header.app-header {
 }
 
 .logo .hi {
-  font-family: var(--font-noto-devanagari), 'Noto Sans Devanagari', sans-serif;
+  font-family: var(--font-noto-devanagari), "Noto Sans Devanagari", sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--ink-3);

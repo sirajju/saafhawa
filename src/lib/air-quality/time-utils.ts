@@ -73,10 +73,7 @@ export function parseDateTimeToIso(
  * Safe against UTC server runtimes (Vercel) by ensuring the ISO timestamp is correctly
  * anchored before converting to the target local timezone.
  */
-export function formatMeasurementTime(
-  dateTimeIso?: string,
-  timeZone = 'Asia/Kolkata'
-): string {
+export function formatMeasurementTime(dateTimeIso?: string, timeZone = 'Asia/Kolkata'): string {
   if (!dateTimeIso) return 'Recent';
   try {
     const targetTz = timeZone || 'Asia/Kolkata';

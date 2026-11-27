@@ -1,18 +1,17 @@
-import { PlanRequest } from './types';
-import { ActionId } from '../impact/action-ids';
-
-export interface ActionPriorityMetadata {
-  getSuggestedTimeOfDay: (profile: PlanRequest, cleanestWindowText?: string) => string;
-  generateReason: (profile: PlanRequest, cleanestWindowText?: string) => string;
-}
+import { type ActionPriorityMetadata } from './types';
+import { type ActionId } from '../impact/action-ids';
 
 export const FALLBACK_METADATA_MAP: Record<ActionId, ActionPriorityMetadata> = {
   wear_n95_mask_outside: {
-    getSuggestedTimeOfDay: (p) => (p.commutersCount > 0 ? 'Morning & Evening Commute' : 'Any outdoor walks or errands'),
+    getSuggestedTimeOfDay: (p) =>
+      p.commutersCount > 0 ? 'Morning & Evening Commute' : 'Any outdoor walks or errands',
     generateReason: (p) => {
-      if (p.hasAsthmaOrRespiratoryCondition) return 'Protects vulnerable lungs and airways from fine particulate inhalation during outdoor transit.';
-      if (p.childrenCount > 0) return 'Significantly cuts down particulate inhalation for your children and family members outdoors.';
-      if (p.elderlyCount > 0) return 'Protects senior cardiovascular and airway health whenever stepping outside.';
+      if (p.hasAsthmaOrRespiratoryCondition)
+        return 'Protects vulnerable lungs and airways from fine particulate inhalation during outdoor transit.';
+      if (p.childrenCount > 0)
+        return 'Significantly cuts down particulate inhalation for your children and family members outdoors.';
+      if (p.elderlyCount > 0)
+        return 'Protects senior cardiovascular and airway health whenever stepping outside.';
       return 'Protects your lungs from fine respirable PM2.5 particulates whenever stepping outdoors.';
     },
   },
@@ -46,30 +45,51 @@ export const FALLBACK_METADATA_MAP: Record<ActionId, ActionPriorityMetadata> = {
   use_exhaust_fan_cooking: {
     getSuggestedTimeOfDay: () => 'During Meal Preparation',
     generateReason: (p) => {
-      const risk = p.hasAsthmaOrRespiratoryCondition ? 'protecting family members with respiratory sensitivity' : p.childrenCount > 0 ? 'so fumes do not reach children in living areas' : p.elderlyCount > 0 ? 'safeguarding senior cardiovascular health' : 'keeping indoor air clean';
+      const risk = p.hasAsthmaOrRespiratoryCondition
+        ? 'protecting family members with respiratory sensitivity'
+        : p.childrenCount > 0
+          ? 'so fumes do not reach children in living areas'
+          : p.elderlyCount > 0
+            ? 'safeguarding senior cardiovascular health'
+            : 'keeping indoor air clean';
       return `Running kitchen exhaust vents intense frying aerosol spikes directly out of your ${p.homeAreaSqFt} sq ft home, ${risk}.`;
     },
   },
   seal_windows_during_peak_inversion: {
     getSuggestedTimeOfDay: () => 'Night to Early Morning',
     generateReason: (p) => {
-      const risk = p.hasAsthmaOrRespiratoryCondition ? 'vulnerable airways' : p.childrenCount > 0 ? 'children while sleeping' : p.elderlyCount > 0 ? 'seniors during rest' : 'your sleeping space';
+      const risk = p.hasAsthmaOrRespiratoryCondition
+        ? 'vulnerable airways'
+        : p.childrenCount > 0
+          ? 'children while sleeping'
+          : p.elderlyCount > 0
+            ? 'seniors during rest'
+            : 'your sleeping space';
       return `Sealing windows in your ${p.homeAreaSqFt} sq ft home stops heavy smog infiltration during cold inversion to protect ${risk}.`;
     },
   },
   eliminate_incense_and_mosquito_coils: {
     getSuggestedTimeOfDay: () => 'All Day',
     generateReason: (p) => {
-      const risk = p.hasAsthmaOrRespiratoryCondition ? 'asthma and airway irritation' : p.childrenCount > 0 ? 'young children' : p.elderlyCount > 0 ? 'seniors' : 'your living space';
+      const risk = p.hasAsthmaOrRespiratoryCondition
+        ? 'asthma and airway irritation'
+        : p.childrenCount > 0
+          ? 'young children'
+          : p.elderlyCount > 0
+            ? 'seniors'
+            : 'your living space';
       return `Eliminating incense and mosquito coils in your ${p.homeAreaSqFt} sq ft home removes a major source of particulate spikes for ${risk}.`;
     },
   },
   wet_mop_instead_of_dry_sweeping: {
     getSuggestedTimeOfDay: () => 'Morning Routine',
     generateReason: (p) => {
-      if (p.hasAsthmaOrRespiratoryCondition) return `Wet mopping your ${p.homeAreaSqFt} sq ft home traps settled fine dust without kicking allergens into sensitive airways.`;
-      if (p.childrenCount > 0) return `Wet mopping your ${p.homeAreaSqFt} sq ft floors prevents settled fine particles from resuspending where children play.`;
-      if (p.elderlyCount > 0) return `Wet mopping your ${p.homeAreaSqFt} sq ft home stops settled toxic dust from becoming airborne, protecting senior breathing air.`;
+      if (p.hasAsthmaOrRespiratoryCondition)
+        return `Wet mopping your ${p.homeAreaSqFt} sq ft home traps settled fine dust without kicking allergens into sensitive airways.`;
+      if (p.childrenCount > 0)
+        return `Wet mopping your ${p.homeAreaSqFt} sq ft floors prevents settled fine particles from resuspending where children play.`;
+      if (p.elderlyCount > 0)
+        return `Wet mopping your ${p.homeAreaSqFt} sq ft home stops settled toxic dust from becoming airborne, protecting senior breathing air.`;
       return `Wet mopping your ${p.homeAreaSqFt} sq ft floor traps settled dust without resuspending fine particulates into your breathing zone.`;
     },
   },
@@ -106,8 +126,10 @@ export const FALLBACK_METADATA_MAP: Record<ActionId, ActionPriorityMetadata> = {
   swap_biomass_cookstove_to_induction: {
     getSuggestedTimeOfDay: () => 'Meal Times',
     generateReason: (p) => {
-      if (p.childrenCount === 0 && p.elderlyCount > 0) return 'Replaces indoor chulha smoke with clean electric cooking, safeguarding senior respiratory health in your home.';
-      if (p.adultsCount === 1 && p.childrenCount === 0 && p.elderlyCount === 0) return 'Replaces indoor chulha smoke with clean electric cooking, eliminating toxic particulate buildup in your living space.';
+      if (p.childrenCount === 0 && p.elderlyCount > 0)
+        return 'Replaces indoor chulha smoke with clean electric cooking, safeguarding senior respiratory health in your home.';
+      if (p.adultsCount === 1 && p.childrenCount === 0 && p.elderlyCount === 0)
+        return 'Replaces indoor chulha smoke with clean electric cooking, eliminating toxic particulate buildup in your living space.';
       return `Replaces indoor chulha smoke with clean electric cooking, safeguarding your ${p.homeAreaSqFt} sq ft household from toxic indoor emissions.`;
     },
   },
@@ -134,9 +156,12 @@ export const FALLBACK_METADATA_MAP: Record<ActionId, ActionPriorityMetadata> = {
   avoid_non_hepa_vacuuming: {
     getSuggestedTimeOfDay: () => 'Cleaning Hours',
     generateReason: (p) => {
-      if (p.hasAsthmaOrRespiratoryCondition) return `Damp dusting across your ${p.homeAreaSqFt} sq ft home prevents vacuum exhaust blowback from triggering sensitive airways.`;
-      if (p.childrenCount > 0) return `Damp dusting your ${p.homeAreaSqFt} sq ft home stops vacuum exhaust from blowing fine dust back into your children's breathing zone.`;
-      if (p.elderlyCount > 0) return `Damp dusting your ${p.homeAreaSqFt} sq ft home avoids vacuum exhaust blowback, protecting senior lung reserves.`;
+      if (p.hasAsthmaOrRespiratoryCondition)
+        return `Damp dusting across your ${p.homeAreaSqFt} sq ft home prevents vacuum exhaust blowback from triggering sensitive airways.`;
+      if (p.childrenCount > 0)
+        return `Damp dusting your ${p.homeAreaSqFt} sq ft home stops vacuum exhaust from blowing fine dust back into your children's breathing zone.`;
+      if (p.elderlyCount > 0)
+        return `Damp dusting your ${p.homeAreaSqFt} sq ft home avoids vacuum exhaust blowback, protecting senior lung reserves.`;
       return `Damp dusting your ${p.homeAreaSqFt} sq ft living area avoids vacuum exhaust blowback from resuspending settled dust.`;
     },
   },
@@ -150,7 +175,8 @@ export const FALLBACK_METADATA_MAP: Record<ActionId, ActionPriorityMetadata> = {
     generateReason: (p) => {
       const vulnerable = [];
       if (p.childrenCount > 0) vulnerable.push(p.childrenCount === 1 ? 'your child' : 'children');
-      if (p.elderlyCount > 0) vulnerable.push(p.elderlyCount === 1 ? 'your senior family member' : 'seniors');
+      if (p.elderlyCount > 0)
+        vulnerable.push(p.elderlyCount === 1 ? 'your senior family member' : 'seniors');
       if (p.hasAsthmaOrRespiratoryCondition) vulnerable.push('anyone with respiratory sensitivity');
       const target = vulnerable.length > 0 ? vulnerable.join(' and ') : 'family members';
       return `Keeping ${target} outside the kitchen while the chulha burns prevents direct inhalation of dense toxic smoke in your ${p.homeAreaSqFt} sq ft home.`;

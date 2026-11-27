@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 /**
  * Free server-side reverse geocoding using OpenStreetMap Nominatim.
  * Resolves GPS coordinates into readable locality and city (e.g. "Kozhikode, Kerala").
@@ -61,7 +62,14 @@ export async function reverseGeocodeCoordinates(
       if (res.ok) {
         const data = await res.json();
         const addr = data.address || {};
-        const city = (addr.city || addr.town || addr.municipality || addr.county || addr.suburb || '').trim();
+        const city = (
+          addr.city ||
+          addr.town ||
+          addr.municipality ||
+          addr.county ||
+          addr.suburb ||
+          ''
+        ).trim();
         const state = (addr.state || '').trim();
         const country = (addr.country || '').trim();
 

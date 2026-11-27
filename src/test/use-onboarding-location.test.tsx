@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
+import type React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { useOnboardingLocation } from '@/components/onboarding/use-onboarding-location';
-import { PlanRequest } from '@/lib/plan/types';
+import { type PlanRequest } from '@/lib/plan/types';
 import { DEFAULT_PROFILE } from '@/components/onboarding/default-profile';
 
 describe('useOnboardingLocation hook', () => {
@@ -46,9 +46,7 @@ describe('useOnboardingLocation hook', () => {
       json: async () => ({ formattedAddress: 'Bengaluru, Karnataka' }),
     } as Response);
 
-    const { result } = renderHook(() =>
-      useOnboardingLocation(mockSetFormData, mockAreaInputRef)
-    );
+    const { result } = renderHook(() => useOnboardingLocation(mockSetFormData, mockAreaInputRef));
 
     await act(async () => {
       result.current.handleLocate();
@@ -75,9 +73,7 @@ describe('useOnboardingLocation hook', () => {
       status: 500,
     } as Response);
 
-    const { result } = renderHook(() =>
-      useOnboardingLocation(mockSetFormData, mockAreaInputRef)
-    );
+    const { result } = renderHook(() => useOnboardingLocation(mockSetFormData, mockAreaInputRef));
 
     await act(async () => {
       result.current.handleLocate();
@@ -105,9 +101,7 @@ describe('useOnboardingLocation hook', () => {
       new DOMException('The operation was aborted due to timeout', 'AbortError')
     );
 
-    const { result } = renderHook(() =>
-      useOnboardingLocation(mockSetFormData, mockAreaInputRef)
-    );
+    const { result } = renderHook(() => useOnboardingLocation(mockSetFormData, mockAreaInputRef));
 
     await act(async () => {
       result.current.handleLocate();

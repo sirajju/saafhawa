@@ -11,10 +11,10 @@ export const INHALATION_RATES_M3_PER_HOUR = {
   ADULT_RESTING: 0.45,
 
   // Source: US EPA Exposure Factors Handbook (2011 Edition), Table 6-1 (Light Domestic / Sedentary Activity)
-  ADULT_LIGHT_ACTIVITY: 0.60,
+  ADULT_LIGHT_ACTIVITY: 0.6,
 
   // Source: US EPA Exposure Factors Handbook (2011 Edition), Table 6-1 (Moderate Exercise / Rapid Inhalation)
-  ADULT_EXERCISE: 1.40,
+  ADULT_EXERCISE: 1.4,
 
   // Source: US EPA Child-Specific Exposure Factors Handbook (2008), Chapter 6 (Age 6-11 years average)
   CHILD_DAILY_AVERAGE: 0.42,
@@ -42,17 +42,17 @@ export const FILTRATION_AND_INFILTRATION_FACTORS = {
   CORSI_ROSENTHAL_COVERAGE_SQFT: 600.0,
 
   // Source: Lawrence Berkeley National Laboratory (LBNL-44933) & Chen & Zhao, Atmospheric Environment (2011)
-  CLOSED_WINDOW_INFILTRATION_RATIO: 0.50,
+  CLOSED_WINDOW_INFILTRATION_RATIO: 0.5,
 
   // Source: Chen & Zhao, Atmospheric Environment (2011) "Review of relationship between indoor and outdoor particles"
-  OPEN_OR_DRAFTY_INFILTRATION_RATIO: 0.80,
+  OPEN_OR_DRAFTY_INFILTRATION_RATIO: 0.8,
 
   // Source: LBNL Home Energy Saver & Building Sealing Guidelines
   // [NEEDS VERIFICATION] - Assumes door sweep and window weatherstripping reduces ambient particle ingress by ~30%
-  WEATHERSTRIPPING_INFILTRATION_REDUCTION: 0.30,
+  WEATHERSTRIPPING_INFILTRATION_REDUCTION: 0.3,
 
   // Source: Singer, B. C. et al., Lawrence Berkeley National Laboratory (2012), Atmospheric Environment
-  KITCHEN_EXHAUST_CAPTURE_EFFICIENCY: 0.70,
+  KITCHEN_EXHAUST_CAPTURE_EFFICIENCY: 0.7,
 
   // Source: Pant, P. et al., Atmospheric Environment (2016)
   COOKING_INDOOR_PM25_SPIKE_UG_M3: 250.0,
@@ -94,5 +94,5 @@ export const EQUIVALENCY_FACTORS = {
   AFTERNOON_VENTILATION_WINDOW_HOURS: 4.0,
 
   // Afternoon ventilation exchange fraction
-  AFTERNOON_VENTILATION_EXCHANGE_FACTOR: 0.40,
+  AFTERNOON_VENTILATION_EXCHANGE_FACTOR: 0.4,
 } as const;

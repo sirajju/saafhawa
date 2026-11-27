@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { PlanDashboard } from '@/components/PlanDashboard';
-import { PlanResponse } from '@/lib/plan/types';
+import { type PlanResponse } from '@/lib/plan/types';
 
 describe('Mobile Guidance Visibility and Safe Bottom Padding', () => {
   const mockPlan: PlanResponse = {

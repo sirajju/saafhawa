@@ -1,15 +1,21 @@
+/* eslint-disable complexity */
 import type { GoogleGenAI, Content, Part } from '@google/genai';
 import { createGeminiClient, resolveGeminiModels } from '../gemini/client';
 import { resolveGeminiApiKey } from '../env';
 import { getAirQualityByLocation } from '../air-quality/service';
-import { AirQualityReport } from '../air-quality/types';
+import { type AirQualityReport } from '../air-quality/types';
 import { capTextLength, withTimeout } from '../gemini/utils';
 import { executeWithGeminiRetry } from '../gemini/executor';
 import { logServerError } from '../logger';
 import { TIMERS } from '../constants';
 import { CHAT_TOOLS } from './tool-declarations';
 import { executeSingleToolCall } from './tool-runner';
-import { ChatResponse, ExecutedToolRecord, ChatRequest, ChatMessage } from './types';
+import {
+  type ChatResponse,
+  type ExecutedToolRecord,
+  type ChatRequest,
+  type ChatMessage,
+} from './types';
 import { buildChatSystemInstruction } from './instruction';
 import { generateFallbackChatResponse } from './fallback';
 
@@ -37,7 +43,10 @@ async function runGeminiConversation(
   const contents: Content[] = [];
   const history = request.conversationHistory || [];
   for (const msg of history.slice(-6)) {
-    contents.push({ role: msg.role === 'assistant' ? 'model' : 'user', parts: [{ text: msg.content }] });
+    contents.push({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    });
   }
   contents.push({ role: 'user', parts: [{ text: request.message }] });
 
@@ -53,7 +62,11 @@ async function runGeminiConversation(
   };
 
   let currentResponse = await withTimeout(
-    ai.models.generateContent({ model: activeModel, contents, config: { systemInstruction, tools: CHAT_TOOLS } }),
+    ai.models.generateContent({
+      model: activeModel,
+      contents,
+      config: { systemInstruction, tools: CHAT_TOOLS },
+    }),
     getTimeoutForRound(0, 3),
     'Gemini Chat Initial'
   );
@@ -82,13 +95,20 @@ async function runGeminiConversation(
     contents.push({ role: 'user', parts: responseParts });
 
     currentResponse = await withTimeout(
-      ai.models.generateContent({ model: activeModel, contents, config: { systemInstruction, tools: CHAT_TOOLS } }),
+      ai.models.generateContent({
+        model: activeModel,
+        contents,
+        config: { systemInstruction, tools: CHAT_TOOLS },
+      }),
       getTimeoutForRound(round + 1, 3),
       `Gemini Chat Round ${round + 2}`
     );
   }
 
-  return capTextLength(currentResponse.text?.trim(), 3000) || 'I am ready to help with your clean air questions.';
+  return (
+    capTextLength(currentResponse.text?.trim(), 3000) ||
+    'I am ready to help with your clean air questions.'
+  );
 }
 
 /**
@@ -125,7 +145,15 @@ export async function handleChatQuery(
     label: 'ChatService',
     totalTimeoutMs: TIMERS.CHAT_BUDGET_MS,
     fn: async (activeModel, timeoutMs) => {
-      return runGeminiConversation(ai, activeModel, request, systemInstruction, fetcher, toolsExecuted, timeoutMs);
+      return runGeminiConversation(
+        ai,
+        activeModel,
+        request,
+        systemInstruction,
+        fetcher,
+        toolsExecuted,
+        timeoutMs
+      );
     },
   });
 

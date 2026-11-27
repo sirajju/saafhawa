@@ -10,7 +10,8 @@ export function rateLimited(resetSeconds: number, message?: string): NextRespons
   return NextResponse.json(
     {
       error: 'Too Many Requests',
-      message: message || `Rate limit exceeded. Please wait ${resetSeconds} seconds before trying again.`,
+      message:
+        message || `Rate limit exceeded. Please wait ${resetSeconds} seconds before trying again.`,
     },
     {
       status: 429,
@@ -30,10 +31,7 @@ export function jsonError(
   message: string,
   headers?: Record<string, string>
 ): NextResponse {
-  return NextResponse.json(
-    { error, message },
-    { status, headers }
-  );
+  return NextResponse.json({ error, message }, { status, headers });
 }
 
 const AIR_QUALITY_ERROR_TITLES: Record<number, string> = {

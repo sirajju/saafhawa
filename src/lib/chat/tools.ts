@@ -1,15 +1,12 @@
 import { getAirQualityByLocation } from '../air-quality/service';
-import { AirQualityReport } from '../air-quality/types';
+import { type AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime, parseDateTimeToIso } from '../air-quality/time-utils';
 import { ACTION_CATALOGUE } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
-import { HouseholdProfile, HouseholdProfileSchema } from '../impact/types';
+import { type HouseholdProfile, HouseholdProfileSchema } from '../impact/types';
 import { getEmissionComparisonText, getExposureComparisonText } from '../impact/comparisons';
 
-export function formatHourInPlaceLocalTime(
-  dateTimeIso: string,
-  timeZone = 'Asia/Kolkata'
-): string {
+export function formatHourInPlaceLocalTime(dateTimeIso: string, timeZone = 'Asia/Kolkata'): string {
   const formatWithTz = (tz: string) => {
     const iso = parseDateTimeToIso(dateTimeIso, tz);
     const rawDate = new Date(iso);
@@ -103,9 +100,7 @@ export function executeCalculateImpactTool(
   currentPm25: number | null
 ): ImpactToolResult {
   const targetId = (args.actionId || '').trim();
-  const actionDef = ACTION_CATALOGUE.find(
-    (a) => a.id.toLowerCase() === targetId.toLowerCase()
-  );
+  const actionDef = ACTION_CATALOGUE.find((a) => a.id.toLowerCase() === targetId.toLowerCase());
 
   if (!actionDef) {
     throw new Error(

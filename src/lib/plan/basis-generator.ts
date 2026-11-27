@@ -1,4 +1,5 @@
-import { PlanRequest } from './types';
+/* eslint-disable complexity */
+import { type PlanRequest } from './types';
 
 export function generateBasisExplanation(
   actionId: string,
@@ -7,23 +8,27 @@ export function generateBasisExplanation(
   cleanestWindowText = 'afternoon'
 ): string {
   const aqiStr = typeof currentAqi === 'number' ? `AQI ${currentAqi}` : 'Air quality advisory';
-  const isSolo = profile.adultsCount === 1 && profile.childrenCount === 0 && profile.elderlyCount === 0;
+  const isSolo =
+    profile.adultsCount === 1 && profile.childrenCount === 0 && profile.elderlyCount === 0;
 
   const vulnerability = profile.hasAsthmaOrRespiratoryCondition
-    ? (profile.childrenCount > 0 ? 'child with asthma' : 'respiratory sensitivity')
+    ? profile.childrenCount > 0
+      ? 'child with asthma'
+      : 'respiratory sensitivity'
     : profile.childrenCount > 0
-    ? `${profile.childrenCount} child(ren)`
-    : profile.elderlyCount > 0
-    ? `${profile.elderlyCount} senior(s)`
-    : isSolo
-    ? 'solo adult'
-    : `${profile.adultsCount + profile.childrenCount + profile.elderlyCount} occupants`;
+      ? `${profile.childrenCount} child(ren)`
+      : profile.elderlyCount > 0
+        ? `${profile.elderlyCount} senior(s)`
+        : isSolo
+          ? 'solo adult'
+          : `${profile.adultsCount + profile.childrenCount + profile.elderlyCount} occupants`;
 
   switch (actionId) {
     case 'wear_n95_mask_outside': {
-      const transit = profile.commutersCount > 0
-        ? `${profile.dailyCommuteDistanceKm} km ${profile.primaryCommuteMode.replace('_', ' ')} commute`
-        : 'outdoor errands';
+      const transit =
+        profile.commutersCount > 0
+          ? `${profile.dailyCommuteDistanceKm} km ${profile.primaryCommuteMode.replace('_', ' ')} commute`
+          : 'outdoor errands';
       return `${aqiStr} forecast · ${vulnerability} · ${transit}`;
     }
 

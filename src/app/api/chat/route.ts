@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { handleChatQuery } from '@/lib/chat/service';
 import { ChatRequestSchema } from '@/lib/chat/types';
 import { VALIDATION_MESSAGES } from '@/lib/constants';

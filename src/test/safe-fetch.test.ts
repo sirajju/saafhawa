@@ -5,7 +5,11 @@ import { ProviderUnavailableError } from '@/lib/air-quality/types';
 describe('safeFetch Utility', () => {
   it('returns response successfully on normal HTTP fetch', async () => {
     const mockFetch = vi.fn().mockResolvedValue(new Response('{"status":"ok"}', { status: 200 }));
-    const res = await safeFetch('https://example.com/api', { method: 'GET' }, { fetchFn: mockFetch });
+    const res = await safeFetch(
+      'https://example.com/api',
+      { method: 'GET' },
+      { fetchFn: mockFetch }
+    );
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -18,7 +22,11 @@ describe('safeFetch Utility', () => {
     const mockFetch = vi.fn().mockRejectedValue(timeoutError);
 
     await expect(
-      safeFetch('https://example.com/api', { method: 'GET' }, { fetchFn: mockFetch, timeoutMs: 100 })
+      safeFetch(
+        'https://example.com/api',
+        { method: 'GET' },
+        { fetchFn: mockFetch, timeoutMs: 100 }
+      )
     ).rejects.toThrow(ProviderUnavailableError);
   });
 

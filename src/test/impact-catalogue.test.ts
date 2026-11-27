@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
 import { calculateActionImpact } from '@/lib/impact/calculator';
-import { HouseholdProfile } from '@/lib/impact/types';
+import { type HouseholdProfile } from '@/lib/impact/types';
 import { INHALATION_RATES_M3_PER_HOUR } from '@/lib/impact/exposure-factors';
 import {
   VEHICULAR_EMISSION_FACTORS,
@@ -95,8 +95,14 @@ describe('Impact Module - Daily Routine Arithmetic', () => {
     const smogWithForecast = {
       currentPm25: 180.0,
       hourlyForecast: [
-        { dateTime: '2026-11-23T08:00:00Z', pm25: { value: 280, units: 'MICROGRAMS_PER_CUBIC_METER' } },
-        { dateTime: '2026-11-23T14:00:00Z', pm25: { value: 100, units: 'MICROGRAMS_PER_CUBIC_METER' } },
+        {
+          dateTime: '2026-11-23T08:00:00Z',
+          pm25: { value: 280, units: 'MICROGRAMS_PER_CUBIC_METER' },
+        },
+        {
+          dateTime: '2026-11-23T14:00:00Z',
+          pm25: { value: 100, units: 'MICROGRAMS_PER_CUBIC_METER' },
+        },
       ],
     };
 
@@ -108,7 +114,9 @@ describe('Impact Module - Daily Routine Arithmetic', () => {
   });
 
   it('marks children indoor action as not applicable when childrenCount is 0', () => {
-    const childAction = ACTION_CATALOGUE.find((a) => a.id === 'keep_children_indoors_morning_smog')!;
+    const childAction = ACTION_CATALOGUE.find(
+      (a) => a.id === 'keep_children_indoors_morning_smog'
+    )!;
     const noKidsProfile = { ...baseProfile, childrenCount: 0 };
 
     const result = calculateActionImpact(childAction, noKidsProfile, { currentPm25: 180 });

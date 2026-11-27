@@ -1,5 +1,4 @@
-import React from 'react';
-import { IconProps } from './IconProps';
+import { type IconProps } from './IconProps';
 
 export function SystemThemeIcon({ className = 'icon', ...props }: IconProps) {
   return (

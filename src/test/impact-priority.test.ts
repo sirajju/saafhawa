@@ -16,7 +16,12 @@ describe('Action Priority Ordering and Deduplication', () => {
       description: 'Carpool to work',
       category: 'daily_routine' as const,
       applicable: true,
-      exposureReduction: { pm25InhaledDoseAvoidedUg: 50, pm25ConcentrationReductionUgM3: 10, percentageDrop: 20, isUnknown: false },
+      exposureReduction: {
+        pm25InhaledDoseAvoidedUg: 50,
+        pm25ConcentrationReductionUgM3: 10,
+        percentageDrop: 20,
+        isUnknown: false,
+      },
       emissionReduction: { pm25SavedGrams: 10, co2SavedGrams: 100 },
     };
     const other = {
@@ -25,7 +30,12 @@ describe('Action Priority Ordering and Deduplication', () => {
       description: 'Wear N95 outdoors',
       category: 'daily_routine' as const,
       applicable: true,
-      exposureReduction: { pm25InhaledDoseAvoidedUg: 100, pm25ConcentrationReductionUgM3: 20, percentageDrop: 40, isUnknown: false },
+      exposureReduction: {
+        pm25InhaledDoseAvoidedUg: 100,
+        pm25ConcentrationReductionUgM3: 20,
+        percentageDrop: 40,
+        isUnknown: false,
+      },
       emissionReduction: { pm25SavedGrams: 0, co2SavedGrams: 0 },
     };
     const wfh = {
@@ -34,7 +44,12 @@ describe('Action Priority Ordering and Deduplication', () => {
       description: 'WFH on smog days',
       category: 'daily_routine' as const,
       applicable: true,
-      exposureReduction: { pm25InhaledDoseAvoidedUg: 100, pm25ConcentrationReductionUgM3: 20, percentageDrop: 50, isUnknown: false },
+      exposureReduction: {
+        pm25InhaledDoseAvoidedUg: 100,
+        pm25ConcentrationReductionUgM3: 20,
+        percentageDrop: 50,
+        isUnknown: false,
+      },
       emissionReduction: { pm25SavedGrams: 20, co2SavedGrams: 200 },
     };
 

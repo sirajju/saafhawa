@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 import { MOCK_PLAN } from './fixtures/mock-plan';
 
 test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
-  test('completes 3-step onboarding and renders the restructured clean air action plan', async ({ page }) => {
+  test('completes 3-step onboarding and renders the restructured clean air action plan', async ({
+    page,
+  }) => {
     // 1. Mock API responses
     await page.route('**/api/plan', async (route) => {
       await route.fulfill({
@@ -18,7 +20,9 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     await page.reload();
 
     // 3. Verify Step 1 of onboarding is displayed
-    await expect(page.getByRole('heading', { name: /Where do you live, and who lives with you/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Where do you live, and who lives with you/i })
+    ).toBeVisible();
     await expect(page.getByText(/Step 1 of 3 · Your home/i)).toBeVisible();
 
     // 4. Fill in location input (top field)
@@ -41,7 +45,11 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     await nextBtn.click();
 
     // 8. Verify dashboard displays with clean location name and top in view
-    await expect(page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })
+    ).toBeVisible({
+      timeout: 10000,
+    });
     await expect(page.getByText('342', { exact: true })).toBeVisible();
     await expect(page.getByText(/Very Poor/).first()).toBeVisible();
 
@@ -51,7 +59,9 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     // 10. Verify total daily household impact summary and adjusted overlapping actions note
     await expect(page.getByText(/If you follow today's plan/i)).toBeVisible();
     await expect(
-      page.getByText('Overlapping actions are adjusted, so the total can be less than the cards added together.')
+      page.getByText(
+        'Overlapping actions are adjusted, so the total can be less than the cards added together.'
+      )
     ).toBeVisible();
 
     // 12. Verify daily timeline and action cards are rendered
@@ -71,7 +81,9 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
     await expect(page.getByText('Ask SaafHawa').first()).toBeVisible();
   });
 
-  test('no horizontal overflow at 390px (mobile) and 1440px (desktop) viewports', async ({ page }) => {
+  test('no horizontal overflow at 390px (mobile) and 1440px (desktop) viewports', async ({
+    page,
+  }) => {
     await page.route('**/api/plan', async (route) => {
       await route.fulfill({
         status: 200,
@@ -88,7 +100,9 @@ test.describe('SaafHawa Onboarding & Plan Smoke Test', () => {
 
     // 1. Mobile viewport: 390px
     await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })
+    ).toBeVisible();
 
     const mobileOverflow = await page.evaluate(() => {
       return document.documentElement.scrollWidth > document.documentElement.clientWidth;

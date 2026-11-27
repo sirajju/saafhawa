@@ -1,7 +1,10 @@
 /**
  * Computes an explicit 24-hour time period starting from the current UTC hour.
  */
-export function computeForecastPeriod(hours = 24, fromDate = new Date()): {
+export function computeForecastPeriod(
+  hours = 24,
+  fromDate = new Date()
+): {
   startTime: string;
   endTime: string;
 } {

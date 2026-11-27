@@ -1,11 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { buildPlanPrompt } from '@/lib/plan/prompt-builder';
 import { MOCK_PROFILE } from './plan-fixtures';
-import { AirQualityReport } from '@/lib/air-quality/types';
+import { type AirQualityReport } from '@/lib/air-quality/types';
 
 describe('Plan Prompt Builder', () => {
   const mockReport: AirQualityReport = {
-    location: { name: 'Connaught Place, Delhi', latitude: 28.63, longitude: 77.22, timeZone: 'Asia/Kolkata' },
+    location: {
+      name: 'Connaught Place, Delhi',
+      latitude: 28.63,
+      longitude: 77.22,
+      timeZone: 'Asia/Kolkata',
+    },
     current: {
       dateTime: '2026-11-26T10:00:00Z',
       aqi: 220,
@@ -27,7 +32,12 @@ describe('Plan Prompt Builder', () => {
       elderlyCount: 1,
     };
 
-    const { systemInstruction, userPrompt } = buildPlanPrompt(profile, mockReport, undefined, '12 PM to 3 PM');
+    const { systemInstruction, userPrompt } = buildPlanPrompt(
+      profile,
+      mockReport,
+      undefined,
+      '12 PM to 3 PM'
+    );
 
     expect(systemInstruction).toContain('CLINICAL RULES');
     expect(systemInstruction).toContain('12 PM to 3 PM');

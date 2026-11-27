@@ -1,5 +1,6 @@
+/* eslint-disable complexity, max-lines-per-function */
 import { calculateCpcbAqi } from './cpcb-aqi';
-import { CurrentAirQuality, AirQualityError } from './types';
+import { type CurrentAirQuality, AirQualityError } from './types';
 import { safeFetch } from './safe-fetch';
 import { logServerWarning } from '../logger';
 import { env } from '../env';
@@ -73,8 +74,14 @@ export async function fetchWaqiNearestStation(
     );
   } catch (err: unknown) {
     if (err instanceof AirQualityError) throw err;
-    logServerWarning('WaqiClient', `WAQI station connection error: ${err instanceof Error ? err.message : 'Network error'}`);
-    throw new AirQualityError('Unable to connect to air quality monitoring service. Please check your connection.', 503);
+    logServerWarning(
+      'WaqiClient',
+      `WAQI station connection error: ${err instanceof Error ? err.message : 'Network error'}`
+    );
+    throw new AirQualityError(
+      'Unable to connect to air quality monitoring service. Please check your connection.',
+      503
+    );
   }
 
   if (response.status === 429) {
@@ -84,7 +91,10 @@ export async function fetchWaqiNearestStation(
 
   if (!response.ok) {
     logServerWarning('WaqiClient', `WAQI API returned HTTP status ${response.status}`);
-    throw new AirQualityError('Air quality service temporarily unavailable. Please try again later.', 502);
+    throw new AirQualityError(
+      'Air quality service temporarily unavailable. Please try again later.',
+      502
+    );
   }
 
   let data: WaqiResponse;
@@ -92,7 +102,10 @@ export async function fetchWaqiNearestStation(
     data = (await response.json()) as WaqiResponse;
   } catch {
     logServerWarning('WaqiClient', 'Failed to parse JSON from WAQI station');
-    throw new AirQualityError('Invalid response received from air quality monitoring service.', 502);
+    throw new AirQualityError(
+      'Invalid response received from air quality monitoring service.',
+      502
+    );
   }
 
   if (data.status !== 'ok' || !data.data) {
@@ -111,7 +124,8 @@ export async function fetchWaqiNearestStation(
     dateTime: d.time?.iso || new Date().toISOString(),
     aqi: aqiScore,
     category: cpcb.category,
-    dominantPollutant: d.dominentpol === 'pm25' || d.dominentpol === 'pm10' ? d.dominentpol : cpcb.dominantPollutant,
+    dominantPollutant:
+      d.dominentpol === 'pm25' || d.dominentpol === 'pm10' ? d.dominentpol : cpcb.dominantPollutant,
     indexCode: 'ind_cpcb',
     indexDisplayName: 'AQI (hourly estimate, CPCB breakpoints)',
     pm25: pm25Val !== null ? { value: pm25Val, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
@@ -122,7 +136,8 @@ export async function fetchWaqiNearestStation(
 
   const stationGeo = d.city?.geo;
   const stationLat = Array.isArray(stationGeo) && stationGeo.length >= 2 ? stationGeo[0] : latitude;
-  const stationLon = Array.isArray(stationGeo) && stationGeo.length >= 2 ? stationGeo[1] : longitude;
+  const stationLon =
+    Array.isArray(stationGeo) && stationGeo.length >= 2 ? stationGeo[1] : longitude;
 
   return {
     current,

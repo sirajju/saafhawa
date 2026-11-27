@@ -84,28 +84,14 @@ export function ForecastChartSvg({
         aria-label={srSummary}
       >
         {/* Best window highlight rect rendered first so gridline text is never hidden */}
-        <rect
-          x={bestX}
-          y={top}
-          width={bestW}
-          height={base - top}
-          rx="6"
-          fill="var(--brand-soft)"
-        />
+        <rect x={bestX} y={top} width={bestW} height={base - top} rx="6" fill="var(--brand-soft)" />
 
         {/* Subtle gridlines at 100, 200, 300 */}
         {[100, 200, 300].map((v) => {
           const y = base - (v / maxAqi) * (base - top);
           return (
             <g key={v}>
-              <line
-                x1="0"
-                x2={width}
-                y1={y}
-                y2={y}
-                stroke="var(--line)"
-                strokeDasharray="2 4"
-              />
+              <line x1="0" x2={width} y1={y} y2={y} stroke="var(--line)" strokeDasharray="2 4" />
               <text
                 x={width - 4}
                 y={y - 4}

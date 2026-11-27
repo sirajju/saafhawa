@@ -41,7 +41,9 @@ export function OnboardingStep1({
       <h1 id="s1h" ref={headingRef} tabIndex={-1} style={{ marginTop: '6px' }}>
         Where do you live, and who lives with you?
       </h1>
-      <p className="onb-intro">We use this to tailor timing and advice. Nothing is stored on our servers.</p>
+      <p className="onb-intro">
+        We use this to tailor timing and advice. Nothing is stored on our servers.
+      </p>
 
       <div className="q">
         <h3>

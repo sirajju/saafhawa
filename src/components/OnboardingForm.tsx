@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { PlanRequest } from '@/lib/plan/types';
+import { useState, useRef, useEffect } from 'react';
+import { type PlanRequest } from '@/lib/plan/types';
 import { DEFAULT_PROFILE } from './onboarding/default-profile';
 import { useOnboardingLocation } from './onboarding/use-onboarding-location';
 import { OnboardingStep1 } from './onboarding/OnboardingStep1';
@@ -32,14 +32,8 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
   const areaInputRef = useRef<HTMLInputElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  const {
-    isLocating,
-    areaError,
-    setAreaError,
-    areaNote,
-    setAreaNote,
-    handleLocate,
-  } = useOnboardingLocation(setFormData, areaInputRef);
+  const { isLocating, areaError, setAreaError, areaNote, setAreaNote, handleLocate } =
+    useOnboardingLocation(setFormData, areaInputRef);
 
   useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
@@ -55,9 +49,7 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
     setFormData((prev) => ({ ...prev, place: val, coordinates: undefined }));
   };
 
-  const handleToggleEquipment = (
-    field: 'hasAirPurifier' | 'hasKitchenChimneyOrExhaust'
-  ) => {
+  const handleToggleEquipment = (field: 'hasAirPurifier' | 'hasKitchenChimneyOrExhaust') => {
     setFormData((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
@@ -172,12 +164,7 @@ export function OnboardingForm({ initialProfile, onSubmit }: OnboardingFormProps
           <span className="step-count" id="onb-count">
             Step {currentStep} of 3
           </span>
-          <button
-            type="button"
-            className="btn btn-primary"
-            id="onb-next"
-            onClick={handleNext}
-          >
+          <button type="button" className="btn btn-primary" id="onb-next" onClick={handleNext}>
             {currentStep === 3 ? 'See my plan' : 'Continue'}
           </button>
         </div>

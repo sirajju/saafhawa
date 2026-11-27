@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -52,7 +51,13 @@ describe('Usability Overhaul - Three-Step Onboarding & Habit Defaults', () => {
     navigator.geolocation = mockGeolocation;
 
     const user = userEvent.setup();
-    render(<OnboardingForm onSubmit={(p) => { submittedProfile = p; }} />);
+    render(
+      <OnboardingForm
+        onSubmit={(p) => {
+          submittedProfile = p;
+        }}
+      />
+    );
 
     const locationBtn = screen.getByRole('button', { name: /Use my location/i });
     await user.click(locationBtn);
@@ -66,7 +71,9 @@ describe('Usability Overhaul - Three-Step Onboarding & Habit Defaults', () => {
     await user.click(screen.getByRole('button', { name: /See my plan/i }));
 
     expect((submittedProfile as { place: string; coordinates?: string }).place).toBe('Mumbai');
-    expect((submittedProfile as { place: string; coordinates?: string }).coordinates).toBeUndefined();
+    expect(
+      (submittedProfile as { place: string; coordinates?: string }).coordinates
+    ).toBeUndefined();
   });
 
   it('does NOT preselect incense choice on step 3', async () => {

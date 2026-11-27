@@ -25,7 +25,9 @@ export class QuotaExceededError extends AirQualityError {
 }
 
 export class ProviderUnavailableError extends AirQualityError {
-  constructor(reason = 'Air quality service is temporarily unavailable. Please try again shortly.') {
+  constructor(
+    reason = 'Air quality service is temporarily unavailable. Please try again shortly.'
+  ) {
     super(reason, 503);
     this.name = 'ProviderUnavailableError';
   }

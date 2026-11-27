@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
 import { ForecastChartSvg } from './forecast/ForecastChartSvg';
 
@@ -81,17 +80,27 @@ export function ForecastChart({
         ? cleanestWindowLength
         : 3;
   } else if (cleanestWindowStart) {
-    const normStart = cleanestWindowStart.replace(/^tomorrow\s+/i, '').replace(/\u00A0/g, ' ').trim();
+    const normStart = cleanestWindowStart
+      .replace(/^tomorrow\s+/i, '')
+      .replace(/\u00A0/g, ' ')
+      .trim();
     const foundStart = points.findIndex((p) => {
-      const ptStr = formatHourInPlaceLocalTime(p.dateTime, timeZone).replace(/\u00A0/g, ' ').trim();
+      const ptStr = formatHourInPlaceLocalTime(p.dateTime, timeZone)
+        .replace(/\u00A0/g, ' ')
+        .trim();
       return ptStr === normStart;
     });
     if (foundStart !== -1) {
       finalCleanestIndex = foundStart;
       if (cleanestWindowEnd) {
-        const normEnd = cleanestWindowEnd.replace(/^tomorrow\s+/i, '').replace(/\u00A0/g, ' ').trim();
+        const normEnd = cleanestWindowEnd
+          .replace(/^tomorrow\s+/i, '')
+          .replace(/\u00A0/g, ' ')
+          .trim();
         const foundEnd = points.findIndex((p) => {
-          const ptStr = formatHourInPlaceLocalTime(p.dateTime, timeZone).replace(/\u00A0/g, ' ').trim();
+          const ptStr = formatHourInPlaceLocalTime(p.dateTime, timeZone)
+            .replace(/\u00A0/g, ' ')
+            .trim();
           return ptStr === normEnd;
         });
         if (foundEnd > foundStart) {
@@ -104,7 +113,9 @@ export function ForecastChart({
   const peakPoint = points[peakIndex];
   const peakTimeStr = peakPoint ? formatHourInPlaceLocalTime(peakPoint.dateTime, timeZone) : '';
   const cleanestPoint = points[finalCleanestIndex];
-  const cleanestTimeStr = cleanestPoint ? formatHourInPlaceLocalTime(cleanestPoint.dateTime, timeZone) : '';
+  const cleanestTimeStr = cleanestPoint
+    ? formatHourInPlaceLocalTime(cleanestPoint.dateTime, timeZone)
+    : '';
 
   const srSummary = `24-hour forecast chart: Current hour is marked as Now with AQI ${
     points[0]?.aqi ?? 'unavailable'
@@ -131,8 +142,13 @@ export function ForecastChart({
       <div className="sr-only" tabIndex={0}>
         <span>{srSummary}</span>
         <span>Current: AQI {points[0]?.aqi ?? '—'}. </span>
-        <span>Cleanest air window is {cleanestWindowStart || cleanestTimeStr} to {cleanestWindowEnd || 'afternoon'} with AQI around {minAqi}. </span>
-        <span>Smog Peak: {peakTimeStr} (AQI {highestVal}). </span>
+        <span>
+          Cleanest air window is {cleanestWindowStart || cleanestTimeStr} to{' '}
+          {cleanestWindowEnd || 'afternoon'} with AQI around {minAqi}.{' '}
+        </span>
+        <span>
+          Smog Peak: {peakTimeStr} (AQI {highestVal}).{' '}
+        </span>
       </div>
     </div>
   );

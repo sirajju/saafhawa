@@ -42,7 +42,10 @@ export function resolveGeminiModels(options?: ResolveGeminiModelsOptions): strin
   }
 
   if (options?.model || options?.fallbackModel) {
-    const list = [options.model || 'gemini-flash-lite-latest', options.fallbackModel || 'gemini-2.5-flash-lite']
+    const list = [
+      options.model || 'gemini-flash-lite-latest',
+      options.fallbackModel || 'gemini-2.5-flash-lite',
+    ]
       .map((s) => s.trim())
       .filter(Boolean);
     return Array.from(new Set(list));

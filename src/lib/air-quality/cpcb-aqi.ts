@@ -44,8 +44,16 @@ const PM10_BREAKPOINTS: Breakpoint[] = [
 /**
  * Computes sub-index for a single pollutant concentration using CPCB piecewise linear interpolation.
  */
-function computeSubIndex(concentration: number | null | undefined, breakpoints: Breakpoint[]): number | null {
-  if (concentration === null || concentration === undefined || isNaN(concentration) || concentration < 0) {
+function computeSubIndex(
+  concentration: number | null | undefined,
+  breakpoints: Breakpoint[]
+): number | null {
+  if (
+    concentration === null ||
+    concentration === undefined ||
+    isNaN(concentration) ||
+    concentration < 0
+  ) {
     return null;
   }
 
@@ -154,4 +162,3 @@ export function calculateCpcbAqi(
     pm10SubIndex: validPm10,
   };
 }
-

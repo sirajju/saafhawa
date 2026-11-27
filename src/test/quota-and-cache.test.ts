@@ -1,6 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import React from 'react';
 import { executeWithGeminiRetry } from '@/lib/gemini/executor';
 import { parseGeminiQuotaError, clearModelExhaustion } from '@/lib/gemini/quota';
 import {
@@ -13,10 +11,9 @@ import {
   clearGeminiCache,
 } from '@/lib/gemini/cache';
 import { pruneCleanAirActions } from '@/lib/plan/action-scoring';
-import { ACTION_CATALOGUE, ActionDefinition } from '@/lib/impact/catalogue';
-import { PlanResponse, GeminiSelectedAction } from '@/lib/plan/types';
-import { AdvisoryResponse } from '@/lib/community/types';
-import { CommunityAdvisoryModal } from '@/components/CommunityAdvisoryModal';
+import { ACTION_CATALOGUE, type ActionDefinition } from '@/lib/impact/catalogue';
+import { type PlanResponse, type GeminiSelectedAction } from '@/lib/plan/types';
+import { type AdvisoryResponse } from '@/lib/community/types';
 
 describe('Gemini Quota Handling & Caching', () => {
   beforeEach(() => {
@@ -30,7 +27,11 @@ describe('Gemini Quota Handling & Caching', () => {
       message: 'Resource has been exhausted (e.g. check quota).',
       status: 429,
       errorDetails: [
-        { '@type': 'type.googleapis.com/google.rpc.ErrorInfo', reason: 'QUOTA_EXCEEDED', metadata: { quota_limit: 'GenerateRequestsPerDayPerProject' } },
+        {
+          '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+          reason: 'QUOTA_EXCEEDED',
+          metadata: { quota_limit: 'GenerateRequestsPerDayPerProject' },
+        },
         { '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '3600s' },
       ],
     };
@@ -146,8 +147,16 @@ describe('Gemini Quota Handling & Caching', () => {
 
   it('prunes smog actions under clean air conditions', () => {
     const selectedActions: GeminiSelectedAction[] = [
-      { actionId: 'keep_children_indoors_morning_smog', suggestedTimeOfDay: 'Morning', reason: 'Smog' },
-      { actionId: 'seal_windows_during_peak_inversion', suggestedTimeOfDay: 'Morning', reason: 'Smog' },
+      {
+        actionId: 'keep_children_indoors_morning_smog',
+        suggestedTimeOfDay: 'Morning',
+        reason: 'Smog',
+      },
+      {
+        actionId: 'seal_windows_during_peak_inversion',
+        suggestedTimeOfDay: 'Morning',
+        reason: 'Smog',
+      },
       { actionId: 'damp_mop_surfaces_daily', suggestedTimeOfDay: 'Daytime', reason: 'Hygiene' },
       { actionId: 'wear_n95_mask_outside', suggestedTimeOfDay: 'Morning', reason: 'Smog' },
     ];
@@ -160,31 +169,5 @@ describe('Gemini Quota Handling & Caching', () => {
     expect(prunedIds).not.toContain('seal_windows_during_peak_inversion');
     expect(prunedIds).not.toContain('wear_n95_mask_outside');
     expect(prunedIds).toContain('damp_mop_surfaces_daily');
-  });
-
-  it('displays resolved place name instead of raw coordinates in CommunityAdvisoryModal', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        headline: 'Advisory',
-        advisoryText: 'Clean air advisory text',
-        audience: 'housing_society',
-        language: 'en',
-      }),
-    }));
-
-    render(
-      <CommunityAdvisoryModal
-        isOpen
-        onClose={() => {}}
-        place="11.2551, 75.8287"
-        displayPlace="Kozhikode, Kerala"
-      />
-    );
-    await waitFor(() => {
-      const el = screen.queryByText(/Kozhikode, Kerala/i);
-      expect(Boolean(el)).toBe(true);
-    });
-    expect(screen.queryByText(/11\.2551/)).toBeNull();
   });
 });

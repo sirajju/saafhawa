@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { calculateActionImpact } from '@/lib/impact/calculator';
 import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
 import { generateHouseholdPlan } from '@/lib/plan/service';
-import { PlanRequest } from '@/lib/plan/types';
+import { type PlanRequest } from '@/lib/plan/types';
 import { MOCK_AIR_QUALITY, MOCK_PROFILE } from './plan-fixtures';
 
 describe('Commute Actions Applicability', () => {

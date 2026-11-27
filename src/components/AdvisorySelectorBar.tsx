@@ -1,4 +1,3 @@
-import React from 'react';
 import { HomeIcon, ShieldIcon } from './ui/Icons';
 
 interface AdvisorySelectorBarProps {
@@ -15,7 +14,16 @@ export function AdvisorySelectorBar({
   onLanguageChange,
 }: AdvisorySelectorBarProps) {
   return (
-    <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+    <div
+      style={{
+        marginTop: 16,
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+      }}
+    >
       {/* Audience Segment */}
       <fieldset className="seg" style={{ margin: 0 }}>
         <legend className="sr-only">Target community audience</legend>

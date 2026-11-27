@@ -1,4 +1,4 @@
-import { PlanRequest } from '@/lib/plan/types';
+import { type PlanRequest } from '@/lib/plan/types';
 
 export const DEFAULT_PROFILE: PlanRequest = {
   place: '',

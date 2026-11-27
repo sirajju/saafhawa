@@ -48,12 +48,7 @@ export function OptionGroup<T extends string | number | boolean>({
   };
 
   return (
-    <div
-      ref={groupRef}
-      className={className}
-      role="radiogroup"
-      aria-label={label}
-    >
+    <div ref={groupRef} className={className} role="radiogroup" aria-label={label}>
       {options.map((opt, idx) => {
         const isSelected = value !== null && value === opt.value;
         const tabIndex = isSelected ? 0 : value === null && idx === 0 ? 0 : -1;

@@ -3,7 +3,7 @@ import { generateHouseholdPlan } from '@/lib/plan/service';
 import { getRuleBasedFallbackActions } from '@/lib/plan/fallback';
 import { evaluateIndoorImpact } from '@/lib/impact/indoor-impact';
 import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
-import { HouseholdProfile } from '@/lib/impact/types';
+import { type HouseholdProfile } from '@/lib/impact/types';
 import { MOCK_AIR_QUALITY, MOCK_PROFILE } from './plan-fixtures';
 
 describe('Characterisation Tests for Named Steps Refactoring', () => {
@@ -33,7 +33,9 @@ describe('Characterisation Tests for Named Steps Refactoring', () => {
     expect(resExhaust?.concentrationReduction).toBeGreaterThan(0);
     expect(resExhaust?.percentageDrop).toBe(70);
 
-    const incenseAction = ACTION_CATALOGUE.find((a) => a.id === 'eliminate_incense_and_mosquito_coils')!;
+    const incenseAction = ACTION_CATALOGUE.find(
+      (a) => a.id === 'eliminate_incense_and_mosquito_coils'
+    )!;
     const incenseProfile: HouseholdProfile = {
       ...MOCK_PROFILE,
       usesIncenseOrMosquitoCoils: true,

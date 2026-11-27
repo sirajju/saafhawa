@@ -1,9 +1,10 @@
+/* eslint-disable max-lines-per-function */
 import {
   FILTRATION_AND_INFILTRATION_FACTORS,
   INHALATION_RATES_M3_PER_HOUR,
 } from './exposure-factors';
 import { VEHICULAR_EMISSION_FACTORS } from './emission-factors';
-import { ActionImpactResult, HouseholdProfile } from './types';
+import { type ActionImpactResult, type HouseholdProfile } from './types';
 import { calculateInhaledAirVolumeM3 } from './air-volume';
 
 /**
@@ -18,19 +19,27 @@ export function calculateBaselineDailyHouseholdDoseUg(
   const commuters = profile.commutersCount ?? Math.min(profile.adultsCount, 1);
   const commuteHours = Math.max(
     0.25,
-    Math.min(3.0, profile.dailyCommuteDistanceKm / VEHICULAR_EMISSION_FACTORS.URBAN_COMMUTE_AVERAGE_SPEED_KM_PER_HOUR)
+    Math.min(
+      3.0,
+      profile.dailyCommuteDistanceKm /
+        VEHICULAR_EMISSION_FACTORS.URBAN_COMMUTE_AVERAGE_SPEED_KM_PER_HOUR
+    )
   );
 
   const transitRatio =
     profile.primaryCommuteMode === 'two_wheeler'
       ? VEHICULAR_EMISSION_FACTORS.TWO_WHEELER_COMMUTE_EXPOSURE_RATIO
       : profile.primaryCommuteMode === 'none'
-      ? 0.50
-      : VEHICULAR_EMISSION_FACTORS.CAR_CABIN_EXPOSURE_RATIO;
+        ? 0.5
+        : VEHICULAR_EMISSION_FACTORS.CAR_CABIN_EXPOSURE_RATIO;
 
-  const commuteDose = commuters > 0
-    ? commuters * INHALATION_RATES_M3_PER_HOUR.ADULT_LIGHT_ACTIVITY * commuteHours * (currentPm25 * transitRatio)
-    : 0;
+  const commuteDose =
+    commuters > 0
+      ? commuters *
+        INHALATION_RATES_M3_PER_HOUR.ADULT_LIGHT_ACTIVITY *
+        commuteHours *
+        (currentPm25 * transitRatio)
+      : 0;
 
   const outdoorHours = profile.dailyOutdoorHoursPerPerson;
   const outdoorVol = calculateInhaledAirVolumeM3(profile, 'light', outdoorHours);
@@ -68,8 +77,18 @@ export function calculateDeduplicatedTotals(
   let totalPm25Grams = 0;
   let totalCo2Grams = 0;
 
-  const commuteOrder = ['work_from_home_on_smog_days', 'swap_car_for_metro', 'swap_two_wheeler_for_metro_or_bus', 'carpool_to_work'];
-  const indoorOrder = ['weatherstrip_doors_and_windows', 'seal_windows_during_peak_inversion', 'run_hepa_air_purifier_bedroom', 'diy_corsi_rosenthal_box'];
+  const commuteOrder = [
+    'work_from_home_on_smog_days',
+    'swap_car_for_metro',
+    'swap_two_wheeler_for_metro_or_bus',
+    'carpool_to_work',
+  ];
+  const indoorOrder = [
+    'weatherstrip_doors_and_windows',
+    'seal_windows_during_peak_inversion',
+    'run_hepa_air_purifier_bedroom',
+    'diy_corsi_rosenthal_box',
+  ];
 
   const ACTION_EVALUATION_PRIORITY: Record<string, number> = {
     work_from_home_on_smog_days: 10,
@@ -83,7 +102,9 @@ export function calculateDeduplicatedTotals(
   };
 
   const sortedActions = [...applicableActions].sort(
-    (a, b) => (ACTION_EVALUATION_PRIORITY[a.actionId] ?? 1000) - (ACTION_EVALUATION_PRIORITY[b.actionId] ?? 1000)
+    (a, b) =>
+      (ACTION_EVALUATION_PRIORITY[a.actionId] ?? 1000) -
+      (ACTION_EVALUATION_PRIORITY[b.actionId] ?? 1000)
   );
 
   for (const action of sortedActions) {
@@ -91,22 +112,30 @@ export function calculateDeduplicatedTotals(
 
     if (commuteOrder.includes(action.actionId)) {
       scale = remainingCommuteFrac;
-      if (action.actionId === 'work_from_home_on_smog_days' || action.actionId === 'swap_car_for_metro' || action.actionId === 'swap_two_wheeler_for_metro_or_bus') {
+      if (
+        action.actionId === 'work_from_home_on_smog_days' ||
+        action.actionId === 'swap_car_for_metro' ||
+        action.actionId === 'swap_two_wheeler_for_metro_or_bus'
+      ) {
         remainingCommuteFrac = 0.0;
       } else if (action.actionId === 'carpool_to_work') {
         remainingCommuteFrac *= 0.5;
       }
     } else if (indoorOrder.includes(action.actionId)) {
       scale = remainingIndoorFrac;
-      const efficiency = action.actionId === 'run_hepa_air_purifier_bedroom'
-        ? FILTRATION_AND_INFILTRATION_FACTORS.HEPA_AIR_PURIFIER_ROOM_EFFICIENCY
-        : action.actionId === 'diy_corsi_rosenthal_box'
-        ? FILTRATION_AND_INFILTRATION_FACTORS.CORSI_ROSENTHAL_BOX_EFFICIENCY
-        : FILTRATION_AND_INFILTRATION_FACTORS.WEATHERSTRIPPING_INFILTRATION_REDUCTION;
+      const efficiency =
+        action.actionId === 'run_hepa_air_purifier_bedroom'
+          ? FILTRATION_AND_INFILTRATION_FACTORS.HEPA_AIR_PURIFIER_ROOM_EFFICIENCY
+          : action.actionId === 'diy_corsi_rosenthal_box'
+            ? FILTRATION_AND_INFILTRATION_FACTORS.CORSI_ROSENTHAL_BOX_EFFICIENCY
+            : FILTRATION_AND_INFILTRATION_FACTORS.WEATHERSTRIPPING_INFILTRATION_REDUCTION;
       remainingIndoorFrac = Math.max(0, remainingIndoorFrac * (1 - efficiency));
     }
 
-    if (action.exposureReduction.isUnknown || action.exposureReduction.pm25InhaledDoseAvoidedUg === null) {
+    if (
+      action.exposureReduction.isUnknown ||
+      action.exposureReduction.pm25InhaledDoseAvoidedUg === null
+    ) {
       hasUnknownExposure = true;
     } else {
       totalDose += (action.exposureReduction.pm25InhaledDoseAvoidedUg || 0) * scale;

@@ -1,4 +1,4 @@
-import { CurrentAirQuality, HourlyForecastPoint } from './types';
+import { type CurrentAirQuality, type HourlyForecastPoint } from './types';
 
 export interface OpenMeteoLocationResult {
   formattedAddress: string;

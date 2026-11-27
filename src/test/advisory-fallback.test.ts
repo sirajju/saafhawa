@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { AirQualityReport } from '../lib/air-quality/types';
 
 describe('Community Advisory Fallback and Cache Bypassing', () => {
   it('returns generationMethod and fallbackReason, never caching template fallback', async () => {
@@ -21,7 +22,7 @@ describe('Community Advisory Fallback and Cache Bypassing', () => {
       { place: 'Kozhikode', audience: 'housing_society', language: 'en' },
       {
         apiKey: '', // forces fallback
-        airQualityFetcher: async () => mockReport as unknown as import('../lib/air-quality/types').AirQualityReport,
+        airQualityFetcher: async () => mockReport as unknown as AirQualityReport,
       }
     );
 

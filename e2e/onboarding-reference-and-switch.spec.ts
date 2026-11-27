@@ -25,7 +25,9 @@ test.describe('Onboarding Reference Alignment & Floating Switch', () => {
     await expect(page.getByText('Enter your city, area or pincode to continue.')).not.toBeVisible();
   });
 
-  test('completes 3-step onboarding and uses floating view switch to return and edit', async ({ page }) => {
+  test('completes 3-step onboarding and uses floating view switch to return and edit', async ({
+    page,
+  }) => {
     await page.route('**/api/plan', async (route) => {
       await route.fulfill({
         status: 200,
@@ -57,7 +59,9 @@ test.describe('Onboarding Reference Alignment & Floating Switch', () => {
     await page.locator('#onb-next').click();
 
     // Dashboard loads
-    await expect(page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })
+    ).toBeVisible();
 
     // Floating switch is now visible
     const viewSwitch = page.locator('.view-switch');
@@ -79,10 +83,14 @@ test.describe('Onboarding Reference Alignment & Floating Switch', () => {
 
     // Switch back to Dashboard using the floating switch
     await dashBtn.click();
-    await expect(page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })
+    ).toBeVisible();
   });
 
-  test('captures screenshots of all 3 onboarding steps in light and dark mode at 1440px and 390px', async ({ page }) => {
+  test('captures screenshots of all 3 onboarding steps in light and dark mode at 1440px and 390px', async ({
+    page,
+  }) => {
     const viewports = [
       { name: '1440px', width: 1440, height: 900 },
       { name: '390px', width: 390, height: 844 },
@@ -131,7 +139,9 @@ test.describe('Onboarding Reference Alignment & Floating Switch', () => {
     }
   });
 
-  test('onboarding column is at most 600px wide, action bar is fixed to bottom, and >=24px gap after scroll', async ({ page }) => {
+  test('onboarding column is at most 600px wide, action bar is fixed to bottom, and >=24px gap after scroll', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
@@ -149,7 +159,9 @@ test.describe('Onboarding Reference Alignment & Floating Switch', () => {
     await expect(actionBar).toBeVisible();
     const isFixed = await actionBar.evaluate((el) => {
       const style = window.getComputedStyle(el);
-      return style.position === 'fixed' && (style.bottom === '0px' || parseFloat(style.bottom) === 0);
+      return (
+        style.position === 'fixed' && (style.bottom === '0px' || parseFloat(style.bottom) === 0)
+      );
     });
     expect(isFixed).toBe(true);
 

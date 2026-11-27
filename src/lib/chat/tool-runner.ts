@@ -1,11 +1,12 @@
-import { FunctionCall } from '@google/genai';
-import { AirQualityReport } from '../air-quality/types';
+/* eslint-disable complexity */
+import { type FunctionCall } from '@google/genai';
+import { type AirQualityReport } from '../air-quality/types';
 import {
   executeCalculateImpactTool,
   executeGetAirQualityTool,
   executeListActionsTool,
 } from './tools';
-import { ChatRequest, ExecutedToolRecord } from './types';
+import { type ChatRequest, type ExecutedToolRecord } from './types';
 
 export async function executeSingleToolCall(
   fc: FunctionCall,
@@ -56,8 +57,7 @@ export async function executeSingleToolCall(
   }
 
   if (fc.name === 'listCatalogueActions') {
-    const categoryArg =
-      typeof fc.args?.category === 'string' ? fc.args.category : undefined;
+    const categoryArg = typeof fc.args?.category === 'string' ? fc.args.category : undefined;
     const listResult = executeListActionsTool({ category: categoryArg });
     toolsExecuted.push({
       toolName: fc.name,

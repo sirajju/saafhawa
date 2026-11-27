@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { PlanRequestSchema } from '../plan/types';
-import { FallbackReason } from '../constants';
+import { type FallbackReason } from '../constants';
 
 export const ChatMessageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system']),

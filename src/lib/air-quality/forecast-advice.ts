@@ -1,8 +1,9 @@
+/* eslint-disable complexity */
 import { formatHourInPlaceLocalTime } from '../chat/tools';
 import {
-  ForecastAdvicePoint,
-  ForecastAdviceHousehold,
-  ForecastAdviceResult,
+  type ForecastAdvicePoint,
+  type ForecastAdviceHousehold,
+  type ForecastAdviceResult,
   getLocalTimeDetails,
 } from './forecast-advice-types';
 import { findWakingWindowCandidates } from './forecast-window-search';
@@ -24,7 +25,9 @@ export function buildForecastAdvice(
   const currentHourFloorMs = referenceNow.getTime() - 30 * 60 * 1000;
   const validPoints = hourlyForecast.filter(
     (p): p is ForecastAdvicePoint & { aqi: number } =>
-      typeof p.aqi === 'number' && !isNaN(p.aqi) && new Date(p.dateTime).getTime() >= currentHourFloorMs
+      typeof p.aqi === 'number' &&
+      !isNaN(p.aqi) &&
+      new Date(p.dateTime).getTime() >= currentHourFloorMs
   );
 
   if (validPoints.length === 0) return buildFallbackAdvice(household);
@@ -36,7 +39,8 @@ export function buildForecastAdvice(
   const best = candidates[0];
 
   const aqiNum = typeof currentAqi === 'number' && !isNaN(currentAqi) ? currentAqi : null;
-  const maxForecastAqi = validPoints.length > 0 ? Math.max(...validPoints.map((p) => p.aqi)) : aqiNum;
+  const maxForecastAqi =
+    validPoints.length > 0 ? Math.max(...validPoints.map((p) => p.aqi)) : aqiNum;
   const isCurrentlyClean = aqiNum !== null && aqiNum <= 100;
   const staysClean = isCurrentlyClean && maxForecastAqi !== null && maxForecastAqi <= 100;
 
@@ -46,7 +50,8 @@ export function buildForecastAdvice(
     if (aqiNum <= 50) {
       plainAdvice = 'Air quality is clean and fine for normal outdoor activities.';
     } else if (hasAsthma) {
-      plainAdvice = 'Air quality is satisfactory and fine for normal activity, though sensitive family members with asthma should take it easy during heavy exertion.';
+      plainAdvice =
+        'Air quality is satisfactory and fine for normal activity, though sensitive family members with asthma should take it easy during heavy exertion.';
     } else {
       plainAdvice = 'Air quality is satisfactory and fine for normal outdoor activities.';
     }
@@ -68,7 +73,9 @@ export function buildForecastAdvice(
   const endTimeStr = formatHourInPlaceLocalTime(endIso, timeZone);
 
   const windowTimeSpan = `${startTimeStr} to ${endTimeStr}`;
-  const cleanestWindowText = best.isTomorrow ? `tomorrow ${windowTimeSpan}` : `today ${windowTimeSpan}`;
+  const cleanestWindowText = best.isTomorrow
+    ? `tomorrow ${windowTimeSpan}`
+    : `today ${windowTimeSpan}`;
 
   const advicePrefix = isCurrentlyClean
     ? 'Air quality is currently favorable, but deteriorates later.'
@@ -77,7 +84,9 @@ export function buildForecastAdvice(
     ? `Cleanest window: tomorrow ${windowTimeSpan}.`
     : `Cleanest window today: ${windowTimeSpan}.`;
 
-  const forecastStartIndex = hourlyForecast.findIndex((p) => p.dateTime === best.startPoint.dateTime);
+  const forecastStartIndex = hourlyForecast.findIndex(
+    (p) => p.dateTime === best.startPoint.dateTime
+  );
 
   return {
     plainAdvice: `${advicePrefix} ${adviceCleanestSuffix}`,

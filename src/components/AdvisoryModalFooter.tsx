@@ -1,4 +1,3 @@
-import React from 'react';
 import { ShareIcon, CopyIcon, CheckIcon } from './ui/Icons';
 
 interface AdvisoryModalFooterProps {
@@ -40,12 +39,7 @@ export function AdvisoryModalFooter({
       </span>
 
       <div style={{ display: 'flex', gap: 10 }}>
-        <button
-          type="button"
-          disabled={isLoading || !hasAdvisory}
-          onClick={onCopy}
-          className="btn"
-        >
+        <button type="button" disabled={isLoading || !hasAdvisory} onClick={onCopy} className="btn">
           {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
           <span>{copied ? 'Copied!' : 'Copy WhatsApp Message'}</span>
         </button>

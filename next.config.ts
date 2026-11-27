@@ -1,25 +1,25 @@
-import type { NextConfig } from "next";
-import { SECURITY_HEADERS_LIST } from "./src/lib/security";
+import type { NextConfig } from 'next';
+import { SECURITY_HEADERS_LIST } from './src/lib/security';
 
 const isVercel = Boolean(process.env.VERCEL);
 
 const nextConfig: NextConfig = {
-  ...(!isVercel && { output: "standalone" }),
+  ...(!isVercel && { output: 'standalone' }),
   poweredByHeader: false,
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
     rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
+      '*.css': {
+        loaders: ['@tailwindcss/turbopack'],
+        as: '*.css',
       },
     },
   },
   async headers() {
     return [
       {
-        source: "/(.*)",
+        source: '/(.*)',
         headers: [...SECURITY_HEADERS_LIST],
       },
     ];

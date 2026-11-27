@@ -28,7 +28,11 @@ export function renderInlineMarkdown(text: string): React.ReactNode[] {
     } else if (matched.startsWith('_') && matched.endsWith('_')) {
       tokens.push(<em key={key}>{matched.slice(1, -1)}</em>);
     } else if (matched.startsWith('`') && matched.endsWith('`')) {
-      tokens.push(<code key={key} className="rounded bg-[var(--surface-2)] px-1 py-0.5 text-xs">{matched.slice(1, -1)}</code>);
+      tokens.push(
+        <code key={key} className="rounded bg-[var(--surface-2)] px-1 py-0.5 text-xs">
+          {matched.slice(1, -1)}
+        </code>
+      );
     } else {
       tokens.push(matched);
     }
@@ -64,7 +68,10 @@ export function SafeMarkdown({ content }: SafeMarkdownProps) {
     const ListTag = currentList.type;
     const items = currentList.items;
     blocks.push(
-      <ListTag key={`list-${blockKey++}`} className={`my-1.5 space-y-1 ${ListTag === 'ul' ? 'list-disc pl-5' : 'list-decimal pl-5'}`}>
+      <ListTag
+        key={`list-${blockKey++}`}
+        className={`my-1.5 space-y-1 ${ListTag === 'ul' ? 'list-disc pl-5' : 'list-decimal pl-5'}`}
+      >
         {items.map((item, idx) => (
           <li key={idx} className="leading-relaxed">
             {renderInlineMarkdown(item)}

@@ -1,5 +1,5 @@
-import { PlanRequest, PlanResponse } from '../plan/types';
-import { AdvisoryResponse } from '../community/types';
+import { type PlanRequest, type PlanResponse } from '../plan/types';
+import { type AdvisoryResponse } from '../community/types';
 
 interface CacheEntry<T> {
   data: T;
@@ -52,11 +52,7 @@ export function setCachedPlan(cacheKey: string, plan: PlanResponse): void {
   });
 }
 
-export function buildAdvisoryCacheKey(
-  place: string,
-  audience: string,
-  language: string
-): string {
+export function buildAdvisoryCacheKey(place: string, audience: string, language: string): string {
   const normPlace = normalizePlace(place);
   const hour = getHourKey();
   return `adv:${normPlace}:${audience}:${language}:${hour}`;

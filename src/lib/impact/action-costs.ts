@@ -1,4 +1,4 @@
-import { ActionId } from './action-ids';
+import { type ActionId } from './action-ids';
 
 export interface ActionCostInfo {
   costRupees: number;

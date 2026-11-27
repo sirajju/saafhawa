@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { buildForecastAdvice, ForecastAdvicePoint } from '@/lib/air-quality/forecast-advice';
+import { buildForecastAdvice, type ForecastAdvicePoint } from '@/lib/air-quality/forecast-advice';
 
 // Generate 48 hours of synthetic points starting from 2026-11-25T00:00:00Z
 function generateSynthetic48HourForecast(): ForecastAdvicePoint[] {
@@ -51,7 +51,9 @@ describe('Forecast Advice - Future Waking Hours & Fixed Clock Tests', () => {
 
     expect(result.isTomorrow).toBe(false);
     expect(result.cleanestWindowText).toMatch(/1[\s\u00A0]PM to 4[\s\u00A0]PM/);
-    expect(result.plainAdvice).toMatch(/Keep members with respiratory sensitivity indoors until 1[\s\u00A0]PM\./);
+    expect(result.plainAdvice).toMatch(
+      /Keep members with respiratory sensitivity indoors until 1[\s\u00A0]PM\./
+    );
     expect(result.plainAdvice).toMatch(/Cleanest window today: 1[\s\u00A0]PM to 4[\s\u00A0]PM\./);
     // Explicitly verify non-breaking space between number and meridiem
     expect(result.plainAdvice).toContain('1\u00A0PM');
@@ -61,13 +63,7 @@ describe('Forecast Advice - Future Waking Hours & Fixed Clock Tests', () => {
   it('starts at current hour and does NOT refer to past morning hours when clock is at 1:00 PM (Afternoon)', () => {
     // 1 PM IST on Nov 25, 2026
     const fixedClock = new Date('2026-11-25T13:00:00+05:30');
-    const result = buildForecastAdvice(
-      150,
-      points,
-      { childrenCount: 1 },
-      timeZone,
-      fixedClock
-    );
+    const result = buildForecastAdvice(150, points, { childrenCount: 1 }, timeZone, fixedClock);
 
     expect(result.isTomorrow).toBe(false);
     // Must NOT say 4 AM or past morning hours!

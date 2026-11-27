@@ -42,7 +42,10 @@ describe('Time Zone - Location-Aware Hourly Forecast Formatting', () => {
 
   it('falls back to India time (Asia/Kolkata) when invalid time zone is supplied', () => {
     const sampleUtcDate = '2026-11-25T12:00:00Z';
-    const fallbackFormatted = formatHourInPlaceLocalTime(sampleUtcDate, 'Invalid/TimeZone_DoesNotExist');
+    const fallbackFormatted = formatHourInPlaceLocalTime(
+      sampleUtcDate,
+      'Invalid/TimeZone_DoesNotExist'
+    );
 
     // Should gracefully fall back to Asia/Kolkata without throwing
     expect(fallbackFormatted).toMatch(/5\s*PM/);

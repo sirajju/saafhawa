@@ -1,15 +1,18 @@
 'use client';
 
 import React from 'react';
-import { CleanLocation, CurrentAirQuality } from '@/lib/air-quality/types';
+import { type CleanLocation, type CurrentAirQuality } from '@/lib/air-quality/types';
 import { getAqiCategoryDetails } from '@/lib/impact/category-details';
 import {
   getAqiCategoryCssVar,
   getAqiCategorySoftCssVar,
   getScaleMarkerPercentage,
 } from '@/lib/design-system';
-import { ForecastChart, ForecastPoint } from './ForecastChart';
-import { buildForecastAdvice, ForecastAdviceHousehold } from '@/lib/air-quality/forecast-advice';
+import { ForecastChart, type ForecastPoint } from './ForecastChart';
+import {
+  buildForecastAdvice,
+  type ForecastAdviceHousehold,
+} from '@/lib/air-quality/forecast-advice';
 import { formatMeasurementTime } from '@/lib/air-quality/time-utils';
 import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
 
@@ -72,7 +75,8 @@ export function AirQualityCard({
       <div className="hero">
         <div>
           <div className="eyebrow" id="air-now">
-            Air quality now · {current.indexDisplayName || 'AQI (hourly estimate, CPCB breakpoints)'}
+            Air quality now ·{' '}
+            {current.indexDisplayName || 'AQI (hourly estimate, CPCB breakpoints)'}
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '14px', marginTop: '10px' }}>
             <div className="aqi-num num" style={{ color: catColor }}>
@@ -167,10 +171,14 @@ export function AirQualityCard({
       <span className="sr-only">Current air quality category is {categoryInfo.categoryText}.</span>
       <span className="sr-only">Current Air Quality Index is {current.aqi}.</span>
       {typeof current.pm25?.value === 'number' && (
-        <span className="sr-only">PM2.5 particulate level is {current.pm25.value} micrograms per cubic meter.</span>
+        <span className="sr-only">
+          PM2.5 particulate level is {current.pm25.value} micrograms per cubic meter.
+        </span>
       )}
       {typeof current.pm10?.value === 'number' && (
-        <span className="sr-only">PM10 particulate level is {current.pm10.value} micrograms per cubic meter.</span>
+        <span className="sr-only">
+          PM10 particulate level is {current.pm10.value} micrograms per cubic meter.
+        </span>
       )}
     </section>
   );

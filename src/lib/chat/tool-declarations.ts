@@ -1,4 +1,4 @@
-import { FunctionDeclaration, Type } from '@google/genai';
+import { type FunctionDeclaration, Type } from '@google/genai';
 
 export const AIR_QUALITY_TOOL_DECLARATION: FunctionDeclaration = {
   name: 'getAirQualityAndForecast',
@@ -9,7 +9,8 @@ export const AIR_QUALITY_TOOL_DECLARATION: FunctionDeclaration = {
     properties: {
       place: {
         type: Type.STRING,
-        description: 'The location name, landmark, city, or pincode (e.g. "Connaught Place", "110001", "Lahore").',
+        description:
+          'The location name, landmark, city, or pincode (e.g. "Connaught Place", "110001", "Lahore").',
       },
     },
     required: ['place'],

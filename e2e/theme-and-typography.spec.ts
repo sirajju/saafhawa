@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 import { MOCK_PLAN } from './fixtures/mock-plan';
 
 test.describe('Theme Switching & Typography System', () => {
-  test('toggles theme to dark, verifies persistence on page reload, then light and system', async ({ page }) => {
+  test('toggles theme to dark, verifies persistence on page reload, then light and system', async ({
+    page,
+  }) => {
     await page.route('**/api/plan', async (route) => {
       await route.fulfill({
         status: 200,
@@ -22,7 +24,9 @@ test.describe('Theme Switching & Typography System', () => {
     await expect(darkBtn).toBeVisible();
     await darkBtn.click();
 
-    let currentTheme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+    let currentTheme = await page.evaluate(() =>
+      document.documentElement.getAttribute('data-theme')
+    );
     let storedTheme = await page.evaluate(() => localStorage.getItem('saafhawa_theme'));
     expect(currentTheme).toBe('dark');
     expect(storedTheme).toBe('dark');
@@ -52,13 +56,17 @@ test.describe('Theme Switching & Typography System', () => {
     await expect(systemBtn).toBeVisible();
     await systemBtn.click();
 
-    const userTheme = await page.evaluate(() => document.documentElement.getAttribute('data-user-theme'));
+    const userTheme = await page.evaluate(() =>
+      document.documentElement.getAttribute('data-user-theme')
+    );
     storedTheme = await page.evaluate(() => localStorage.getItem('saafhawa_theme'));
     expect(userTheme).toBe('system');
     expect(storedTheme).toBe('system');
   });
 
-  test('verifies no visible text on onboarding or dashboard has font-size smaller than 13px', async ({ page }) => {
+  test('verifies no visible text on onboarding or dashboard has font-size smaller than 13px', async ({
+    page,
+  }) => {
     await page.route('**/api/plan', async (route) => {
       await route.fulfill({
         status: 200,
@@ -71,7 +79,12 @@ test.describe('Theme Switching & Typography System', () => {
     const scanVisibleTextForSmallSizes = async () => {
       return page.evaluate(() => {
         const elements = Array.from(document.querySelectorAll('body *'));
-        const violations: Array<{ tag: string; text: string; fontSize: string; className: string }> = [];
+        const violations: Array<{
+          tag: string;
+          text: string;
+          fontSize: string;
+          className: string;
+        }> = [];
 
         for (const el of elements) {
           const style = window.getComputedStyle(el);
@@ -89,7 +102,11 @@ test.describe('Theme Switching & Typography System', () => {
 
           let hasDirectText = false;
           for (const child of Array.from(el.childNodes)) {
-            if (child.nodeType === Node.TEXT_NODE && child.textContent && child.textContent.trim().length > 0) {
+            if (
+              child.nodeType === Node.TEXT_NODE &&
+              child.textContent &&
+              child.textContent.trim().length > 0
+            ) {
               hasDirectText = true;
               break;
             }
@@ -115,7 +132,9 @@ test.describe('Theme Switching & Typography System', () => {
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await expect(page.getByRole('heading', { name: /Where do you live, and who lives with you/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Where do you live, and who lives with you/i })
+    ).toBeVisible();
 
     const onboardingViolations = await scanVisibleTextForSmallSizes();
     expect(onboardingViolations).toEqual([]);
@@ -126,7 +145,9 @@ test.describe('Theme Switching & Typography System', () => {
     }, MOCK_PLAN);
     await page.reload();
 
-    await expect(page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })
+    ).toBeVisible();
     await expect(page.getByText('Your plan for today')).toBeVisible();
 
     const dashboardViolations = await scanVisibleTextForSmallSizes();

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrandIcon } from './ui/Icons';
 import { TIMERS } from '@/lib/constants';
 
@@ -25,10 +25,25 @@ export function LoadingState() {
   }, []);
 
   return (
-    <div aria-hidden="true" className="wrap" style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div
+      aria-hidden="true"
+      className="wrap"
+      style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}
+    >
       {/* Reassuring Loading Status Card */}
-      <div className="card" style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand)', padding: 24 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+      <div
+        className="card"
+        style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand)', padding: 24 }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div
               style={{
@@ -56,7 +71,16 @@ export function LoadingState() {
         </div>
 
         {/* Pulse Bar */}
-        <div style={{ marginTop: 16, height: 6, width: '100%', borderRadius: 999, background: 'var(--surface-2)', overflow: 'hidden' }}>
+        <div
+          style={{
+            marginTop: 16,
+            height: 6,
+            width: '100%',
+            borderRadius: 999,
+            background: 'var(--surface-2)',
+            overflow: 'hidden',
+          }}
+        >
           <div
             style={{
               height: '100%',
@@ -72,23 +96,49 @@ export function LoadingState() {
       {/* SKELETON: Matches Real Layout */}
       <div className="stack" style={{ opacity: 0.6 }}>
         {/* Header Skeleton */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 16, borderBottom: '1px solid var(--line)' }}>
-          <div style={{ height: 28, width: 240, borderRadius: 6, background: 'var(--surface-2)' }} />
-          <div style={{ height: 18, width: 360, borderRadius: 6, background: 'var(--surface-2)' }} />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            paddingBottom: 16,
+            borderBottom: '1px solid var(--line)',
+          }}
+        >
+          <div
+            style={{ height: 28, width: 240, borderRadius: 6, background: 'var(--surface-2)' }}
+          />
+          <div
+            style={{ height: 18, width: 360, borderRadius: 6, background: 'var(--surface-2)' }}
+          />
         </div>
 
         {/* Top AQI Card Skeleton */}
-        <div className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div
+          className="card"
+          style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ height: 72, width: 140, borderRadius: 8, background: 'var(--surface-2)' }} />
-            <div style={{ height: 32, width: 120, borderRadius: 999, background: 'var(--surface-2)' }} />
+            <div
+              style={{ height: 72, width: 140, borderRadius: 8, background: 'var(--surface-2)' }}
+            />
+            <div
+              style={{ height: 32, width: 120, borderRadius: 999, background: 'var(--surface-2)' }}
+            />
           </div>
-          <div style={{ height: 24, width: '80%', borderRadius: 6, background: 'var(--surface-2)' }} />
-          <div style={{ height: 140, width: '100%', borderRadius: 8, background: 'var(--surface-2)' }} />
+          <div
+            style={{ height: 24, width: '80%', borderRadius: 6, background: 'var(--surface-2)' }}
+          />
+          <div
+            style={{ height: 140, width: '100%', borderRadius: 8, background: 'var(--surface-2)' }}
+          />
         </div>
 
         {/* Impact Skeleton */}
-        <div className="card" style={{ padding: 24, height: 120, background: 'var(--surface-2)' }} />
+        <div
+          className="card"
+          style={{ padding: 24, height: 120, background: 'var(--surface-2)' }}
+        />
       </div>
     </div>
   );

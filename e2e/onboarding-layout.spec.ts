@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 import { MOCK_PLAN } from './fixtures/mock-plan';
 
 test.describe('Onboarding & Dashboard Layout Responsiveness', () => {
-  test('onboarding at 390px phone: 16px side padding and icon-only location button', async ({ page }) => {
+  test('onboarding at 390px phone: 16px side padding and icon-only location button', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());

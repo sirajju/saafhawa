@@ -1,5 +1,4 @@
-import React from 'react';
-import { IconProps } from './IconProps';
+import { type IconProps } from './IconProps';
 
 export function BrandIcon({ className = 'w-6 h-6', ...props }: IconProps) {
   return (

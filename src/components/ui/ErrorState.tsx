@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertTriangleIcon, RefreshIcon, EditIcon } from './Icons';
 
 interface ErrorStateProps {
@@ -7,11 +6,7 @@ interface ErrorStateProps {
   onChangeLocation?: () => void;
 }
 
-export function ErrorState({
-  message,
-  onRetry,
-  onChangeLocation,
-}: ErrorStateProps) {
+export function ErrorState({ message, onRetry, onChangeLocation }: ErrorStateProps) {
   return (
     <div className="wrap" style={{ maxWidth: 680, padding: '32px 16px' }}>
       <div
@@ -44,7 +39,8 @@ export function ErrorState({
               Unable to Load Air Quality or Plan
             </h2>
             <p style={{ marginTop: 8, fontSize: 15, lineHeight: 1.5, color: 'var(--ink-2)' }}>
-              {message || 'We could not reach the air quality sensors or generate your family’s plan right now.'}
+              {message ||
+                'We could not reach the air quality sensors or generate your family’s plan right now.'}
             </p>
             <p className="caption" style={{ marginTop: 6, color: 'var(--ink-3)' }}>
               Your profile is safely stored. Please check your internet connection or try again.
@@ -52,21 +48,13 @@ export function ErrorState({
 
             <div style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
               {onRetry && (
-                <button
-                  type="button"
-                  onClick={onRetry}
-                  className="btn btn-primary"
-                >
+                <button type="button" onClick={onRetry} className="btn btn-primary">
                   <RefreshIcon className="h-4 w-4" />
                   <span>Try Again</span>
                 </button>
               )}
               {onChangeLocation && (
-                <button
-                  type="button"
-                  onClick={onChangeLocation}
-                  className="btn"
-                >
+                <button type="button" onClick={onChangeLocation} className="btn">
                   <EditIcon className="h-4 w-4" />
                   <span>Change Location</span>
                 </button>

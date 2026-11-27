@@ -1,9 +1,13 @@
-import { ActionDefinition } from '../impact/catalogue';
-import { ActionImpactResult, AirQualityContext } from '../impact/types';
-import { GeminiSelectedAction, PlanRequest } from './types';
+import { type ActionDefinition } from '../impact/catalogue';
+import { type ActionImpactResult, type AirQualityContext } from '../impact/types';
+import { type GeminiSelectedAction, type PlanRequest } from './types';
 
 export const WORK_FROM_HOME_ACTION_ID = 'work_from_home_on_smog_days';
-export const COMMUTE_SWAP_ACTION_IDS = new Set(['swap_car_for_metro', 'swap_two_wheeler_for_metro_or_bus', 'carpool_to_work']);
+export const COMMUTE_SWAP_ACTION_IDS = new Set([
+  'swap_car_for_metro',
+  'swap_two_wheeler_for_metro_or_bus',
+  'carpool_to_work',
+]);
 export const SMOG_DEFENSE_ACTION_IDS = new Set([
   'keep_children_indoors_morning_smog',
   'seal_windows_during_peak_inversion',

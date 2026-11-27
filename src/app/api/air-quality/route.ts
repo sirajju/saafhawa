@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getAirQualityByLocation } from '@/lib/air-quality/service';
 import { AirQualityQuerySchema } from '@/lib/air-quality/types';
 import { airQualityRateLimiter, getClientIp } from '@/lib/rate-limit';
@@ -20,7 +20,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const rawPlace = searchParams.get('place');
     if (!rawPlace) {
-      return jsonError(400, 'Invalid Request', 'Query parameter "place" is required (between 2 and 120 characters).');
+      return jsonError(
+        400,
+        'Invalid Request',
+        'Query parameter "place" is required (between 2 and 120 characters).'
+      );
     }
 
     const { place } = AirQualityQuerySchema.parse({ place: rawPlace });

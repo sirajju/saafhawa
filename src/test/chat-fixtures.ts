@@ -1,6 +1,6 @@
-import { AirQualityReport } from '@/lib/air-quality/types';
-import { HouseholdProfile } from '@/lib/impact/types';
-import { PlanRequest } from '@/lib/plan/types';
+import { type AirQualityReport } from '@/lib/air-quality/types';
+import { type HouseholdProfile } from '@/lib/impact/types';
+import { type PlanRequest } from '@/lib/plan/types';
 
 export const MOCK_AIR_QUALITY: AirQualityReport = {
   location: {

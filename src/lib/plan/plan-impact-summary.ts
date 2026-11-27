@@ -1,13 +1,13 @@
-import { ActionDefinition } from '../impact/catalogue';
+import { type ActionDefinition } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { calculateDeduplicatedTotals } from '../impact/deduplication';
-import { ActionImpactResult, AirQualityContext } from '../impact/types';
+import { type ActionImpactResult, type AirQualityContext } from '../impact/types';
 import { generateBasisExplanation } from './basis-generator';
 import {
-  GeminiSelectedAction,
-  PlannedAction,
-  PlanRequest,
-  PlanSummary,
+  type GeminiSelectedAction,
+  type PlannedAction,
+  type PlanRequest,
+  type PlanSummary,
 } from './types';
 
 export function buildPlannedActionsAndSummary(
@@ -25,7 +25,12 @@ export function buildPlannedActionsAndSummary(
     const impact = calculateActionImpact(actionDef, profile, airQualityContext);
     actionImpacts.push(impact);
 
-    const basisExplanation = generateBasisExplanation(actionDef.id, profile, airQualityAqi, cleanestWindowSpan);
+    const basisExplanation = generateBasisExplanation(
+      actionDef.id,
+      profile,
+      airQualityAqi,
+      cleanestWindowSpan
+    );
     let timeOfDay = selected.suggestedTimeOfDay;
     if (actionDef.id === 'wear_n95_mask_outside' && profile.commutersCount === 0) {
       timeOfDay = 'Any outdoor walks or errands';
@@ -47,7 +52,10 @@ export function buildPlannedActionsAndSummary(
       reason: isCleanAir
         ? selected.reason
             .replace(/severe smog/gi, 'outdoor pollution')
-            .replace(/ground-level temperature inversion concentrates severe smog outdoors/gi, 'routine respiratory hygiene')
+            .replace(
+              /ground-level temperature inversion concentrates severe smog outdoors/gi,
+              'routine respiratory hygiene'
+            )
         : selected.reason,
       basisExplanation,
       costRupees: actionDef.costRupees ?? 0,
@@ -58,8 +66,14 @@ export function buildPlannedActionsAndSummary(
     };
   });
 
-  plannedActions.sort((a, b) => ((a.costRupees ?? 0) > 0 ? 1 : 0) - ((b.costRupees ?? 0) > 0 ? 1 : 0));
-  const deduped = calculateDeduplicatedTotals(actionImpacts, profile, airQualityContext.currentPm25);
+  plannedActions.sort(
+    (a, b) => ((a.costRupees ?? 0) > 0 ? 1 : 0) - ((b.costRupees ?? 0) > 0 ? 1 : 0)
+  );
+  const deduped = calculateDeduplicatedTotals(
+    actionImpacts,
+    profile,
+    airQualityContext.currentPm25
+  );
 
   const summary: PlanSummary = {
     totalActionsCount: plannedActions.length,

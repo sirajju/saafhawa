@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { PlannedAction } from '@/lib/plan/types';
+import { type PlannedAction } from '@/lib/plan/types';
 import { getLocalTimeDetails } from '@/lib/air-quality/forecast-advice';
 import { DailyTimelineItem } from './DailyTimelineItem';
 
@@ -34,7 +33,12 @@ export function getTimeSlotForAction(action: PlannedAction): TimeSlot {
   ) {
     return 'anytime';
   }
-  if (s.includes('night') || s.includes('bedtime') || s.includes('sleep') || id.includes('bedroom')) {
+  if (
+    s.includes('night') ||
+    s.includes('bedtime') ||
+    s.includes('sleep') ||
+    id.includes('bedroom')
+  ) {
     return 'night';
   }
   if (s.includes('evening') || s.includes('post-commute') || s.includes('sunset')) {
@@ -52,7 +56,12 @@ export function getTimeSlotForAction(action: PlannedAction): TimeSlot {
   ) {
     return 'afternoon';
   }
-  if (s.includes('morning') || s.includes('commute') || s.includes('early') || s.includes('breakfast')) {
+  if (
+    s.includes('morning') ||
+    s.includes('commute') ||
+    s.includes('early') ||
+    s.includes('breakfast')
+  ) {
     return 'morning';
   }
 

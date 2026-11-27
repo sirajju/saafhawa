@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -10,9 +10,13 @@ function TrapModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
 
   return (
     <div ref={containerRef} role="dialog" aria-modal="true">
-      <button type="button" id="btn-first">First</button>
+      <button type="button" id="btn-first">
+        First
+      </button>
       <input type="text" id="input-middle" placeholder="Middle" />
-      <button type="button" id="btn-last">Last</button>
+      <button type="button" id="btn-last">
+        Last
+      </button>
     </div>
   );
 }
@@ -53,7 +57,12 @@ describe('useFocusTrap Hook', () => {
 
     // Shift+Tab from first wraps to last
     firstBtn.focus();
-    const shiftTabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+    const shiftTabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
     window.dispatchEvent(shiftTabEvent);
     expect(document.activeElement).toBe(lastBtn);
 
@@ -64,7 +73,11 @@ describe('useFocusTrap Hook', () => {
     const handleClose = vi.fn();
     render(<TrapModal isOpen={true} onClose={handleClose} />);
 
-    const escEvent = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    const escEvent = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
     window.dispatchEvent(escEvent);
 
     expect(handleClose).toHaveBeenCalledTimes(1);
@@ -86,7 +99,11 @@ describe('useFocusTrap Hook', () => {
     expect(document.activeElement).toBe(middleInput);
 
     // Press Escape to confirm new callback is used
-    const escEvent = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    const escEvent = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
     window.dispatchEvent(escEvent);
     expect(handleClose2).toHaveBeenCalledTimes(1);
     expect(handleClose1).not.toHaveBeenCalled();

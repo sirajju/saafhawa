@@ -46,7 +46,8 @@ describe('Chat Multi-Turn Conversation History', () => {
   });
 
   it('validates chat request when conversation history includes long assistant reply (>500 chars)', () => {
-    const longAssistantReply = 'Here is a detailed explanation of clean air techniques for your family. '.repeat(10);
+    const longAssistantReply =
+      'Here is a detailed explanation of clean air techniques for your family. '.repeat(10);
     expect(longAssistantReply.length).toBeGreaterThan(500);
 
     const parsed = ChatRequestSchema.parse({

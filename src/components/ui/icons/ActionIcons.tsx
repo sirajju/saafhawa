@@ -1,5 +1,4 @@
-import React from 'react';
-import { IconProps } from './IconProps';
+import { type IconProps } from './IconProps';
 
 export function ChatIcon({ className = 'w-5 h-5', ...props }: IconProps) {
   return (

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getClientIp, reverseGeocodeRateLimiter } from '@/lib/rate-limit';
 import { reverseGeocodeCoordinates } from '@/lib/air-quality/reverse-geocoder';

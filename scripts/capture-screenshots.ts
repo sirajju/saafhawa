@@ -4,17 +4,24 @@ import fs from 'fs';
 import path from 'path';
 
 test.describe('Take Production Screenshots', () => {
-  test('captures dashboard, chat, and advisory in light and dark mode at 1440px and 390px', async ({ page }) => {
+  test('captures dashboard, chat, and advisory in light and dark mode at 1440px and 390px', async ({
+    page,
+  }) => {
     test.setTimeout(60000);
     await page.route('**/api/plan', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_PLAN) })
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(MOCK_PLAN),
+      })
     );
     await page.route('**/api/community-advisory', (route) =>
       route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
-          advisoryText: '🚨 Community Clean Air Advisory: Connaught Place\nAQI: 342 (Very Poor)\n• Wear N95 masks\n• Avoid morning exercise\n• Keep windows closed',
+          advisoryText:
+            '🚨 Community Clean Air Advisory: Connaught Place\nAQI: 342 (Very Poor)\n• Wear N95 masks\n• Avoid morning exercise\n• Keep windows closed',
           audience: 'housing_society',
           language: 'en',
         }),
@@ -38,21 +45,35 @@ test.describe('Take Production Screenshots', () => {
         await page.evaluate((t) => {
           document.documentElement.setAttribute('data-theme', t);
         }, theme);
-        await expect(page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })).toBeVisible();
+        await expect(
+          page.getByRole('heading', { level: 1, name: /Today in Connaught Place/i })
+        ).toBeVisible();
 
-        const dashPath = path.join('docs', 'screenshots', `saafhawa-dashboard-${vp.name}-${theme}.png`);
+        const dashPath = path.join(
+          'docs',
+          'screenshots',
+          `saafhawa-dashboard-${vp.name}-${theme}.png`
+        );
         await page.screenshot({ path: dashPath, fullPage: true });
 
         if (vp.name === '390px') {
           const askBtn = page.getByRole('button', { name: /Ask SaafHawa Assistant/i });
           await askBtn.click();
           await expect(page.getByRole('dialog', { name: /SaafHawa Assistant/i })).toBeVisible();
-          const chatPath = path.join('docs', 'screenshots', `saafhawa-chat-mobile-sheet-${vp.name}-${theme}.png`);
+          const chatPath = path.join(
+            'docs',
+            'screenshots',
+            `saafhawa-chat-mobile-sheet-${vp.name}-${theme}.png`
+          );
           await page.screenshot({ path: chatPath });
           const closeBtn = page.getByRole('button', { name: /Close assistant/i });
           await closeBtn.click();
         } else {
-          const chatPath = path.join('docs', 'screenshots', `saafhawa-chat-desktop-${vp.name}-${theme}.png`);
+          const chatPath = path.join(
+            'docs',
+            'screenshots',
+            `saafhawa-chat-desktop-${vp.name}-${theme}.png`
+          );
           await page.screenshot({ path: chatPath });
         }
 
@@ -61,7 +82,8 @@ test.describe('Take Production Screenshots', () => {
           await shareBtn.scrollIntoViewIfNeeded();
           await shareBtn.click();
           await expect(page.getByRole('dialog', { name: /Share Smog Advisory/i })).toBeVisible();
-          const advName = vp.name === '1440px' ? 'advisory-modal-desktop.png' : 'advisory-modal-mobile.png';
+          const advName =
+            vp.name === '1440px' ? 'advisory-modal-desktop.png' : 'advisory-modal-mobile.png';
           await page.screenshot({ path: path.join('docs', 'screenshots', advName) });
           const closeAdv = page.getByRole('button', { name: /Close dialog/i });
           await closeAdv.click();

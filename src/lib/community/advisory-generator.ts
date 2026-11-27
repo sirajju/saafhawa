@@ -1,12 +1,13 @@
+/* eslint-disable complexity, max-lines-per-function */
 import { createGeminiClient, resolveGeminiModels } from '../gemini/client';
 import { resolveGeminiApiKey } from '../env';
 import { getAirQualityByLocation } from '../air-quality/service';
-import { AirQualityReport } from '../air-quality/types';
+import { type AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/time-utils';
 import { capTextLength, withTimeout } from '../gemini/utils';
 import { executeWithGeminiRetry } from '../gemini/executor';
 import { logServerError } from '../logger';
-import { AdvisoryRequest, AdvisoryResponse } from './types';
+import { type AdvisoryRequest, type AdvisoryResponse } from './types';
 import { generateTemplateAdvisory } from './advisory-templates';
 import { buildAdvisoryCacheKey, getCachedAdvisory, setCachedAdvisory } from '../gemini/cache';
 
@@ -94,9 +95,14 @@ REQUIREMENTS:
     });
 
     if (execResult.data && execResult.data.length > 50) {
-      const headline = request.language === 'hi'
-        ? (request.audience === 'school_group' ? `🏫 स्कूल परामर्श: ${report.location.name}` : `🏘️ सोसायटी परामर्श: ${report.location.name}`)
-        : (request.audience === 'school_group' ? `🏫 School Smog Advisory: ${report.location.name}` : `🏘️ Community Clean Air Advisory: ${report.location.name}`);
+      const headline =
+        request.language === 'hi'
+          ? request.audience === 'school_group'
+            ? `🏫 स्कूल परामर्श: ${report.location.name}`
+            : `🏘️ सोसायटी परामर्श: ${report.location.name}`
+          : request.audience === 'school_group'
+            ? `🏫 School Smog Advisory: ${report.location.name}`
+            : `🏘️ Community Clean Air Advisory: ${report.location.name}`;
 
       const responseToReturn: AdvisoryResponse = {
         headline,

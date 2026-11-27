@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-
 interface ViewSwitchProps {
   currentView: 'dash' | 'onb';
   onChangeView: (view: 'dash' | 'onb') => void;
@@ -9,11 +7,7 @@ interface ViewSwitchProps {
 
 export function ViewSwitch({ currentView, onChangeView }: ViewSwitchProps) {
   return (
-    <div
-      className="view-switch seg"
-      aria-label="Switch view"
-      role="group"
-    >
+    <div className="view-switch seg" aria-label="Switch view" role="group">
       <button
         type="button"
         aria-pressed={currentView === 'dash'}

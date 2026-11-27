@@ -34,7 +34,12 @@ describe('WAQI Client - CPCB Ground Station & Fallback', () => {
       json: async () => mockResponse,
     });
 
-    const result = await fetchWaqiNearestStation(28.6139, 77.209, 'valid-token', mockFetch as unknown as typeof fetch);
+    const result = await fetchWaqiNearestStation(
+      28.6139,
+      77.209,
+      'valid-token',
+      mockFetch as unknown as typeof fetch
+    );
 
     expect(result).not.toBeNull();
     expect(result?.stationName).toBe('Anand Vihar, Delhi, India');
@@ -52,7 +57,12 @@ describe('WAQI Client - CPCB Ground Station & Fallback', () => {
       json: async () => ({ status: 'error', data: 'Unknown station' }),
     });
 
-    const result = await fetchWaqiNearestStation(28.6139, 77.209, 'bad-token', mockFetch as unknown as typeof fetch);
+    const result = await fetchWaqiNearestStation(
+      28.6139,
+      77.209,
+      'bad-token',
+      mockFetch as unknown as typeof fetch
+    );
     expect(result).toBeNull();
   });
 });

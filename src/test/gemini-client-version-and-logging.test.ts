@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GoogleGenAI } from '@google/genai';
+import type * as GenAiModule from '@google/genai';
 import { createGeminiClient, DEFAULT_GEMINI_API_VERSION } from '@/lib/gemini/client';
 import { generateHouseholdPlan } from '@/lib/plan/service';
-import { PlanRequest } from '@/lib/plan/types';
-import { AirQualityReport } from '@/lib/air-quality/types';
+import { type PlanRequest } from '@/lib/plan/types';
+import { type AirQualityReport } from '@/lib/air-quality/types';
 
 vi.mock('@google/genai', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@google/genai')>();
+  const actual = await importOriginal<typeof GenAiModule>();
   const MockGoogleGenAI = vi.fn().mockImplementation(function (
     this: { apiKey?: string; apiVersion?: string; models?: unknown },
     config: { apiKey: string; apiVersion?: string }
@@ -97,7 +98,9 @@ describe('Gemini Client Version & Plan Service Logging', () => {
 
   it('plan service logs real error when Gemini generator throws (without exposing API key)', async () => {
     const testSecretKey = 'AIzaSyD-TEST-SECRET-KEY-1234567890';
-    const fakeError = new Error(`404 Not Found: models/gemini-flash-lite-latest not found on v1 for key=${testSecretKey}`);
+    const fakeError = new Error(
+      `404 Not Found: models/gemini-flash-lite-latest not found on v1 for key=${testSecretKey}`
+    );
 
     const failingGenerator = vi.fn().mockRejectedValue(fakeError);
 

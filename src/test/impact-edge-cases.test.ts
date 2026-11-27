@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateHouseholdImpact } from '@/lib/impact/calculator';
-import { HouseholdProfile } from '@/lib/impact/types';
+import { type HouseholdProfile } from '@/lib/impact/types';
 
 describe('Impact Module - Edge Cases', () => {
   it('handles household with NO car: marks car-specific swaps as non-applicable', () => {
@@ -162,8 +162,6 @@ describe('Impact Module - Edge Cases', () => {
 
     expect(
       summary.topActionsByEmissions[0].emissionReduction.pm25SavedGrams
-    ).toBeGreaterThanOrEqual(
-      summary.topActionsByEmissions[1].emissionReduction.pm25SavedGrams
-    );
+    ).toBeGreaterThanOrEqual(summary.topActionsByEmissions[1].emissionReduction.pm25SavedGrams);
   });
 });

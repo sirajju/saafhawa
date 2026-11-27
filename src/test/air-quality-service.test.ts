@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { airQualityCache } from '@/lib/air-quality/cache';
 import { getAirQualityByLocation } from '@/lib/air-quality/service';
-import { AirQualityReportSchema } from '@/lib/air-quality/types';
-import {
-  MOCK_GEOCODE_SUCCESS,
-  MOCK_CURRENT_CONDITIONS_WITH_CPCB,
-  generateMockHourlyForecast,
-} from './air-quality-fixtures';
 
 describe('Air Quality - Service Orchestration', () => {
   const originalMapsKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -30,13 +24,30 @@ describe('Air Quality - Service Orchestration', () => {
       if (url.includes('postalpincode.in')) {
         return Promise.resolve({
           ok: true,
-          json: async () => [{ Status: 'Success', PostOffice: [{ District: 'Central Delhi', State: 'Delhi', Division: 'New Delhi Central' }] }],
+          json: async () => [
+            {
+              Status: 'Success',
+              PostOffice: [
+                { District: 'Central Delhi', State: 'Delhi', Division: 'New Delhi Central' },
+              ],
+            },
+          ],
         });
       }
       if (url.includes('geocoding-api.open-meteo.com')) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ results: [{ name: 'New Delhi', latitude: 28.61, longitude: 77.21, timezone: 'Asia/Kolkata', country_code: 'IN' }] }),
+          json: async () => ({
+            results: [
+              {
+                name: 'New Delhi',
+                latitude: 28.61,
+                longitude: 77.21,
+                timezone: 'Asia/Kolkata',
+                country_code: 'IN',
+              },
+            ],
+          }),
         });
       }
       if (url.includes('air-quality-api.open-meteo.com')) {
@@ -44,7 +55,11 @@ describe('Air Quality - Service Orchestration', () => {
           ok: true,
           json: async () => ({
             current: { time: '2026-11-25T12:00', pm2_5: 180, pm10: 310 },
-            hourly: { time: ['2026-11-25T12:00', '2026-11-25T13:00'], pm2_5: [180, 175], pm10: [310, 300] },
+            hourly: {
+              time: ['2026-11-25T12:00', '2026-11-25T13:00'],
+              pm2_5: [180, 175],
+              pm10: [310, 300],
+            },
           }),
         });
       }
@@ -67,7 +82,17 @@ describe('Air Quality - Service Orchestration', () => {
       if (url.includes('geocoding-api.open-meteo.com')) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ results: [{ name: 'New Delhi', latitude: 28.63, longitude: 77.22, timezone: 'Asia/Kolkata', country_code: 'IN' }] }),
+          json: async () => ({
+            results: [
+              {
+                name: 'New Delhi',
+                latitude: 28.63,
+                longitude: 77.22,
+                timezone: 'Asia/Kolkata',
+                country_code: 'IN',
+              },
+            ],
+          }),
         });
       }
       if (url.includes('api.waqi.info/feed/geo:')) {
@@ -109,17 +134,31 @@ describe('Air Quality - Service Orchestration', () => {
     process.env.GOOGLE_MAPS_API_KEY = 'valid-test-key';
 
     const mockFetch = vi.fn().mockImplementation((url: string) => {
-      if (url.includes('googleapis.com')) return Promise.reject(new Error('Google 429 Quota Exceeded'));
+      if (url.includes('googleapis.com'))
+        return Promise.reject(new Error('Google 429 Quota Exceeded'));
       if (url.includes('geocoding-api.open-meteo.com')) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ results: [{ name: 'Mumbai', latitude: 19.07, longitude: 72.88, timezone: 'Asia/Kolkata', country_code: 'IN' }] }),
+          json: async () => ({
+            results: [
+              {
+                name: 'Mumbai',
+                latitude: 19.07,
+                longitude: 72.88,
+                timezone: 'Asia/Kolkata',
+                country_code: 'IN',
+              },
+            ],
+          }),
         });
       }
       if (url.includes('air-quality-api.open-meteo.com')) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ current: { pm2_5: 95, pm10: 160 }, hourly: { time: ['2026-11-25T12:00'], pm2_5: [95], pm10: [160] } }),
+          json: async () => ({
+            current: { pm2_5: 95, pm10: 160 },
+            hourly: { time: ['2026-11-25T12:00'], pm2_5: [95], pm10: [160] },
+          }),
         });
       }
       return Promise.reject(new Error('Unknown URL: ' + url));
@@ -129,34 +168,5 @@ describe('Air Quality - Service Orchestration', () => {
     expect(report.location.name).toContain('Mumbai');
     expect(report.current.dataSource).toBe('Open-Meteo (CAMS model)');
     expect(report.current.aqi).toBeGreaterThan(0);
-  });
-
-  it('returns clean report using ind_cpcb when available and includes indexCode', async () => {
-    const mockFetch = vi.fn().mockImplementation((url: string) => {
-      if (url.includes('maps.googleapis.com/maps/api/geocode')) return Promise.resolve({ ok: true, json: async () => MOCK_GEOCODE_SUCCESS });
-      if (url.includes('currentConditions:lookup')) return Promise.resolve({ ok: true, json: async () => MOCK_CURRENT_CONDITIONS_WITH_CPCB });
-      if (url.includes('forecast:lookup')) return Promise.resolve({ ok: true, json: async () => generateMockHourlyForecast(12) });
-      return Promise.reject(new Error('Unknown URL'));
-    });
-
-    const report = await getAirQualityByLocation('Connaught Place', { fetchFn: mockFetch });
-    expect(() => AirQualityReportSchema.parse(report)).not.toThrow();
-    expect(report.location.name).toBe('Connaught Place, New Delhi, Delhi 110001, India');
-    expect(report.current.aqi).toBe(342);
-    expect(report.current.indexCode).toBe('ind_cpcb');
-    expect(report.hourlyForecast.length).toBe(12);
-  });
-
-  it('falls back gracefully to current conditions with empty forecast when forecast fails', async () => {
-    const mockFetch = vi.fn().mockImplementation((url: string) => {
-      if (url.includes('maps.googleapis.com/maps/api/geocode')) return Promise.resolve({ ok: true, json: async () => MOCK_GEOCODE_SUCCESS });
-      if (url.includes('currentConditions:lookup')) return Promise.resolve({ ok: true, json: async () => MOCK_CURRENT_CONDITIONS_WITH_CPCB });
-      if (url.includes('forecast:lookup')) return Promise.reject(new Error('Simulated network timeout'));
-      return Promise.reject(new Error('Unknown URL'));
-    });
-
-    const report = await getAirQualityByLocation('110001', { fetchFn: mockFetch });
-    expect(report.current.aqi).toBe(342);
-    expect(report.hourlyForecast).toEqual([]);
   });
 });

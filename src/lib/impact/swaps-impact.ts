@@ -1,6 +1,6 @@
-import { ActionDefinition } from './catalogue';
-import { HouseholdProfile } from './types';
-import { ActionImpactEvaluation } from './routine-types';
+import { type ActionDefinition } from './catalogue';
+import { type HouseholdProfile } from './types';
+import { type ActionImpactEvaluation } from './routine-types';
 import { evaluateCommuteSwapsImpact } from './commute-swaps';
 import { evaluateCombustionSwapsImpact } from './combustion-swaps';
 

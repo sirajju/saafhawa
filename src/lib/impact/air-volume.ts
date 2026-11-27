@@ -1,5 +1,5 @@
 import { INHALATION_RATES_M3_PER_HOUR } from './exposure-factors';
-import { AirQualityContext, HouseholdProfile } from './types';
+import { type AirQualityContext, type HouseholdProfile } from './types';
 
 /**
  * Calculates total volume of air inhaled by household occupants for a given activity and duration.
@@ -15,8 +15,8 @@ export function calculateInhaledAirVolumeM3(
     activity === 'exercise'
       ? INHALATION_RATES_M3_PER_HOUR.ADULT_EXERCISE
       : activity === 'resting'
-      ? INHALATION_RATES_M3_PER_HOUR.ADULT_RESTING
-      : INHALATION_RATES_M3_PER_HOUR.ADULT_LIGHT_ACTIVITY;
+        ? INHALATION_RATES_M3_PER_HOUR.ADULT_RESTING
+        : INHALATION_RATES_M3_PER_HOUR.ADULT_LIGHT_ACTIVITY;
 
   const childRate = INHALATION_RATES_M3_PER_HOUR.CHILD_DAILY_AVERAGE;
   const elderlyRate = INHALATION_RATES_M3_PER_HOUR.ELDERLY_DAILY_AVERAGE;
@@ -38,7 +38,11 @@ export function extractAirQualityParameters(airQuality: AirQualityContext): {
   peakPm25: number | null;
   cleanestPm25: number | null;
 } {
-  if (airQuality.currentPm25 === null || airQuality.currentPm25 === undefined || isNaN(airQuality.currentPm25)) {
+  if (
+    airQuality.currentPm25 === null ||
+    airQuality.currentPm25 === undefined ||
+    isNaN(airQuality.currentPm25)
+  ) {
     return {
       currentPm25: null,
       peakPm25: null,

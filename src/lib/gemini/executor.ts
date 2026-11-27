@@ -1,3 +1,4 @@
+/* eslint-disable complexity, max-lines-per-function */
 import {
   modelExhaustionMap,
   sanitizeErrorMessage,
@@ -34,11 +35,21 @@ export async function executeWithGeminiRetry<T>(
   options: GeminiRetryOptions<T>
 ): Promise<GeminiExecutionResult<T>> {
   const label = options.label || 'Gemini';
-  const deadline = Date.now() + Math.min(TIMERS.GEMINI_TOTAL_TIMEOUT_MS, options.totalTimeoutMs ?? TIMERS.GEMINI_TOTAL_TIMEOUT_MS);
-  const candidateModels: string[] = options.models && options.models.length > 0
-    ? options.models.map((m) => m.trim()).filter(Boolean)
-    : [options.primaryModel, options.fallbackModel].filter((m): m is string => Boolean(m && m.trim()));
-  const models = Array.from(new Set(candidateModels.length > 0 ? candidateModels : ['gemini-flash-lite-latest']));
+  const deadline =
+    Date.now() +
+    Math.min(
+      TIMERS.GEMINI_TOTAL_TIMEOUT_MS,
+      options.totalTimeoutMs ?? TIMERS.GEMINI_TOTAL_TIMEOUT_MS
+    );
+  const candidateModels: string[] =
+    options.models && options.models.length > 0
+      ? options.models.map((m) => m.trim()).filter(Boolean)
+      : [options.primaryModel, options.fallbackModel].filter((m): m is string =>
+          Boolean(m && m.trim())
+        );
+  const models = Array.from(
+    new Set(candidateModels.length > 0 ? candidateModels : ['gemini-flash-lite-latest'])
+  );
 
   let lastError: unknown = null;
   let failedDueToBusy = false;
@@ -50,7 +61,10 @@ export async function executeWithGeminiRetry<T>(
 
     const exhaustedUntil = modelExhaustionMap.get(model);
     if (exhaustedUntil && Date.now() < exhaustedUntil) {
-      logServerWarning(label, `Model ${model} is exhausted until ${new Date(exhaustedUntil).toLocaleTimeString()} (skipping).`);
+      logServerWarning(
+        label,
+        `Model ${model} is exhausted until ${new Date(exhaustedUntil).toLocaleTimeString()} (skipping).`
+      );
       failedDueToDailyQuota = true;
       latestDailyResetAt = Math.max(latestDailyResetAt || 0, exhaustedUntil);
       continue;
@@ -89,18 +103,27 @@ export async function executeWithGeminiRetry<T>(
           const reset = quota.resetAt || Date.now() + 24 * 3600 * 1000;
           latestDailyResetAt = Math.max(latestDailyResetAt || 0, reset);
           modelExhaustionMap.set(model, reset);
-          logServerWarning(label, `Daily quota exhausted on ${model} until ${new Date(reset).toLocaleTimeString()}. Switching model immediately.`);
+          logServerWarning(
+            label,
+            `Daily quota exhausted on ${model} until ${new Date(reset).toLocaleTimeString()}. Switching model immediately.`
+          );
           break;
         }
 
         if (quota.isQuota && !quota.isDailyQuota) {
           failedDueToBusy = true;
           if (attempt === 0 && quota.retryDelayMs !== undefined && quota.retryDelayMs <= 5000) {
-            logServerWarning(label, `Per-minute rate limit on ${model}, waiting ${quota.retryDelayMs}ms once.`);
+            logServerWarning(
+              label,
+              `Per-minute rate limit on ${model}, waiting ${quota.retryDelayMs}ms once.`
+            );
             await new Promise((r) => setTimeout(r, quota.retryDelayMs));
             continue;
           }
-          logServerWarning(label, `Per-minute rate limit on ${model} (delay > 5s or retried). Switching model.`);
+          logServerWarning(
+            label,
+            `Per-minute rate limit on ${model} (delay > 5s or retried). Switching model.`
+          );
           break;
         }
 

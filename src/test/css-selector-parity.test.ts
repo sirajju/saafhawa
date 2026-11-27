@@ -55,14 +55,9 @@ describe('CSS Selector Parity', () => {
 
     const currentSelectors = new Set(extractSelectors(combinedCss));
 
-    const missing = referenceSelectors.filter(
-      (sel) => !currentSelectors.has(sel)
-    );
+    const missing = referenceSelectors.filter((sel) => !currentSelectors.has(sel));
 
-    expect(
-      missing,
-      `Missing selectors:\n${missing.join('\n')}`
-    ).toEqual([]);
+    expect(missing, `Missing selectors:\n${missing.join('\n')}`).toEqual([]);
     expect(referenceSelectors.length).toBeGreaterThan(100);
   });
 });

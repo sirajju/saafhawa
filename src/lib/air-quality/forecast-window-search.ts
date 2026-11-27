@@ -1,6 +1,6 @@
 import {
-  ForecastAdvicePoint,
-  LocalTimeDetails,
+  type ForecastAdvicePoint,
+  type LocalTimeDetails,
   getLocalTimeDetails,
 } from './forecast-advice-types';
 

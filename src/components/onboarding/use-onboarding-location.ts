@@ -1,5 +1,5 @@
-import { useState, RefObject } from 'react';
-import { PlanRequest } from '@/lib/plan/types';
+import { useState, type RefObject } from 'react';
+import { type PlanRequest } from '@/lib/plan/types';
 
 export function useOnboardingLocation(
   setFormData: React.Dispatch<React.SetStateAction<PlanRequest>>,
@@ -38,7 +38,11 @@ export function useOnboardingLocation(
             if (!res.ok) throw new Error('Reverse geocode failed');
             const data = await res.json();
             if (data?.formattedAddress) {
-              setFormData((prev) => ({ ...prev, place: data.formattedAddress, coordinates: coordsStr }));
+              setFormData((prev) => ({
+                ...prev,
+                place: data.formattedAddress,
+                coordinates: coordsStr,
+              }));
               setAreaNote(`Found your location near ${data.formattedAddress}.`);
               setAreaError(null);
             } else {
@@ -47,8 +51,14 @@ export function useOnboardingLocation(
           })
           .catch(() => {
             clearTimeout(timeoutId);
-            setFormData((prev) => ({ ...prev, place: prev.place || coordsStr, coordinates: coordsStr }));
-            setAreaNote("Location found. Couldn't get the area name, but your plan will use your exact position.");
+            setFormData((prev) => ({
+              ...prev,
+              place: prev.place || coordsStr,
+              coordinates: coordsStr,
+            }));
+            setAreaNote(
+              "Location found. Couldn't get the area name, but your plan will use your exact position."
+            );
             setAreaError(null);
           })
           .finally(() => {

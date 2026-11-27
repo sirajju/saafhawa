@@ -1,12 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { MAX_REQUEST_BODY_BYTES, SECURITY_HEADERS, readJsonBodyWithLimit } from '@/lib/security';
 import {
-  MAX_REQUEST_BODY_BYTES,
-  SECURITY_HEADERS,
-  readJsonBodyWithLimit,
-} from '@/lib/security';
-import {
-  airQualityRateLimiter, planRateLimiter, chatRateLimiter, advisoryRateLimiter,
+  airQualityRateLimiter,
+  planRateLimiter,
+  chatRateLimiter,
+  advisoryRateLimiter,
 } from '@/lib/rate-limit';
 import { GET as airQualityHandler } from '@/app/api/air-quality/route';
 import { POST as planHandler } from '@/app/api/plan/route';

@@ -1,33 +1,14 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useId } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { ChatHeader } from './ChatHeader';
-import { ChatMessage, ChatMessageList } from './ChatMessageList';
-import { ChatRequest } from '@/lib/chat/types';
-import { HouseholdProfile } from '@/lib/impact/types';
+import { type ChatMessage, ChatMessageList } from './ChatMessageList';
+import { type ChatRequest } from '@/lib/chat/types';
 import { SendIcon } from './ui/Icons';
 import { getShortPlaceName } from '@/lib/design-system';
+import { SAMPLE_PROMPTS, INITIAL_GREETING, type ChatPanelProps } from './chat/chat-constants';
 
-export interface ChatPanelProps {
-  place: string;
-  displayPlace?: string;
-  householdProfile?: HouseholdProfile;
-  dataSource?: string;
-  measuredTime?: string;
-  timeZone?: string;
-  onClose?: () => void;
-  className?: string;
-  headingId?: string;
-}
-
-const SAMPLE_PROMPTS = [
-  'Can my daughter play outside at 5 PM?', 'Is a DIY box-fan filter worth it?',
-  'Metro or car for tomorrow’s commute?',
-];
-
-const INITIAL_GREETING: ChatMessage[] = [
-  { role: 'assistant', content: "Ask me about timing, masks, purifiers or your commute. I'll check the forecast first.", isGreeting: true },
-];
+export type { ChatPanelProps };
 
 /**
  * Interactive conversational assistant for real-time air quality questions,
@@ -76,7 +57,8 @@ export function ChatPanel({
 
     try {
       const conversationHistory = currentList
-        .filter((m) => !m.isGreeting && !m.isError).slice(-6)
+        .filter((m) => !m.isGreeting && !m.isError)
+        .slice(-6)
         .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }));
 
       const payload: ChatRequest = {
@@ -129,7 +111,10 @@ export function ChatPanel({
   const handleRetryMessage = (msgIdx: number) => {
     for (let i = msgIdx - 1; i >= 0; i--) {
       if (messages[i].role === 'user') {
-        handleSendMessage(messages[i].content, messages.filter((_, idx) => idx !== msgIdx && idx !== i));
+        void handleSendMessage(
+          messages[i].content,
+          messages.filter((_, idx) => idx !== msgIdx && idx !== i)
+        );
         break;
       }
     }
@@ -163,7 +148,10 @@ export function ChatPanel({
 
       <div className="composer">
         <form
-          onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSendMessage();
+          }}
           className="composer-form"
           style={{ display: 'flex', width: '100%', gap: '8px', alignItems: 'center' }}
         >
@@ -190,7 +178,10 @@ export function ChatPanel({
         </form>
       </div>
 
-      <p className="caption text-center" style={{ padding: '8px 16px', margin: 0, color: 'var(--ink-3)' }}>
+      <p
+        className="caption text-center"
+        style={{ padding: '8px 16px', margin: 0, color: 'var(--ink-3)' }}
+      >
         For acute symptoms or breathing distress, always consult a doctor.
       </p>
     </section>

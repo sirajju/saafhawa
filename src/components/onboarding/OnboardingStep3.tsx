@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { OptionGroup } from './OptionGroup';
-import { PlanRequest } from '@/lib/plan/types';
+import { type PlanRequest } from '@/lib/plan/types';
 
 interface OnboardingStep3Props {
   homeAreaSqFt: number;
@@ -31,9 +31,7 @@ export function OnboardingStep3({
 }: OnboardingStep3Props) {
   // Map home area sq ft to 4 BHK sizes
   const homeSize =
-    homeAreaSqFt <= 600 ? 550 :
-    homeAreaSqFt <= 1100 ? 950 :
-    homeAreaSqFt <= 1600 ? 1400 : 2000;
+    homeAreaSqFt <= 600 ? 550 : homeAreaSqFt <= 1100 ? 950 : homeAreaSqFt <= 1600 ? 1400 : 2000;
 
   return (
     <section className="onb-step" data-step="3" aria-labelledby="s3h">
@@ -42,7 +40,8 @@ export function OnboardingStep3({
         What&apos;s your home like inside?
       </h1>
       <p className="onb-intro">
-        Indoor air can be far cleaner than outside — or worse. These answers decide which fixes we suggest.
+        Indoor air can be far cleaner than outside — or worse. These answers decide which fixes we
+        suggest.
       </p>
 
       <div className="q">
@@ -120,7 +119,13 @@ export function OnboardingStep3({
         <p className="caption">We&apos;ll start with free actions either way</p>
         <OptionGroup<PlanRequest['budget']>
           label="Budget"
-          value={budget === 'moderate' || budget === 'flexible' ? 'moderate' : budget === 'low' ? 'low' : 'zero_cost'}
+          value={
+            budget === 'moderate' || budget === 'flexible'
+              ? 'moderate'
+              : budget === 'low'
+                ? 'low'
+                : 'zero_cost'
+          }
           onChange={(val) => onFieldChange('budget', val)}
           options={[
             { value: 'zero_cost', label: 'Free only' },

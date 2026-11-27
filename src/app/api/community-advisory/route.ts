@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { generateCommunityAdvisory } from '@/lib/community/advisory-generator';
 import { AdvisoryRequestSchema } from '@/lib/community/types';
 import { advisoryRateLimiter, getClientIp } from '@/lib/rate-limit';
@@ -25,7 +25,11 @@ export async function POST(request: NextRequest) {
 
     const parseResult = AdvisoryRequestSchema.safeParse(rawBody);
     if (!parseResult.success) {
-      return jsonError(400, 'Validation Error', 'Please provide a valid location and audience selection.');
+      return jsonError(
+        400,
+        'Validation Error',
+        'Please provide a valid location and audience selection.'
+      );
     }
 
     const advisory = await generateCommunityAdvisory(parseResult.data);

@@ -1,14 +1,14 @@
-import { ActionDefinition } from './catalogue';
+import { type ActionDefinition } from './catalogue';
 import {
   EQUIVALENCY_FACTORS,
   FILTRATION_AND_INFILTRATION_FACTORS,
   INHALATION_RATES_M3_PER_HOUR,
 } from './exposure-factors';
 import { INCENSE_AND_BURNING_FACTORS } from './emission-factors';
-import { HouseholdProfile } from './types';
+import { type HouseholdProfile } from './types';
 import { calculateInhaledAirVolumeM3 } from './air-volume';
 import { evaluateIndoorFiltrationAction } from './indoor-filtration';
-import { ActionImpactEvaluation } from './routine-types';
+import { type ActionImpactEvaluation } from './routine-types';
 
 function notApplicable(reason: string): ActionImpactEvaluation {
   return {
@@ -24,13 +24,20 @@ function notApplicable(reason: string): ActionImpactEvaluation {
 
 function evaluateCookingExhaust(profile: HouseholdProfile): ActionImpactEvaluation {
   if (profile.cookingFuel === 'induction') {
-    return notApplicable('Induction cooking does not generate combustion emissions; exhaust action not needed');
+    return notApplicable(
+      'Induction cooking does not generate combustion emissions; exhaust action not needed'
+    );
   }
   if (!profile.hasKitchenChimneyOrExhaust) {
     return notApplicable('Household does not have a kitchen chimney or exhaust fan installed');
   }
-  const conc = FILTRATION_AND_INFILTRATION_FACTORS.COOKING_INDOOR_PM25_SPIKE_UG_M3 * FILTRATION_AND_INFILTRATION_FACTORS.KITCHEN_EXHAUST_CAPTURE_EFFICIENCY;
-  const cookVolume = 1 * INHALATION_RATES_M3_PER_HOUR.ADULT_LIGHT_ACTIVITY * FILTRATION_AND_INFILTRATION_FACTORS.COOKING_DAILY_DURATION_HOURS;
+  const conc =
+    FILTRATION_AND_INFILTRATION_FACTORS.COOKING_INDOOR_PM25_SPIKE_UG_M3 *
+    FILTRATION_AND_INFILTRATION_FACTORS.KITCHEN_EXHAUST_CAPTURE_EFFICIENCY;
+  const cookVolume =
+    1 *
+    INHALATION_RATES_M3_PER_HOUR.ADULT_LIGHT_ACTIVITY *
+    FILTRATION_AND_INFILTRATION_FACTORS.COOKING_DAILY_DURATION_HOURS;
   return {
     applicable: true,
     concentrationReduction: conc,
@@ -61,7 +68,11 @@ function evaluateAfternoonVentilation(
   }
   const deltaAmbient = Math.max(0, peakPm25 - cleanestPm25);
   const conc = deltaAmbient * EQUIVALENCY_FACTORS.AFTERNOON_VENTILATION_EXCHANGE_FACTOR;
-  const vol = calculateInhaledAirVolumeM3(profile, 'light', EQUIVALENCY_FACTORS.AFTERNOON_VENTILATION_WINDOW_HOURS);
+  const vol = calculateInhaledAirVolumeM3(
+    profile,
+    'light',
+    EQUIVALENCY_FACTORS.AFTERNOON_VENTILATION_WINDOW_HOURS
+  );
   return {
     applicable: true,
     concentrationReduction: conc,
@@ -69,7 +80,8 @@ function evaluateAfternoonVentilation(
     percentageDrop: peakPm25 > 0 ? (deltaAmbient / peakPm25) * 40 : 0,
     pm25SavedGrams: 0,
     co2SavedGrams: 0,
-    methodologyNotes: 'Airs out CO2 and indoor VOCs during afternoon solar dispersion rather than high-inversion hours.',
+    methodologyNotes:
+      'Airs out CO2 and indoor VOCs during afternoon solar dispersion rather than high-inversion hours.',
   };
 }
 
@@ -79,7 +91,11 @@ function evaluateIncenseElimination(profile: HouseholdProfile): ActionImpactEval
   }
   const areaScale = Math.min(1.5, Math.max(0.5, 1000 / profile.homeAreaSqFt));
   const conc = INCENSE_AND_BURNING_FACTORS.INCENSE_ROOM_PM25_ELEVATION_UG_M3 * areaScale;
-  const vol = calculateInhaledAirVolumeM3(profile, 'light', INCENSE_AND_BURNING_FACTORS.INCENSE_DAILY_HOURS);
+  const vol = calculateInhaledAirVolumeM3(
+    profile,
+    'light',
+    INCENSE_AND_BURNING_FACTORS.INCENSE_DAILY_HOURS
+  );
   const sticks = INCENSE_AND_BURNING_FACTORS.INCENSE_STICKS_PER_DAY;
   const pm25Saved = sticks * INCENSE_AND_BURNING_FACTORS.PM25_PER_INCENSE_STICK_OR_COIL_GRAMS;
   const co2Saved = sticks * INCENSE_AND_BURNING_FACTORS.CO2_PER_INCENSE_STICK_OR_COIL_GRAMS;
@@ -96,7 +112,11 @@ function evaluateIncenseElimination(profile: HouseholdProfile): ActionImpactEval
 
 function evaluateVacuumAvoidance(profile: HouseholdProfile): ActionImpactEvaluation {
   const conc = FILTRATION_AND_INFILTRATION_FACTORS.NON_HEPA_VACUUM_RESUSPENSION_UG_M3;
-  const vol = calculateInhaledAirVolumeM3(profile, 'light', FILTRATION_AND_INFILTRATION_FACTORS.NON_HEPA_VACUUM_DURATION_HOURS);
+  const vol = calculateInhaledAirVolumeM3(
+    profile,
+    'light',
+    FILTRATION_AND_INFILTRATION_FACTORS.NON_HEPA_VACUUM_DURATION_HOURS
+  );
   return {
     applicable: true,
     concentrationReduction: conc,
@@ -104,7 +124,8 @@ function evaluateVacuumAvoidance(profile: HouseholdProfile): ActionImpactEvaluat
     percentageDrop: 100.0,
     pm25SavedGrams: 0,
     co2SavedGrams: 0,
-    methodologyNotes: 'Prevents micro-particulate blowback from porous non-HEPA vacuum exhaust filters.',
+    methodologyNotes:
+      'Prevents micro-particulate blowback from porous non-HEPA vacuum exhaust filters.',
   };
 }
 
@@ -122,7 +143,8 @@ function evaluateChulhaAction(actionId: string, profile: HouseholdProfile): Acti
       percentageDrop: 45.0,
       pm25SavedGrams: 0,
       co2SavedGrams: 0,
-      methodologyNotes: 'Flushes 45% of chulha cooking smoke directly outdoors by isolating and cross-ventilating the kitchen.',
+      methodologyNotes:
+        'Flushes 45% of chulha cooking smoke directly outdoors by isolating and cross-ventilating the kitchen.',
     };
   }
   const conc = 70.0;
@@ -134,7 +156,8 @@ function evaluateChulhaAction(actionId: string, profile: HouseholdProfile): Acti
     percentageDrop: 30.0,
     pm25SavedGrams: 12.5,
     co2SavedGrams: 0,
-    methodologyNotes: 'Using dry, seasoned firewood reduces particulate emissions by 25-30% compared to wet wood.',
+    methodologyNotes:
+      'Using dry, seasoned firewood reduces particulate emissions by 25-30% compared to wet wood.',
   };
 }
 
@@ -148,7 +171,7 @@ export function evaluateIndoorImpact(
   const filtrationResult = evaluateIndoorFiltrationAction(action, profile, currentPm25);
   if (filtrationResult !== null) return filtrationResult;
 
-  switch (action.id) {
+  switch (action.id as string) {
     case 'use_exhaust_fan_cooking':
       return evaluateCookingExhaust(profile);
     case 'ventilate_at_cleanest_afternoon_hour':

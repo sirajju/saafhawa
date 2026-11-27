@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { executeSingleToolCall } from '@/lib/chat/tool-runner';
-import { ChatRequest, ExecutedToolRecord } from '@/lib/chat/types';
+import { type ChatRequest, type ExecutedToolRecord } from '@/lib/chat/types';
 import { MOCK_PROFILE } from './plan-fixtures';
 
 describe('Chat Tool Runner Dispatcher', () => {

@@ -1,9 +1,9 @@
-import { ACTION_CATALOGUE, ActionDefinition } from './catalogue';
+import { ACTION_CATALOGUE, type ActionDefinition } from './catalogue';
 import {
-  ActionImpactResult,
-  AirQualityContext,
-  HouseholdImpactSummary,
-  HouseholdProfile,
+  type ActionImpactResult,
+  type AirQualityContext,
+  type HouseholdImpactSummary,
+  type HouseholdProfile,
   HouseholdProfileSchema,
 } from './types';
 import { extractAirQualityParameters } from './air-volume';
@@ -22,8 +22,7 @@ export function calculateActionImpact(
 ): ActionImpactResult {
   const { currentPm25, peakPm25, cleanestPm25 } = extractAirQualityParameters(airQuality);
 
-  const evalResult =
-    evaluateRoutineImpact(action, profile, currentPm25, peakPm25, cleanestPm25) ??
+  const evalResult = evaluateRoutineImpact(action, profile, currentPm25, peakPm25, cleanestPm25) ??
     evaluateIndoorImpact(action, profile, currentPm25, peakPm25, cleanestPm25) ??
     evaluateSwapsImpact(action, profile, currentPm25) ?? {
       applicable: false,
@@ -46,15 +45,18 @@ export function calculateActionImpact(
     applicable: evalResult.applicable,
     reasonIfNotApplicable: evalResult.reasonIfNotApplicable,
     exposureReduction: {
-      pm25ConcentrationReductionUgM3: isUnknown || evalResult.concentrationReduction === null
-        ? null
-        : Number(Math.max(0, evalResult.concentrationReduction).toFixed(1)),
-      pm25InhaledDoseAvoidedUg: isUnknown || evalResult.doseAvoidedUg === null
-        ? null
-        : Number(Math.max(0, evalResult.doseAvoidedUg).toFixed(1)),
-      percentageDrop: isUnknown || evalResult.percentageDrop === null
-        ? null
-        : Number(Math.min(100, Math.max(0, evalResult.percentageDrop)).toFixed(1)),
+      pm25ConcentrationReductionUgM3:
+        isUnknown || evalResult.concentrationReduction === null
+          ? null
+          : Number(Math.max(0, evalResult.concentrationReduction).toFixed(1)),
+      pm25InhaledDoseAvoidedUg:
+        isUnknown || evalResult.doseAvoidedUg === null
+          ? null
+          : Number(Math.max(0, evalResult.doseAvoidedUg).toFixed(1)),
+      percentageDrop:
+        isUnknown || evalResult.percentageDrop === null
+          ? null
+          : Number(Math.min(100, Math.max(0, evalResult.percentageDrop)).toFixed(1)),
       isUnknown,
     },
     emissionReduction: {
@@ -85,12 +87,14 @@ export function calculateHouseholdImpact(
 
   const deduped = calculateDeduplicatedTotals(applicableActions, profile, currentPm25);
 
-  const totalCo2EmissionsSavedKg = Number(
-    (deduped.totalCo2EmissionsSavedGrams / 1000).toFixed(2)
-  );
+  const totalCo2EmissionsSavedKg = Number((deduped.totalCo2EmissionsSavedGrams / 1000).toFixed(2));
 
   const topActionsByExposure = [...applicableActions]
-    .sort((a, b) => (b.exposureReduction.pm25InhaledDoseAvoidedUg || 0) - (a.exposureReduction.pm25InhaledDoseAvoidedUg || 0))
+    .sort(
+      (a, b) =>
+        (b.exposureReduction.pm25InhaledDoseAvoidedUg || 0) -
+        (a.exposureReduction.pm25InhaledDoseAvoidedUg || 0)
+    )
     .slice(0, 3);
 
   const topActionsByEmissions = [...applicableActions]

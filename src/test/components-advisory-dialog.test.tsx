@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,18 +8,10 @@ function TestWrapper() {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div>
-      <button
-        id="trigger-btn"
-        type="button"
-        onClick={() => setIsOpen(true)}
-      >
+      <button id="trigger-btn" type="button" onClick={() => setIsOpen(true)}>
         Open Advisory
       </button>
-      <CommunityAdvisoryModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        place="New Delhi"
-      />
+      <CommunityAdvisoryModal isOpen={isOpen} onClose={() => setIsOpen(false)} place="New Delhi" />
     </div>
   );
 }

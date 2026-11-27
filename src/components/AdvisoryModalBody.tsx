@@ -1,5 +1,4 @@
-import React from 'react';
-import { AdvisoryResponse } from '@/lib/community/types';
+import { type AdvisoryResponse } from '@/lib/community/types';
 import { RefreshIcon, AlertTriangleIcon } from './ui/Icons';
 
 interface AdvisoryModalBodyProps {
@@ -18,7 +17,16 @@ export function AdvisoryModalBody({
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
       {isLoading && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 0', textAlign: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '48px 0',
+            textAlign: 'center',
+          }}
+        >
           <RefreshIcon className="h-8 w-8 animate-spin" style={{ color: 'var(--brand)' }} />
           <p style={{ marginTop: 12, fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>
             Generating customized {language === 'hi' ? 'Hindi' : 'English'} advisory...
@@ -48,10 +56,31 @@ export function AdvisoryModalBody({
       {advisory && !isLoading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* WhatsApp Preview Share Card */}
-          <div style={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--line)', background: 'var(--surface-2)', padding: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12, borderBottom: '1px solid var(--line)', fontSize: 13, fontWeight: 600, color: 'var(--ink-2)' }}>
+          <div
+            style={{
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--line)',
+              background: 'var(--surface-2)',
+              padding: 20,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: 12,
+                borderBottom: '1px solid var(--line)',
+                fontSize: 13,
+                fontWeight: 600,
+                color: 'var(--ink-2)',
+              }}
+            >
               <span>WHATSAPP MESSAGE PREVIEW</span>
-              <span className="pill" style={{ color: 'var(--brand)', background: 'var(--brand-soft)' }}>
+              <span
+                className="pill"
+                style={{ color: 'var(--brand)', background: 'var(--brand-soft)' }}
+              >
                 Ready to Broadcast
               </span>
             </div>

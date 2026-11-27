@@ -2,11 +2,11 @@ import {
   fetchCurrentConditions,
   fetchHourlyForecast,
   geocodePlace,
-  GeocodeLocationResult,
-  ClientRequestOptions,
+  type GeocodeLocationResult,
+  type ClientRequestOptions,
 } from './google-client';
 import { fetchTimeZone } from './timezone-client';
-import { AirQualityReport, AirQualityReportSchema, HourlyForecastPoint } from './types';
+import { type AirQualityReport, AirQualityReportSchema, type HourlyForecastPoint } from './types';
 import { extractPollutant, extractPrimaryIndex } from './index-extractor';
 
 export interface GoogleServiceOptions extends ClientRequestOptions {
@@ -24,11 +24,25 @@ export async function fetchViaGoogle(
   const forecastHours = options.forecastHours ?? 24;
   const location: GeocodeLocationResult = await geocodePlace(place, apiKey, options);
 
-  const currentConditionsPromise = fetchCurrentConditions(location.latitude, location.longitude, apiKey, options);
-  const forecastPromise = fetchHourlyForecast(location.latitude, location.longitude, apiKey, forecastHours, options).catch(
-    () => null
+  const currentConditionsPromise = fetchCurrentConditions(
+    location.latitude,
+    location.longitude,
+    apiKey,
+    options
   );
-  const timeZonePromise = fetchTimeZone(location.latitude, location.longitude, apiKey, options).catch(() => null);
+  const forecastPromise = fetchHourlyForecast(
+    location.latitude,
+    location.longitude,
+    apiKey,
+    forecastHours,
+    options
+  ).catch(() => null);
+  const timeZonePromise = fetchTimeZone(
+    location.latitude,
+    location.longitude,
+    apiKey,
+    options
+  ).catch(() => null);
 
   const [currentConditions, rawForecast, resolvedTimeZone] = await Promise.all([
     currentConditionsPromise,

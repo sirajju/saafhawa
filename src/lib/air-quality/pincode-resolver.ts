@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import { LocationNotFoundError, ProviderUnavailableError, AirQualityError } from './types';
 import { safeFetch } from './safe-fetch';
 
@@ -52,10 +53,16 @@ export async function resolveIndianPincodeCandidates(
 
   let response: Response;
   try {
-    response = await safeFetch(url, { method: 'GET', headers: { Accept: 'application/json' } }, options);
+    response = await safeFetch(
+      url,
+      { method: 'GET', headers: { Accept: 'application/json' } },
+      options
+    );
   } catch (err) {
     if (err instanceof AirQualityError) throw err;
-    throw new ProviderUnavailableError('Unable to connect to postal pincode service. Please check your connection.');
+    throw new ProviderUnavailableError(
+      'Unable to connect to postal pincode service. Please check your connection.'
+    );
   }
 
   if (!response.ok) {

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+/* eslint-disable max-lines-per-function */
+import { type NextRequest, NextResponse } from 'next/server';
 
 /**
  * Global maximum payload size for incoming API requests: 64 Kilobytes.
@@ -31,7 +32,7 @@ export const SECURITY_HEADERS_LIST = [
       "object-src 'none';",
       "base-uri 'self';",
       "form-action 'self';",
-      "upgrade-insecure-requests;",
+      'upgrade-insecure-requests;',
     ].join(' '),
   },
 ] as const;

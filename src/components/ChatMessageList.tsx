@@ -3,7 +3,7 @@
 import React from 'react';
 import { RefreshIcon } from './ui/Icons';
 import { SafeMarkdown } from './chat/SafeMarkdown';
-import { FallbackReason } from '@/lib/constants';
+import { type FallbackReason } from '@/lib/constants';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -42,10 +42,7 @@ export function ChatMessageList({
       aria-label="Conversation with clean air assistant"
     >
       {messages.map((msg, index) => (
-        <div
-          key={index}
-          className={`bubble ${msg.role === 'user' ? 'user-bubble' : ''}`}
-        >
+        <div key={index} className={`bubble ${msg.role === 'user' ? 'user-bubble' : ''}`}>
           {msg.role === 'assistant' ? (
             <SafeMarkdown content={msg.content} />
           ) : (
@@ -53,7 +50,10 @@ export function ChatMessageList({
           )}
           {msg.fallbackReason === 'gemini_busy' && (
             <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between gap-2 flex-wrap text-xs text-[var(--ink-2)]">
-              <span>Gemini is busy right now, so this answer was built by our rules. Try again in a minute.</span>
+              <span>
+                Gemini is busy right now, so this answer was built by our rules. Try again in a
+                minute.
+              </span>
               {onRetryMessage && (
                 <button
                   type="button"
@@ -68,7 +68,10 @@ export function ChatMessageList({
           )}
           {msg.fallbackReason === 'daily_quota_exhausted' && (
             <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between gap-2 flex-wrap text-xs text-[var(--ink-2)]">
-              <span>Today&apos;s free Gemini limit is used up, so answers are built by our rules until {msg.dailyQuotaResetTime || 'tomorrow'}.</span>
+              <span>
+                Today&apos;s free Gemini limit is used up, so answers are built by our rules until{' '}
+                {msg.dailyQuotaResetTime || 'tomorrow'}.
+              </span>
             </div>
           )}
           {msg.toolsSummary && msg.toolsSummary.length > 0 && (

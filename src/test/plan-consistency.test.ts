@@ -4,7 +4,7 @@ import { getRuleBasedFallbackActions } from '@/lib/plan/fallback';
 import { resolvePlanConsistency } from '@/lib/plan/conflict-resolver';
 import { WORK_FROM_HOME_ACTION_ID } from '@/lib/plan/action-scoring';
 import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
-import { GeminiSelectedAction } from '@/lib/plan/types';
+import { type GeminiSelectedAction } from '@/lib/plan/types';
 import { MOCK_AIR_QUALITY, TEST_PROFILE_CAR, TEST_PROFILE_TWO_WHEELER } from './plan-fixtures';
 
 describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
@@ -13,16 +13,23 @@ describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
     const fallbackActionsCar = getRuleBasedFallbackActions(TEST_PROFILE_CAR, MOCK_AIR_QUALITY);
     const hasWfhCar = fallbackActionsCar.some((a) => a.actionId === WORK_FROM_HOME_ACTION_ID);
     const hasCommuteSwapCar = fallbackActionsCar.some((a) =>
-      ['swap_car_for_metro', 'swap_two_wheeler_for_metro_or_bus', 'carpool_to_work'].includes(a.actionId)
+      ['swap_car_for_metro', 'swap_two_wheeler_for_metro_or_bus', 'carpool_to_work'].includes(
+        a.actionId
+      )
     );
 
     expect(hasWfhCar && hasCommuteSwapCar).toBe(false);
 
     // For two-wheeler commuter with WFH enabled
-    const fallbackActions2W = getRuleBasedFallbackActions(TEST_PROFILE_TWO_WHEELER, MOCK_AIR_QUALITY);
+    const fallbackActions2W = getRuleBasedFallbackActions(
+      TEST_PROFILE_TWO_WHEELER,
+      MOCK_AIR_QUALITY
+    );
     const hasWfh2W = fallbackActions2W.some((a) => a.actionId === WORK_FROM_HOME_ACTION_ID);
     const hasCommuteSwap2W = fallbackActions2W.some((a) =>
-      ['swap_car_for_metro', 'swap_two_wheeler_for_metro_or_bus', 'carpool_to_work'].includes(a.actionId)
+      ['swap_car_for_metro', 'swap_two_wheeler_for_metro_or_bus', 'carpool_to_work'].includes(
+        a.actionId
+      )
     );
 
     expect(hasWfh2W && hasCommuteSwap2W).toBe(false);
@@ -31,12 +38,36 @@ describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
   it('resolves conflicting Gemini output: keeps larger benefit and replaces the other with an action from a different group', () => {
     // When WFH conflicts with Carpool: WFH has larger dose benefit (24 ug vs 0 ug for carpool)
     const conflictingGeminiActions: GeminiSelectedAction[] = [
-      { actionId: 'wear_n95_mask_outside', suggestedTimeOfDay: 'Morning Commute', reason: 'Mask protection' },
-      { actionId: 'keep_children_indoors_morning_smog', suggestedTimeOfDay: 'Early Morning', reason: 'Child health' },
-      { actionId: 'run_hepa_air_purifier_bedroom', suggestedTimeOfDay: 'Night', reason: 'Clean bedroom air' },
-      { actionId: 'work_from_home_on_smog_days', suggestedTimeOfDay: 'All Day', reason: 'Remote work eliminates commute' },
-      { actionId: 'carpool_to_work', suggestedTimeOfDay: 'Commute hours', reason: 'Carpool instead of driving solo' },
-      { actionId: 'use_exhaust_fan_cooking', suggestedTimeOfDay: 'Meal times', reason: 'Kitchen ventilation' },
+      {
+        actionId: 'wear_n95_mask_outside',
+        suggestedTimeOfDay: 'Morning Commute',
+        reason: 'Mask protection',
+      },
+      {
+        actionId: 'keep_children_indoors_morning_smog',
+        suggestedTimeOfDay: 'Early Morning',
+        reason: 'Child health',
+      },
+      {
+        actionId: 'run_hepa_air_purifier_bedroom',
+        suggestedTimeOfDay: 'Night',
+        reason: 'Clean bedroom air',
+      },
+      {
+        actionId: 'work_from_home_on_smog_days',
+        suggestedTimeOfDay: 'All Day',
+        reason: 'Remote work eliminates commute',
+      },
+      {
+        actionId: 'carpool_to_work',
+        suggestedTimeOfDay: 'Commute hours',
+        reason: 'Carpool instead of driving solo',
+      },
+      {
+        actionId: 'use_exhaust_fan_cooking',
+        suggestedTimeOfDay: 'Meal times',
+        reason: 'Kitchen ventilation',
+      },
     ];
 
     const airQualityContext = {
@@ -45,7 +76,11 @@ describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
     };
 
     // For car commuter, WFH has larger benefit than carpool (24 ug vs 0 ug dose avoided)
-    const resolved = resolvePlanConsistency(conflictingGeminiActions, TEST_PROFILE_CAR, airQualityContext);
+    const resolved = resolvePlanConsistency(
+      conflictingGeminiActions,
+      TEST_PROFILE_CAR,
+      airQualityContext
+    );
 
     const hasWfh = resolved.some((a) => a.actionId === 'work_from_home_on_smog_days');
     const hasCarpool = resolved.some((a) => a.actionId === 'carpool_to_work');
@@ -67,10 +102,26 @@ describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
 
   it('keeps commute swap when it provides higher direct benefit than WFH (e.g. 2-wheeler commute to metro)', () => {
     const conflictingActions: GeminiSelectedAction[] = [
-      { actionId: 'wear_n95_mask_outside', suggestedTimeOfDay: 'Morning Commute', reason: 'Mask protection' },
-      { actionId: 'work_from_home_on_smog_days', suggestedTimeOfDay: 'All Day', reason: 'Remote work' },
-      { actionId: 'swap_two_wheeler_for_metro_or_bus', suggestedTimeOfDay: 'Commute', reason: 'Metro swap' },
-      { actionId: 'run_hepa_air_purifier_bedroom', suggestedTimeOfDay: 'Night', reason: 'Purifier' },
+      {
+        actionId: 'wear_n95_mask_outside',
+        suggestedTimeOfDay: 'Morning Commute',
+        reason: 'Mask protection',
+      },
+      {
+        actionId: 'work_from_home_on_smog_days',
+        suggestedTimeOfDay: 'All Day',
+        reason: 'Remote work',
+      },
+      {
+        actionId: 'swap_two_wheeler_for_metro_or_bus',
+        suggestedTimeOfDay: 'Commute',
+        reason: 'Metro swap',
+      },
+      {
+        actionId: 'run_hepa_air_purifier_bedroom',
+        suggestedTimeOfDay: 'Night',
+        reason: 'Purifier',
+      },
     ];
 
     const airQualityContext = {
@@ -78,7 +129,11 @@ describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
       hourlyForecast: [],
     };
 
-    const resolved = resolvePlanConsistency(conflictingActions, TEST_PROFILE_TWO_WHEELER, airQualityContext);
+    const resolved = resolvePlanConsistency(
+      conflictingActions,
+      TEST_PROFILE_TWO_WHEELER,
+      airQualityContext
+    );
 
     const hasWfh = resolved.some((a) => a.actionId === 'work_from_home_on_smog_days');
     const hasMetro2W = resolved.some((a) => a.actionId === 'swap_two_wheeler_for_metro_or_bus');
@@ -95,7 +150,11 @@ describe('Plan Consistency - Mutual Exclusivity of WFH & Commute Swaps', () => {
         { actionId: 'wear_n95_mask_outside', suggestedTimeOfDay: 'Morning', reason: 'Mask' },
         { actionId: 'work_from_home_on_smog_days', suggestedTimeOfDay: 'All day', reason: 'WFH' },
         { actionId: 'swap_car_for_metro', suggestedTimeOfDay: 'Commute', reason: 'Metro' },
-        { actionId: 'run_hepa_air_purifier_bedroom', suggestedTimeOfDay: 'Night', reason: 'Purifier' },
+        {
+          actionId: 'run_hepa_air_purifier_bedroom',
+          suggestedTimeOfDay: 'Night',
+          reason: 'Purifier',
+        },
         { actionId: 'diy_corsi_rosenthal_box', suggestedTimeOfDay: 'Day', reason: 'CR Box' },
       ],
     });

@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -94,9 +93,7 @@ describe('Accessibility - OnboardingForm (3 Steps, Progress, Labels & Keyboard)'
     await user.click(continueBtn);
 
     // Verify error message and focus
-    expect(
-      screen.getByText(/Enter your city, area or pincode to continue\./i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Enter your city, area or pincode to continue\./i)).toBeInTheDocument();
     expect(areaInput.getAttribute('aria-invalid')).toBe('true');
     expect(document.activeElement).toBe(areaInput);
 

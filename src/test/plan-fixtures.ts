@@ -1,5 +1,5 @@
-import { AirQualityReport } from '@/lib/air-quality/types';
-import { PlanRequest } from '@/lib/plan/types';
+import { type AirQualityReport } from '@/lib/air-quality/types';
+import { type PlanRequest } from '@/lib/plan/types';
 
 export const MOCK_AIR_QUALITY: AirQualityReport = {
   location: {
@@ -87,7 +87,8 @@ export const MOCK_GEMINI_OUTPUT = JSON.stringify({
     {
       actionId: 'diy_corsi_rosenthal_box',
       suggestedTimeOfDay: 'All Day',
-      reason: 'An affordable DIY cleaner providing high air filtration without buying expensive purifiers.',
+      reason:
+        'An affordable DIY cleaner providing high air filtration without buying expensive purifiers.',
     },
     {
       actionId: 'eliminate_incense_and_mosquito_coils',
@@ -97,7 +98,8 @@ export const MOCK_GEMINI_OUTPUT = JSON.stringify({
     {
       actionId: 'swap_car_for_metro',
       suggestedTimeOfDay: 'Commute Hours',
-      reason: 'Replaces daily road traffic with clean electric transit to reduce tailpipe emissions.',
+      reason:
+        'Replaces daily road traffic with clean electric transit to reduce tailpipe emissions.',
     },
     {
       actionId: 'unknown_hallucinated_action_123',

@@ -1,5 +1,5 @@
-import { PlannedAction } from '@/lib/plan/types';
-import { CleanLocation, CurrentAirQuality } from '@/lib/air-quality/types';
+import { type PlannedAction } from '@/lib/plan/types';
+import { type CleanLocation, type CurrentAirQuality } from '@/lib/air-quality/types';
 
 export const MOCK_LOCATION: CleanLocation = {
   name: 'Connaught Place, New Delhi, Delhi 110001, India',

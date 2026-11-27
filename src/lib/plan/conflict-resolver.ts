@@ -1,7 +1,8 @@
-import { ACTION_CATALOGUE, ActionDefinition } from '../impact/catalogue';
+/* eslint-disable complexity, max-lines-per-function */
+import { ACTION_CATALOGUE, type ActionDefinition } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
-import { AirQualityContext } from '../impact/types';
-import { GeminiSelectedAction, PlanRequest } from './types';
+import { type AirQualityContext } from '../impact/types';
+import { type GeminiSelectedAction, type PlanRequest } from './types';
 import { FALLBACK_METADATA_MAP } from './metadata';
 import {
   WORK_FROM_HOME_ACTION_ID,
@@ -28,9 +29,7 @@ export function resolvePlanConsistency(
     return selectedActions;
   }
 
-  const catalogueMap = new Map<string, ActionDefinition>(
-    ACTION_CATALOGUE.map((a) => [a.id, a])
-  );
+  const catalogueMap = new Map<string, ActionDefinition>(ACTION_CATALOGUE.map((a) => [a.id, a]));
 
   const wfhDef = catalogueMap.get(WORK_FROM_HOME_ACTION_ID)!;
   const wfhImpact = calculateActionImpact(wfhDef, profile, airQualityContext);
@@ -118,7 +117,11 @@ export function resolvePlanConsistency(
     }
   }
 
-  if (!replacementInserted && bestReplacement && !result.some((r) => r.actionId === bestReplacement.id)) {
+  if (
+    !replacementInserted &&
+    bestReplacement &&
+    !result.some((r) => r.actionId === bestReplacement.id)
+  ) {
     const meta = FALLBACK_METADATA_MAP[bestReplacement.id];
     result.push({
       actionId: bestReplacement.id,

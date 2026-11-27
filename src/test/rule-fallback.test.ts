@@ -17,7 +17,9 @@ describe('Rule-Based Clean Air Fallback Selection', () => {
       hasAsthmaOrRespiratoryCondition: true,
     });
 
-    expect(advice.plainAdvice.toLowerCase()).not.toContain('avoid strenuous outdoor activities tonight');
+    expect(advice.plainAdvice.toLowerCase()).not.toContain(
+      'avoid strenuous outdoor activities tonight'
+    );
     expect(advice.plainAdvice.toLowerCase()).not.toContain('cleanest window: tomorrow');
     expect(advice.plainAdvice.toLowerCase()).toContain('satisfactory');
     expect(advice.plainAdvice.toLowerCase()).toContain('asthma');

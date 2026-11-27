@@ -1,5 +1,10 @@
-import { AirQualityIndexSchema, PollutantItemSchema, PollutantMeasurement } from './types';
-import { z } from 'zod';
+/* eslint-disable complexity */
+import {
+  type AirQualityIndexSchema,
+  type PollutantItemSchema,
+  type PollutantMeasurement,
+} from './types';
+import { type z } from 'zod';
 
 export type AirQualityIndex = z.infer<typeof AirQualityIndexSchema>;
 export type PollutantItem = z.infer<typeof PollutantItemSchema>;

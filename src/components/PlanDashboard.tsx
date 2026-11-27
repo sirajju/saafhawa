@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback, useId } from 'react';
-import { PlanResponse, PlanRequest } from '@/lib/plan/types';
+import { useEffect, useRef, useState, useCallback, useId } from 'react';
+import { type PlanResponse, type PlanRequest } from '@/lib/plan/types';
 import { useFocusTrap } from '@/lib/use-focus-trap';
 import { AirQualityCard } from './AirQualityCard';
 import { TotalSavingsBanner } from './TotalSavingsBanner';
@@ -67,7 +67,9 @@ export function PlanDashboard({
 
   const handleToggleActionDone = (actionId: string) => {
     setCompletedActionIds((prev) => {
-      const updated = prev.includes(actionId) ? prev.filter((id) => id !== actionId) : [...prev, actionId];
+      const updated = prev.includes(actionId)
+        ? prev.filter((id) => id !== actionId)
+        : [...prev, actionId];
       try {
         localStorage.setItem(getTodayStorageKey(), JSON.stringify(updated));
       } catch {
@@ -126,11 +128,7 @@ export function PlanDashboard({
           timeZone={plan.location.timeZone}
         />
 
-        <button
-          type="button"
-          onClick={onOpenAdvisoryModal}
-          className="card share-card"
-        >
+        <button type="button" onClick={onOpenAdvisoryModal} className="card share-card">
           <span
             className="logo-mark"
             style={{ background: 'var(--brand-soft)', color: 'var(--brand)' }}
@@ -152,7 +150,12 @@ export function PlanDashboard({
           onClick={() => setIsMobileChatOpen(true)}
           aria-label="Ask SaafHawa Assistant"
           className="btn btn-primary"
-          style={{ height: '48px', padding: '0 20px', borderRadius: '999px', boxShadow: 'var(--shadow)' }}
+          style={{
+            height: '48px',
+            padding: '0 20px',
+            borderRadius: '999px',
+            boxShadow: 'var(--shadow)',
+          }}
         >
           <ChatIcon className="icon" />
           <span>Ask Assistant</span>

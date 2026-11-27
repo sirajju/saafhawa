@@ -1,4 +1,4 @@
-import { ChatRequest } from './types';
+import { type ChatRequest } from './types';
 
 /**
  * Builds the system instruction for the conversational smog advisor.
@@ -10,16 +10,25 @@ export function buildChatSystemInstruction(
   const profileDetails: string[] = [];
 
   if (profile) {
-    profileDetails.push(`- Adults: ${profile.adultsCount}, Children: ${profile.childrenCount}, Seniors: ${profile.elderlyCount}`);
+    profileDetails.push(
+      `- Adults: ${profile.adultsCount}, Children: ${profile.childrenCount}, Seniors: ${profile.elderlyCount}`
+    );
     if (profile.hasAsthmaOrRespiratoryCondition) {
-      profileDetails.push(`- CRITICAL HEALTH CONTEXT: At least one household member has Asthma or a respiratory condition.`);
+      profileDetails.push(
+        `- CRITICAL HEALTH CONTEXT: At least one household member has Asthma or a respiratory condition.`
+      );
     }
-    profileDetails.push(`- Primary commute: ${profile.primaryCommuteMode} (${profile.dailyCommuteDistanceKm} km/day)`);
-    profileDetails.push(`- Cooking fuel: ${profile.cookingFuel}, Air purifier owned: ${profile.hasAirPurifier ? 'Yes' : 'No'}`);
+    profileDetails.push(
+      `- Primary commute: ${profile.primaryCommuteMode} (${profile.dailyCommuteDistanceKm} km/day)`
+    );
+    profileDetails.push(
+      `- Cooking fuel: ${profile.cookingFuel}, Air purifier owned: ${profile.hasAirPurifier ? 'Yes' : 'No'}`
+    );
     profileDetails.push(`- Budget focus: ${profile.budget}`);
   }
 
-  const profileContext = profileDetails.length > 0 ? profileDetails.join('\n') : 'Standard household profile';
+  const profileContext =
+    profileDetails.length > 0 ? profileDetails.join('\n') : 'Standard household profile';
 
   return `You are SaafHawa's helpful, empathetic winter smog and clean air assistant.
 Your mission is to provide clear, actionable advice to help families and communities navigate hazardous winter air pollution safely.

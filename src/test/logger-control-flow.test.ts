@@ -68,7 +68,9 @@ describe('Logger - Next.js Internal Control-Flow Error Handling', () => {
   });
 
   it('logs and sanitizes standard server exceptions with sensitive keys redacted', () => {
-    const appError = new Error('Failed to query service for AIzaSyD-1234567890abcdefghijklmnopqrstuvw with token=secretToken123');
+    const appError = new Error(
+      'Failed to query service for AIzaSyD-1234567890abcdefghijklmnopqrstuvw with token=secretToken123'
+    );
 
     logServerError('TestContext', appError);
 

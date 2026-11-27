@@ -78,7 +78,8 @@ describe('Chat Service & Medical Policy', () => {
   it('handles medical questions in fallback mode by advising consulting a doctor alongside precautions', async () => {
     const response = await handleChatQuery(
       {
-        message: 'My child has a bad cough and difficulty breathing in this smog, what should I do?',
+        message:
+          'My child has a bad cough and difficulty breathing in this smog, what should I do?',
         place: 'Noida',
         householdProfile: MOCK_PLAN_PROFILE,
       },

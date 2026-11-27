@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { CloseIcon } from './ui/Icons';
 import { getShortPlaceName } from '@/lib/design-system';
 import { formatMeasurementTime } from '@/lib/air-quality/time-utils';
@@ -33,9 +32,7 @@ export function ChatHeader({
           Ask SaafHawa
           <span className="sr-only"> Assistant</span>
         </h3>
-        <p className="caption">
-          Answers use today&apos;s {shortPlace} data
-        </p>
+        <p className="caption">Answers use today&apos;s {shortPlace} data</p>
         <div className="caption" style={{ fontSize: 13, color: 'var(--ink-3)', marginTop: 2 }}>
           <span>
             <span>{activeSource}</span>

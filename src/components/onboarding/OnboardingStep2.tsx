@@ -3,7 +3,7 @@
 import React from 'react';
 import { OptionGroup } from './OptionGroup';
 import { CarIcon, BikeIcon, BusIcon, WalkIcon, HomeIcon } from '../ui/Icons';
-import { PlanRequest } from '@/lib/plan/types';
+import { type PlanRequest } from '@/lib/plan/types';
 
 interface OnboardingStep2Props {
   primaryCommuteMode: PlanRequest['primaryCommuteMode'];
@@ -26,9 +26,13 @@ export function OnboardingStep2({
 }: OnboardingStep2Props) {
   // Map numeric km to the 4 discrete ranges in reference
   const distanceRange =
-    dailyCommuteDistanceKm <= 5 ? 4 :
-    dailyCommuteDistanceKm <= 15 ? 10 :
-    dailyCommuteDistanceKm <= 30 ? 20 : 35;
+    dailyCommuteDistanceKm <= 5
+      ? 4
+      : dailyCommuteDistanceKm <= 15
+        ? 10
+        : dailyCommuteDistanceKm <= 30
+          ? 20
+          : 35;
 
   return (
     <section className="onb-step" data-step="2" aria-labelledby="s2h">
@@ -36,7 +40,9 @@ export function OnboardingStep2({
       <h1 id="s2h" ref={headingRef} tabIndex={-1} style={{ marginTop: '6px' }}>
         How does your household get around?
       </h1>
-      <p className="onb-intro">Your commute shapes both the smog you breathe and the smog you add.</p>
+      <p className="onb-intro">
+        Your commute shapes both the smog you breathe and the smog you add.
+      </p>
 
       <div className="q">
         <h3>Main way to work, school or college</h3>

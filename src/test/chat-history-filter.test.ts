@@ -5,7 +5,11 @@ describe('Chat History Filtering and Execution Summary', () => {
     const messages = [
       { role: 'assistant' as const, content: 'Ask me anything', isGreeting: true },
       { role: 'user' as const, content: 'Is air bad?' },
-      { role: 'assistant' as const, content: 'Unable to connect. Please try asking again.', isError: true },
+      {
+        role: 'assistant' as const,
+        content: 'Unable to connect. Please try asking again.',
+        isError: true,
+      },
       { role: 'user' as const, content: 'Can I exercise?' },
       { role: 'assistant' as const, content: 'Yes, AQI is moderate.' },
     ];
@@ -25,7 +29,9 @@ describe('Chat History Filtering and Execution Summary', () => {
       { name: 'calculateActionImpact' },
     ];
     const rawTools = toolsExecuted.map((t: { resultSummary?: string }) => t.resultSummary);
-    const toolsSummary = Array.from(new Set(rawTools.filter((s: unknown): s is string => Boolean(s))));
+    const toolsSummary = Array.from(
+      new Set(rawTools.filter((s: unknown): s is string => Boolean(s)))
+    );
     expect(toolsSummary).toEqual(['AQI 85', 'Impact calculated']);
   });
 });

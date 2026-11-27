@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -31,9 +30,7 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
     );
 
     // Verify window.scrollTo was called to keep top in view
-    expect(scrollToMock).toHaveBeenCalledWith(
-      expect.objectContaining({ top: 0, left: 0 })
-    );
+    expect(scrollToMock).toHaveBeenCalledWith(expect.objectContaining({ top: 0, left: 0 }));
 
     // Verify focus moved to the main plan heading
     const heading = screen.getByRole('heading', {
@@ -70,7 +67,9 @@ describe('Usability Overhaul - Plan Loading, Focus, Timeline & Progress', () => 
     expect(detailsButtons.length).toBeGreaterThanOrEqual(2);
 
     // Reason line is visible
-    expect(screen.getByText(/Reduces toxic fine particulate inhalation during transit/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Reduces toxic fine particulate inhalation during transit/i)
+    ).toBeInTheDocument();
   });
 
   it('marks an action as done, persists in localStorage per day, and updates progress counter', async () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrandIcon, LocationIcon, SunIcon, MoonIcon, SystemThemeIcon } from './ui/Icons';
 import { getShortPlaceName } from '@/lib/design-system';
 
@@ -13,10 +13,7 @@ interface NavbarProps {
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
-export function Navbar({
-  currentPlace,
-  onEditProfile,
-}: NavbarProps) {
+export function Navbar({ currentPlace, onEditProfile }: NavbarProps) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window === 'undefined') return 'light';
     try {
@@ -36,9 +33,10 @@ export function Navbar({
       // LocalStorage error
     }
 
-    const mq = typeof window !== 'undefined' && window.matchMedia
-      ? window.matchMedia('(prefers-color-scheme: dark)')
-      : null;
+    const mq =
+      typeof window !== 'undefined' && window.matchMedia
+        ? window.matchMedia('(prefers-color-scheme: dark)')
+        : null;
     const isDark = newTheme === 'dark' || (newTheme === 'system' && Boolean(mq?.matches));
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     document.documentElement.setAttribute('data-user-theme', newTheme);

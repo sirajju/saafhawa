@@ -1,10 +1,15 @@
+/* eslint-disable complexity */
 import { airQualityCache, normalizeLocationKey } from './cache';
-import { ClientRequestOptions } from './google-client';
+import { type ClientRequestOptions } from './google-client';
 import { fetchViaGoogle } from './google-service';
-import { geocodeOpenMeteoPlace, fetchOpenMeteoAirQuality, OpenMeteoLocationResult } from './open-meteo-client';
+import {
+  geocodeOpenMeteoPlace,
+  fetchOpenMeteoAirQuality,
+  type OpenMeteoLocationResult,
+} from './open-meteo-client';
 import { fetchWaqiNearestStation } from './waqi-client';
-import { AirQualityReport, AirQualityReportSchema } from './types';
-import { extractPrimaryIndex, extractPollutant, ExtractedIndex } from './index-extractor';
+import { type AirQualityReport, AirQualityReportSchema } from './types';
+import { extractPrimaryIndex, extractPollutant, type ExtractedIndex } from './index-extractor';
 import { logServerWarning } from '../logger';
 import { env } from '../env';
 
@@ -54,19 +59,26 @@ async function fetchViaOpenMeteo(
   preResolvedLocation?: OpenMeteoLocationResult
 ): Promise<AirQualityReport> {
   const location = preResolvedLocation || (await geocodeOpenMeteoPlace(place, options));
-  const aqData = await fetchOpenMeteoAirQuality(location.latitude, location.longitude, location.timeZone, options);
+  const aqData = await fetchOpenMeteoAirQuality(
+    location.latitude,
+    location.longitude,
+    location.timeZone,
+    options
+  );
 
   const rawReport: AirQualityReport = {
     location: {
       name: location.formattedAddress,
       latitude: location.latitude,
       longitude: location.longitude,
-      timeZone: aqData.timeZone || (location.timeZone !== 'auto' ? location.timeZone : 'Asia/Kolkata'),
+      timeZone:
+        aqData.timeZone || (location.timeZone !== 'auto' ? location.timeZone : 'Asia/Kolkata'),
     },
     current: {
       ...aqData.current,
       dataSource: 'Open-Meteo (CAMS model)',
-      attribution: 'Air quality data provided by Open-Meteo under CC BY 4.0 (Copernicus CAMS model)',
+      attribution:
+        'Air quality data provided by Open-Meteo under CC BY 4.0 (Copernicus CAMS model)',
     },
     hourlyForecast: aqData.hourlyForecast,
     cachedAt: new Date().toISOString(),
@@ -105,7 +117,12 @@ export async function getAirQualityByLocation(
   if (waqiToken) {
     try {
       const location = await geocodeOpenMeteoPlace(place, options);
-      const waqiStation = await fetchWaqiNearestStation(location.latitude, location.longitude, waqiToken, options.fetchFn);
+      const waqiStation = await fetchWaqiNearestStation(
+        location.latitude,
+        location.longitude,
+        waqiToken,
+        options.fetchFn
+      );
 
       if (waqiStation) {
         // Merge with 24-hr rolling forecast from Open-Meteo
@@ -121,7 +138,9 @@ export async function getAirQualityByLocation(
             name: `${location.formattedAddress} · Station: ${waqiStation.stationName}`,
             latitude: waqiStation.latitude,
             longitude: waqiStation.longitude,
-            timeZone: openMeteoData?.timeZone || (location.timeZone !== 'auto' ? location.timeZone : 'Asia/Kolkata'),
+            timeZone:
+              openMeteoData?.timeZone ||
+              (location.timeZone !== 'auto' ? location.timeZone : 'Asia/Kolkata'),
           },
           current: waqiStation.current,
           hourlyForecast: openMeteoData?.hourlyForecast || [],
@@ -145,7 +164,9 @@ export async function getAirQualityByLocation(
   // 2. If Google API key is configured, try Google as an optional upgrade
   if (googleApiKey) {
     try {
-      const googleReport = syncFirstForecastHour(await fetchViaGoogle(place, googleApiKey, options));
+      const googleReport = syncFirstForecastHour(
+        await fetchViaGoogle(place, googleApiKey, options)
+      );
       airQualityCache.set(cacheKey, googleReport);
       return googleReport;
     } catch (googleError) {

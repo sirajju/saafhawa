@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { parseDateTimeToIso, formatMeasurementTime } from '@/lib/air-quality/time-utils';
 import { fetchOpenMeteoAirQuality } from '@/lib/air-quality/open-meteo-client';
@@ -7,7 +6,7 @@ import { formatHourInPlaceLocalTime, executeGetAirQualityTool } from '@/lib/chat
 import { generateTemplateAdvisory } from '@/lib/community/advisory-templates';
 import { generateFallbackChatResponse } from '@/lib/chat/fallback';
 import { ChatHeader } from '@/components/ChatHeader';
-import { AirQualityReport } from '@/lib/air-quality/types';
+import { type AirQualityReport } from '@/lib/air-quality/types';
 
 describe('Measurement Time Parsing & Formatting in UTC Runtime Environment', () => {
   const origTz = process.env.TZ;
@@ -78,11 +77,15 @@ describe('Measurement Time Parsing & Formatting in UTC Runtime Environment', () 
 
     // Hourly point 0: 23:00 IST = 17:30 UTC -> 11 PM
     expect(result.hourlyForecast[0].dateTime).toBe('2026-11-25T17:30:00.000Z');
-    expect(formatHourInPlaceLocalTime(result.hourlyForecast[0].dateTime, 'Asia/Kolkata')).toMatch(/11\s*PM/);
+    expect(formatHourInPlaceLocalTime(result.hourlyForecast[0].dateTime, 'Asia/Kolkata')).toMatch(
+      /11\s*PM/
+    );
 
     // Hourly point 1: 00:00 IST = 18:30 UTC -> 12 AM
     expect(result.hourlyForecast[1].dateTime).toBe('2026-11-25T18:30:00.000Z');
-    expect(formatHourInPlaceLocalTime(result.hourlyForecast[1].dateTime, 'Asia/Kolkata')).toMatch(/12\s*AM/);
+    expect(formatHourInPlaceLocalTime(result.hourlyForecast[1].dateTime, 'Asia/Kolkata')).toMatch(
+      /12\s*AM/
+    );
   });
 
   it('displays real 11 PM local measurement time in ChatHeader and AirQualityCard', () => {
@@ -137,7 +140,11 @@ describe('Measurement Time Parsing & Formatting in UTC Runtime Environment', () 
 
     // 3. Fallback Chat answer
     const chatFallback = await generateFallbackChatResponse(
-      { message: 'What is the air quality right now?', place: 'New Delhi', conversationHistory: [] },
+      {
+        message: 'What is the air quality right now?',
+        place: 'New Delhi',
+        conversationHistory: [],
+      },
       async () => mockReport
     );
     expect(chatFallback.reply.toLowerCase()).toMatch(/measured at:\s*11:00\s*pm/);

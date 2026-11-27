@@ -1,8 +1,9 @@
-import { PlanRequest } from './plan/types';
+/* eslint-disable complexity */
+import { type PlanRequest } from './plan/types';
 
 /**
  * SaafHawa Calm Health Design System
- * 
+ *
  * Strict alignment with saafhawa-design-reference.html:
  * - Off-white (#f6f5f1) in light, near-black (#0e1013) in dark
  * - Three text colours: ink, ink-2, ink-3
@@ -12,15 +13,30 @@ import { PlanRequest } from './plan/types';
  * - Corner radius: 16px cards, 10–12px controls, full pill for chips
  */
 
-export function getAqiCategoryCssVar(aqi: number | null | undefined, category?: string | null): string {
+export function getAqiCategoryCssVar(
+  aqi: number | null | undefined,
+  category?: string | null
+): string {
   const normCategory = (category || '').toLowerCase();
-  if (normCategory.includes('severe') || normCategory.includes('hazardous') || (typeof aqi === 'number' && aqi > 400)) {
+  if (
+    normCategory.includes('severe') ||
+    normCategory.includes('hazardous') ||
+    (typeof aqi === 'number' && aqi > 400)
+  ) {
     return 'var(--aqi-severe)';
   }
-  if (normCategory.includes('very poor') || normCategory.includes('very unhealthy') || (typeof aqi === 'number' && aqi > 300)) {
+  if (
+    normCategory.includes('very poor') ||
+    normCategory.includes('very unhealthy') ||
+    (typeof aqi === 'number' && aqi > 300)
+  ) {
     return 'var(--aqi-vpoor)';
   }
-  if (normCategory.includes('poor') || normCategory.includes('unhealthy') || (typeof aqi === 'number' && aqi > 200)) {
+  if (
+    normCategory.includes('poor') ||
+    normCategory.includes('unhealthy') ||
+    (typeof aqi === 'number' && aqi > 200)
+  ) {
     return 'var(--aqi-poor)';
   }
   if (normCategory.includes('moderate') || (typeof aqi === 'number' && aqi > 100)) {
@@ -32,15 +48,30 @@ export function getAqiCategoryCssVar(aqi: number | null | undefined, category?: 
   return 'var(--aqi-good)';
 }
 
-export function getAqiCategorySoftCssVar(aqi: number | null | undefined, category?: string | null): string {
+export function getAqiCategorySoftCssVar(
+  aqi: number | null | undefined,
+  category?: string | null
+): string {
   const normCategory = (category || '').toLowerCase();
-  if (normCategory.includes('severe') || normCategory.includes('hazardous') || (typeof aqi === 'number' && aqi > 400)) {
+  if (
+    normCategory.includes('severe') ||
+    normCategory.includes('hazardous') ||
+    (typeof aqi === 'number' && aqi > 400)
+  ) {
     return 'var(--aqi-severe-soft)';
   }
-  if (normCategory.includes('very poor') || normCategory.includes('very unhealthy') || (typeof aqi === 'number' && aqi > 300)) {
+  if (
+    normCategory.includes('very poor') ||
+    normCategory.includes('very unhealthy') ||
+    (typeof aqi === 'number' && aqi > 300)
+  ) {
     return 'var(--aqi-vpoor-soft)';
   }
-  if (normCategory.includes('poor') || normCategory.includes('unhealthy') || (typeof aqi === 'number' && aqi > 200)) {
+  if (
+    normCategory.includes('poor') ||
+    normCategory.includes('unhealthy') ||
+    (typeof aqi === 'number' && aqi > 200)
+  ) {
     return 'var(--aqi-poor-soft)';
   }
   if (normCategory.includes('moderate') || (typeof aqi === 'number' && aqi > 100)) {
@@ -59,7 +90,10 @@ export function getAqiCategorySoftCssVar(aqi: number | null | undefined, categor
 export function getShortPlaceName(rawPlace?: string | null): string {
   if (!rawPlace || !rawPlace.trim()) return 'Delhi';
   const clean = rawPlace.replace(/·\s*Station:.*$/i, '').trim();
-  const parts = clean.split(',').map((p) => p.trim()).filter(Boolean);
+  const parts = clean
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean);
   if (parts.length === 0) return 'Delhi';
 
   // If pincode alone, return it
@@ -67,7 +101,12 @@ export function getShortPlaceName(rawPlace?: string | null): string {
 
   // If Delhi is in the string, return Delhi for city-level clarity
   if (parts.some((p) => p.toLowerCase() === 'delhi' || p.toLowerCase().includes('delhi'))) {
-    const locality = parts.find((p) => !p.toLowerCase().includes('india') && !p.toLowerCase().includes('national capital') && !p.toLowerCase().includes('nct'));
+    const locality = parts.find(
+      (p) =>
+        !p.toLowerCase().includes('india') &&
+        !p.toLowerCase().includes('national capital') &&
+        !p.toLowerCase().includes('nct')
+    );
     return locality || 'Delhi';
   }
 
@@ -90,10 +129,10 @@ export function getHouseholdSummary(profile?: PlanRequest | null): string {
       ? 'one child with asthma'
       : 'family member with asthma'
     : children > 0
-    ? `${children} ${children === 1 ? 'child' : 'children'}`
-    : seniors > 0
-    ? `${seniors} senior`
-    : 'daily routine & commute';
+      ? `${children} ${children === 1 ? 'child' : 'children'}`
+      : seniors > 0
+        ? `${seniors} senior`
+        : 'daily routine & commute';
 
   return `Plan for a family of ${total} · ${sensitive}`;
 }

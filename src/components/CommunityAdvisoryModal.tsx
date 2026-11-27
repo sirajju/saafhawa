@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { AdvisoryResponse } from '@/lib/community/types';
+import { useState, useEffect } from 'react';
+import { type AdvisoryResponse } from '@/lib/community/types';
 import { useFocusTrap } from '@/lib/use-focus-trap';
-import { AdvisorySelectorBar } from './AdvisorySelectorBar';
+import { AdvisoryModalHeader } from './AdvisoryModalHeader';
 import { AdvisoryModalBody } from './AdvisoryModalBody';
 import { AdvisoryModalFooter } from './AdvisoryModalFooter';
-import { ShareIcon, CloseIcon } from './ui/Icons';
 
 interface CommunityAdvisoryModalProps {
   isOpen: boolean;
@@ -45,7 +44,9 @@ export function CommunityAdvisoryModal({
       .then(async (response) => {
         if (!response.ok) {
           const errData = await response.json().catch(() => null);
-          throw new Error(errData?.message || `Failed to generate advisory (HTTP ${response.status})`);
+          throw new Error(
+            errData?.message || `Failed to generate advisory (HTTP ${response.status})`
+          );
         }
         return response.json();
       })
@@ -62,7 +63,9 @@ export function CommunityAdvisoryModal({
         }
       });
 
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, [isOpen, place, audience, language]);
 
   const handleCopyText = async () => {
@@ -71,7 +74,9 @@ export function CommunityAdvisoryModal({
       await navigator.clipboard.writeText(advisory.advisoryText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-    } catch { /* Clipboard access denied */ }
+    } catch {
+      /* Clipboard access denied */
+    }
   };
 
   if (!isOpen) return null;
@@ -97,7 +102,12 @@ export function CommunityAdvisoryModal({
       }}
     >
       <div
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(4px)',
+        }}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -118,61 +128,25 @@ export function CommunityAdvisoryModal({
           overflow: 'hidden',
         }}
       >
-        <div style={{ padding: 24, borderBottom: '1px solid var(--line)' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 44,
-                  height: 44,
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--brand-soft)',
-                  color: 'var(--brand)',
-                }}
-              >
-                <ShareIcon className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 id="advisory-modal-title" style={{ fontSize: 22, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
-                  Share Smog Advisory
-                </h2>
-                <p className="caption" style={{ margin: '4px 0 0' }}>
-                  Ready-to-copy WhatsApp advisory based on today&apos;s air quality in {displayPlace || place}.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close dialog"
-              className="btn btn-ghost"
-              style={{ width: 36, height: 36, padding: 0 }}
-            >
-              <CloseIcon className="h-5 w-5" />
-            </button>
-          </div>
-
-          <AdvisorySelectorBar
-            audience={audience}
-            language={language}
-            onAudienceChange={(a) => {
-              setAudience(a);
-              setIsLoading(true);
-              setErrorMessage(null);
-              setCopied(false);
-            }}
-            onLanguageChange={(l) => {
-              setLanguage(l);
-              setIsLoading(true);
-              setErrorMessage(null);
-              setCopied(false);
-            }}
-          />
-        </div>
+        <AdvisoryModalHeader
+          onClose={onClose}
+          place={place}
+          displayPlace={displayPlace}
+          audience={audience}
+          language={language}
+          onAudienceChange={(a) => {
+            setAudience(a);
+            setIsLoading(true);
+            setErrorMessage(null);
+            setCopied(false);
+          }}
+          onLanguageChange={(l) => {
+            setLanguage(l);
+            setIsLoading(true);
+            setErrorMessage(null);
+            setCopied(false);
+          }}
+        />
 
         <AdvisoryModalBody
           isLoading={isLoading}

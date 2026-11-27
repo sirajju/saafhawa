@@ -35,7 +35,9 @@ describe('GET /api/reverse-geocode', () => {
 
   it('returns 400 when coordinates exceed 40 characters in length', async () => {
     const longParam = '12.' + '9'.repeat(45);
-    const req = new NextRequest(`http://localhost:3000/api/reverse-geocode?lat=${longParam}&lon=77.5946`);
+    const req = new NextRequest(
+      `http://localhost:3000/api/reverse-geocode?lat=${longParam}&lon=77.5946`
+    );
     const res = await GET(req);
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -50,7 +52,9 @@ describe('GET /api/reverse-geocode', () => {
       country: 'India',
     });
 
-    const req = new NextRequest('http://localhost:3000/api/reverse-geocode?lat=11.2551&lon=75.8287');
+    const req = new NextRequest(
+      'http://localhost:3000/api/reverse-geocode?lat=11.2551&lon=75.8287'
+    );
     const res = await GET(req);
     expect(res.status).toBe(200);
     const json = await res.json();
@@ -59,7 +63,9 @@ describe('GET /api/reverse-geocode', () => {
 
   it('returns 200 with formattedAddress: null and logs error when lookup throws', async () => {
     const logSpy = vi.spyOn(logger, 'logServerError').mockImplementation(() => {});
-    vi.spyOn(reverseGeocoder, 'reverseGeocodeCoordinates').mockRejectedValueOnce(new Error('Network failure'));
+    vi.spyOn(reverseGeocoder, 'reverseGeocodeCoordinates').mockRejectedValueOnce(
+      new Error('Network failure')
+    );
 
     const req = new NextRequest('http://localhost:3000/api/reverse-geocode?lat=11.25&lon=75.82');
     const res = await GET(req);

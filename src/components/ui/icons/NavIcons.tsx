@@ -1,5 +1,4 @@
-import React from 'react';
-import { IconProps } from './IconProps';
+import { type IconProps } from './IconProps';
 
 export function LocationIcon({ className = 'w-4 h-4', ...props }: IconProps) {
   return (

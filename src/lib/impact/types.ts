@@ -20,7 +20,12 @@ export type WindowSealingQuality = 'poor' | 'average' | 'good';
 
 export const HouseholdProfileSchema = z.object({
   // Household demographics (bounded to prevent absurd inputs)
-  adultsCount: z.number().int().min(1, 'At least 1 adult is required').max(30, 'Cannot exceed 30 adults').default(2),
+  adultsCount: z
+    .number()
+    .int()
+    .min(1, 'At least 1 adult is required')
+    .max(30, 'Cannot exceed 30 adults')
+    .default(2),
   childrenCount: z.number().int().min(0).max(30, 'Cannot exceed 30 children').default(0),
   elderlyCount: z.number().int().min(0).max(30, 'Cannot exceed 30 seniors').default(0),
 
@@ -29,7 +34,11 @@ export const HouseholdProfileSchema = z.object({
     .enum(['petrol_car', 'diesel_car', 'two_wheeler', 'public_transit', 'walking_cycling', 'none'])
     .default('petrol_car'),
   commutersCount: z.number().int().min(0).max(30, 'Cannot exceed 30 commuters').default(1),
-  dailyCommuteDistanceKm: z.number().min(0).max(300, 'Daily commute distance cannot exceed 300 km').default(20),
+  dailyCommuteDistanceKm: z
+    .number()
+    .min(0)
+    .max(300, 'Daily commute distance cannot exceed 300 km')
+    .default(20),
   hasCarpoolOption: z.boolean().default(true),
   canWorkFromHome: z.boolean().default(true),
 
@@ -38,12 +47,20 @@ export const HouseholdProfileSchema = z.object({
   budget: z.enum(['zero_cost', 'low', 'moderate', 'flexible']).default('low').optional(),
 
   // Outdoor habits
-  dailyOutdoorHoursPerPerson: z.number().min(0).max(24, 'Outdoor hours cannot exceed 24').default(1.5),
+  dailyOutdoorHoursPerPerson: z
+    .number()
+    .min(0)
+    .max(24, 'Outdoor hours cannot exceed 24')
+    .default(1.5),
   doesOutdoorExercise: z.boolean().default(false),
   exerciseHoursPerDay: z.number().min(0).max(12, 'Exercise hours cannot exceed 12').default(1),
 
   // Indoor setup & habits
-  homeAreaSqFt: z.number().min(50, 'Home area must be at least 50 sq ft').max(25000, 'Home area cannot exceed 25,000 sq ft').default(1000),
+  homeAreaSqFt: z
+    .number()
+    .min(50, 'Home area must be at least 50 sq ft')
+    .max(25000, 'Home area cannot exceed 25,000 sq ft')
+    .default(1000),
   hasAirPurifier: z.boolean().default(false),
   hasKitchenChimneyOrExhaust: z.boolean().default(false),
   usesIncenseOrMosquitoCoils: z.boolean().default(true),

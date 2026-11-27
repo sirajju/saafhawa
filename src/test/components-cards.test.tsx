@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -12,7 +11,8 @@ describe('Accessibility - AirQualityCard (Screen Reader Text & Visual Metrics)',
   it('renders section landmark with clean place name', () => {
     render(<AirQualityCard location={MOCK_LOCATION} current={MOCK_CURRENT} />);
 
-    const section = screen.getByRole('region', { name: /Today's Air Quality & Family Guidance/i }) ||
+    const section =
+      screen.getByRole('region', { name: /Today's Air Quality & Family Guidance/i }) ||
       document.querySelector('section[aria-labelledby="air-quality-heading"]');
     expect(section).toBeInTheDocument();
 
@@ -26,7 +26,14 @@ describe('Accessibility - AirQualityCard (Screen Reader Text & Visual Metrics)',
       <AirQualityCard
         location={MOCK_LOCATION}
         current={MOCK_CURRENT}
-        hourlyForecast={[{ dateTime: '2026-11-24T11:00:00Z', aqi: 350, category: 'Very Poor', dominantPollutant: 'pm25' }]}
+        hourlyForecast={[
+          {
+            dateTime: '2026-11-24T11:00:00Z',
+            aqi: 350,
+            category: 'Very Poor',
+            dominantPollutant: 'pm25',
+          },
+        ]}
       />
     );
 
@@ -77,7 +84,14 @@ describe('Accessibility - AirQualityCard (Screen Reader Text & Visual Metrics)',
       <AirQualityCard
         location={MOCK_LOCATION}
         current={MOCK_CURRENT}
-        hourlyForecast={[{ dateTime: '2026-11-24T11:00:00Z', aqi: 350, category: 'Very Poor', dominantPollutant: 'pm25' }]}
+        hourlyForecast={[
+          {
+            dateTime: '2026-11-24T11:00:00Z',
+            aqi: 350,
+            category: 'Very Poor',
+            dominantPollutant: 'pm25',
+          },
+        ]}
       />
     );
 
@@ -123,7 +137,9 @@ describe('Accessibility - DailyTimelineItem (Article Landmark & Keyboard Toggle)
     };
     render(<TotalSavingsBanner summary={summary} generationMethod="gemini" />);
     expect(
-      screen.getByText(/Overlapping actions are adjusted, so the total can be less than the cards added together/i)
+      screen.getByText(
+        /Overlapping actions are adjusted, so the total can be less than the cards added together/i
+      )
     ).toBeInTheDocument();
   });
 });
@@ -156,13 +172,7 @@ describe('Accessibility - CommunityAdvisoryModal (Dialog Trap, Labels & Escape K
 
   it('renders modal dialog landmark with aria-modal and aria-labelledby', async () => {
     const handleClose = vi.fn();
-    render(
-      <CommunityAdvisoryModal
-        isOpen={true}
-        onClose={handleClose}
-        place="Delhi 110001"
-      />
-    );
+    render(<CommunityAdvisoryModal isOpen={true} onClose={handleClose} place="Delhi 110001" />);
 
     const dialog = screen.getByRole('dialog');
     expect(dialog).toBeInTheDocument();
@@ -177,13 +187,7 @@ describe('Accessibility - CommunityAdvisoryModal (Dialog Trap, Labels & Escape K
 
   it('closes dialog on Escape key press', async () => {
     const handleClose = vi.fn();
-    render(
-      <CommunityAdvisoryModal
-        isOpen={true}
-        onClose={handleClose}
-        place="Delhi 110001"
-      />
-    );
+    render(<CommunityAdvisoryModal isOpen={true} onClose={handleClose} place="Delhi 110001" />);
 
     expect(await screen.findByText('Mock advisory text')).toBeInTheDocument();
 

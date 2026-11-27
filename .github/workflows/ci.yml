@@ -6,10 +6,18 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     name: Lint, Typecheck & Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     env:
       GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY || 'ci-dummy-key' }}
@@ -29,14 +37,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: ESLint Check
-        run: npm run lint
-
-      - name: TypeScript Compilation Check
-        run: npx tsc --noEmit
-
-      - name: Run Unit Tests with Coverage (Vitest)
-        run: npm run test:coverage
+      - name: Run Quality Checks (Lint, Typecheck, Test, Format)
+        run: npm run check
 
       - name: Install Playwright Chromium & Dependencies
         run: npx playwright install --with-deps chromium

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getAirQualityByLocation } from '@/lib/air-quality/service';
+import type { AirQualityReport } from '@/lib/air-quality/types';
 
 describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () => {
   const originalKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -18,7 +19,7 @@ describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () =>
     const results = [];
 
     for (const p of places) {
-      let report: import('@/lib/air-quality/types').AirQualityReport | undefined;
+      let report: AirQualityReport | undefined;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
           report = await getAirQualityByLocation(p.query);
@@ -54,7 +55,10 @@ describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () =>
       });
     }
 
-    console.log('REAL LIVE QUERY RESULTS FOR 5 EVALUATOR CITIES:\n', JSON.stringify(results, null, 2));
+    console.log(
+      'REAL LIVE QUERY RESULTS FOR 5 EVALUATOR CITIES:\n',
+      JSON.stringify(results, null, 2)
+    );
 
     process.env.GOOGLE_MAPS_API_KEY = originalKey;
   }, 30000);

@@ -1,4 +1,4 @@
-import { PlanResponse } from '@/lib/plan/types';
+import { type PlanResponse } from '@/lib/plan/types';
 
 export const MOCK_PLAN: PlanResponse = {
   location: {

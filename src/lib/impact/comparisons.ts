@@ -1,14 +1,11 @@
-import { ExposureReduction, EmissionReduction } from './types';
+import { type ExposureReduction, type EmissionReduction } from './types';
 import { EQUIVALENCY_FACTORS } from './exposure-factors';
 import { VEHICULAR_EMISSION_FACTORS } from './emission-factors';
 
 /**
  * Returns plain-language, relatable comparisons for scientific exposure and emission numbers.
  */
-export function getExposureComparisonText(
-  exposure: ExposureReduction,
-  actionId: string
-): string {
+export function getExposureComparisonText(exposure: ExposureReduction, actionId: string): string {
   if (exposure.isUnknown || exposure.pm25InhaledDoseAvoidedUg === null) {
     return 'Impact unknown — local PM2.5 measurements are currently unavailable for this area.';
   }
@@ -53,10 +50,7 @@ export function getExposureComparisonText(
   return 'Reduces exposure during hazardous winter smog periods.';
 }
 
-export function getEmissionComparisonText(
-  emission: EmissionReduction,
-  actionId: string
-): string {
+export function getEmissionComparisonText(emission: EmissionReduction, actionId: string): string {
   const pm25 = emission.pm25SavedGrams;
   const co2 = emission.co2SavedGrams;
   const carCo2KmFactor = VEHICULAR_EMISSION_FACTORS.PETROL_CAR_CO2_G_PER_KM;
@@ -84,7 +78,8 @@ export function getEmissionComparisonText(
 
   if (co2 > 0 || pm25 > 0) {
     const co2Part = co2 >= 1000 ? `${(co2 / 1000).toFixed(1)} kg CO₂` : `${co2.toFixed(0)} g CO₂`;
-    const pmPart = pm25 >= 1 ? `${pm25.toFixed(1)} g PM₂.₅` : `${(pm25 * 1000).toFixed(0)} mg PM₂.₅`;
+    const pmPart =
+      pm25 >= 1 ? `${pm25.toFixed(1)} g PM₂.₅` : `${(pm25 * 1000).toFixed(0)} mg PM₂.₅`;
     return `Prevents ${pmPart} and ${co2Part} from entering the atmosphere today.`;
   }
 

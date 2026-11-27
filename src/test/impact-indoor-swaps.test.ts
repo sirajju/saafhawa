@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
 import { calculateActionImpact } from '@/lib/impact/calculator';
-import { HouseholdProfile } from '@/lib/impact/types';
+import { type HouseholdProfile } from '@/lib/impact/types';
 
 describe('Impact Module - Indoor Air Quality Arithmetic', () => {
   const profile: HouseholdProfile = {
@@ -46,7 +46,9 @@ describe('Impact Module - Indoor Air Quality Arithmetic', () => {
   });
 
   it('calculates both exposure AND emission savings when eliminating incense coils', () => {
-    const incenseAction = ACTION_CATALOGUE.find((a) => a.id === 'eliminate_incense_and_mosquito_coils')!;
+    const incenseAction = ACTION_CATALOGUE.find(
+      (a) => a.id === 'eliminate_incense_and_mosquito_coils'
+    )!;
     const result = calculateActionImpact(incenseAction, profile, { currentPm25: 150 });
 
     expect(result.applicable).toBe(true);
@@ -56,7 +58,9 @@ describe('Impact Module - Indoor Air Quality Arithmetic', () => {
   });
 
   it('marks incense action not applicable when household does not use them', () => {
-    const incenseAction = ACTION_CATALOGUE.find((a) => a.id === 'eliminate_incense_and_mosquito_coils')!;
+    const incenseAction = ACTION_CATALOGUE.find(
+      (a) => a.id === 'eliminate_incense_and_mosquito_coils'
+    )!;
     const noIncenseProfile = { ...profile, usesIncenseOrMosquitoCoils: false };
 
     const result = calculateActionImpact(incenseAction, noIncenseProfile, { currentPm25: 150 });

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { env } from './env';
 
 interface RateLimitRecord {
@@ -129,7 +129,10 @@ export function getClientIp(request: NextRequest, customHops?: number): string {
   if (env.isVercel) {
     const forwardedFor = request.headers.get('x-forwarded-for');
     if (forwardedFor) {
-      const parts = forwardedFor.split(',').map((p) => p.trim()).filter(Boolean);
+      const parts = forwardedFor
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean);
       if (parts.length > 0) {
         let ip = parts[0];
         if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+$/.test(ip)) ip = ip.split(':')[0];
@@ -151,7 +154,10 @@ export function getClientIp(request: NextRequest, customHops?: number): string {
 
   const forwardedFor = request.headers.get('x-forwarded-for');
   if (forwardedFor) {
-    const parts = forwardedFor.split(',').map((p) => p.trim()).filter(Boolean);
+    const parts = forwardedFor
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean);
     if (parts.length >= hops) {
       let ip = parts[parts.length - hops];
       if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+$/.test(ip)) {
