@@ -12,7 +12,7 @@ export default defineConfig({
     testTimeout: 20000,
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/test/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['e2e/**', 'node_modules/**', 'src/test/live-evaluator-queries.test.ts'],
+    exclude: ['e2e/**', 'node_modules/**', 'src/test/air-quality-live-cities.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

@@ -6,8 +6,8 @@ import { ACTION_CATALOGUE } from '@/lib/impact/catalogue';
 import { type HouseholdProfile } from '@/lib/impact/types';
 import { MOCK_AIR_QUALITY, MOCK_PROFILE } from './plan-fixtures';
 
-describe('Characterisation Tests for Named Steps Refactoring', () => {
-  it('characterises getRuleBasedFallbackActions across varying profiles', () => {
+describe('Rule-based plan and indoor impact behaviour', () => {
+  it('selects rule-based fallback actions that match each household profile', () => {
     const actionsHighAqi = getRuleBasedFallbackActions(MOCK_PROFILE, MOCK_AIR_QUALITY);
     expect(actionsHighAqi.length).toBeGreaterThanOrEqual(6);
     expect(actionsHighAqi.length).toBeLessThanOrEqual(8);
@@ -21,7 +21,7 @@ describe('Characterisation Tests for Named Steps Refactoring', () => {
     expect(hasPaidAction).toBe(false);
   });
 
-  it('characterises evaluateIndoorImpact for exhaust fan, ventilate, and incense', () => {
+  it('evaluates indoor impact for exhaust fan, ventilation and incense actions', () => {
     const exhaustAction = ACTION_CATALOGUE.find((a) => a.id === 'use_exhaust_fan_cooking')!;
     const profile: HouseholdProfile = {
       ...MOCK_PROFILE,
@@ -46,7 +46,7 @@ describe('Characterisation Tests for Named Steps Refactoring', () => {
     expect(resIncense?.pm25SavedGrams).toBeGreaterThan(0);
   });
 
-  it('characterises generateHouseholdPlan in rule-based fallback mode', async () => {
+  it('generates a complete household plan in rule-based mode', async () => {
     const plan = await generateHouseholdPlan(MOCK_PROFILE, {
       airQualityFetcher: async () => MOCK_AIR_QUALITY,
     });

@@ -88,7 +88,7 @@ describe('Impact Calculator Correctness & Deduplication', () => {
     expect(summary.totalPm25InhaledDoseAvoidedUg).toBeNull();
   });
 
-  it('fixes divide-by-zero when PM2.5 is 0 without throwing or returning NaN', () => {
+  it('handles PM2.5 of 0 without throwing or returning NaN', () => {
     const summary = calculateHouseholdImpact(BASE_TEST_PROFILE, { currentPm25: 0 });
 
     expect(summary.totalPm25InhaledDoseAvoidedUg).toBe(0);

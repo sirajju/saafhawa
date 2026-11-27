@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 
-describe('WAQI Client Network Handling and Reverse Geocoder Cache', () => {
+describe('WAQI network failures and reverse geocoder caching', () => {
   it('waqi client handles network/timeout via safeFetch, throwing 503 AirQualityError', async () => {
     const { fetchWaqiNearestStation } = await import('../lib/air-quality/waqi-client');
     const mockTimeoutFetch = vi.fn().mockRejectedValue(new Error('AbortError: Request timed out'));

@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { getAirQualityByLocation } from '@/lib/air-quality/service';
 import type { AirQualityReport } from '@/lib/air-quality/types';
 
-describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () => {
+describe('Live air quality for five Indian cities via Open-Meteo (no Google key)', () => {
   const originalKey = process.env.GOOGLE_MAPS_API_KEY;
 
-  it('fetches real live air quality for all 5 evaluator cities via Open-Meteo default', async () => {
+  it('fetches real-time air quality for all five cities through the default Open-Meteo source', async () => {
     delete process.env.GOOGLE_MAPS_API_KEY;
 
     const places = [
@@ -55,10 +55,8 @@ describe('Real Live Requests for 5 Evaluator Cities (Without Google Key)', () =>
       });
     }
 
-    console.log(
-      'REAL LIVE QUERY RESULTS FOR 5 EVALUATOR CITIES:\n',
-      JSON.stringify(results, null, 2)
-    );
+    expect(results).toHaveLength(places.length);
+    expect(new Set(results.map((r) => r.resolvedLocation)).size).toBe(places.length);
 
     process.env.GOOGLE_MAPS_API_KEY = originalKey;
   }, 30000);

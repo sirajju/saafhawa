@@ -44,11 +44,7 @@ export function DashboardHeader({
         </div>
 
         {onOpenAdvisoryModal && (
-          <button
-            type="button"
-            onClick={onOpenAdvisoryModal}
-            className="btn hide-sm"
-          >
+          <button type="button" onClick={onOpenAdvisoryModal} className="btn hide-sm">
             <ShareIcon className="icon" />
             <span>Share with society</span>
             <span className="sr-only"> (advisory for {shortPlace})</span>

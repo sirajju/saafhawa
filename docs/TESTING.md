@@ -7,7 +7,7 @@ This document records the testing architecture of **SaafHawa** with exact, unedi
 ### 1. Test Architecture Overview
 
 - **Unit & Integration Suite (Vitest with v8 Coverage):** 302 automated tests across 75 test files in [`src/test/`](../src/test/) covering schemas, rate limiters, deterministic physics, Gemini client resilience, model fallback chains, CPCB AQI breakpoints, time zones, and accessible components. Executed via `npm test` or `npm run test:coverage`.
-- **Live Network Suite (Vitest Live):** Dedicated live network integration in [`src/test/live-evaluator-queries.test.ts`](../src/test/live-evaluator-queries.test.ts) querying real Open-Meteo APIs for 5 evaluator cities without API keys. Executed via `npm run test:live`.
+- **Live Network Suite (Vitest Live):** Dedicated live network integration in [`src/test/air-quality-live-cities.test.ts`](../src/test/air-quality-live-cities.test.ts) querying real Open-Meteo APIs for five Indian cities without API keys. Executed via `npm run test:live`.
 - **End-to-End Suite (Playwright):** 19 browser tests across 6 spec files in [`e2e/`](../e2e/) validating onboarding, dashboard, theme switching, typography, and responsive layouts at 390px and 1440px. Executed via `npm run test:e2e`. Live network chat tests tagged `@live` are isolated and executed via `npm run test:e2e:live`.
 - **Screenshot Automation:** Headless screenshot capture script in [`scripts/capture-screenshots.ts`](../scripts/capture-screenshots.ts) executed via `npm run capture-screenshots`.
 
@@ -49,7 +49,7 @@ Thresholds: Statements >= 78%, Branches >= 68%, Functions >= 72%, Lines >= 80% (
 > saafhawa@0.1.0 test:live
 > vitest run --config vitest.live.config.mts
 
- ✓ src/test/live-evaluator-queries.test.ts (1 test)
+ ✓ src/test/air-quality-live-cities.test.ts (1 test)
  Test Files  1 passed (1)
       Tests  1 passed (1)
    Duration  5.36s
@@ -147,11 +147,11 @@ _(Note: Live network chat queries are tagged `@live` and run via `npm run test:e
 | `src/test/gemini-utils.test.ts`                      | Promise timeouts and text length bounding for Gemini responses                      |
 | `src/test/household-personalization.test.ts`         | Household sizing, vulnerable members, commute profile adaptation                    |
 | `src/test/impact-catalogue.test.ts`                  | Catalogue integrity, fitted N95 efficiency, outdoor exercise shifts                 |
-| `src/test/impact-corrections.test.ts`                | Sequential overlap discounting, dose baseline bounds, zero PM2.5 handling           |
+| `src/test/impact-calculation.test.ts`                | Sequential overlap discounting, dose baseline bounds, zero PM2.5 handling           |
 | `src/test/impact-edge-cases.test.ts`                 | Non-car households, clean ambient air baseline, occupant scaling                    |
 | `src/test/impact-indoor-swaps.test.ts`               | HEPA filtration, exhaust ventilation, incense cessation, transit swaps              |
 | `src/test/impact-priority.test.ts`                   | Action priority sorting to prevent commute double-counting                          |
-| `src/test/live-evaluator-queries.test.ts`            | Live network queries for 5 cities via Open-Meteo (`npm run test:live`)              |
+| `src/test/air-quality-live-cities.test.ts`           | Live network queries for 5 cities via Open-Meteo (`npm run test:live`)              |
 | `src/test/logger-control-flow.test.ts`               | Next.js prerender bailout passthrough, key redaction in error logs                  |
 | `src/test/measurement-time-utc.test.tsx`             | Server UTC vs local time zone formatting agreement                                  |
 | `src/test/mobile-guidance-visibility.test.tsx`       | Mobile guidance visibility without scrolling at 390px viewport                      |
@@ -185,7 +185,7 @@ _(Note: Live network chat queries are tagged `@live` and run via `npm run test:e
 | `src/test/use-focus-trap.test.tsx`                   | Modal focus trapping, tab wrapping, escape handler, focus restoration               |
 | `src/test/use-onboarding-location.test.tsx`          | Browser geolocation hook, error recovery, reverse geocoding                         |
 | `src/test/waqi-client.test.ts`                       | WAQI CPCB ground station querying, fallback to Open-Meteo                           |
-| `src/test/waqi-network.test.ts`                      | WAQI timeout handling and reverse geocode cache verification                        |
+| `src/test/waqi-and-reverse-geocode-caching.test.ts`  | WAQI timeout handling and reverse geocode cache verification                        |
 | `e2e/dashboard-styling.spec.ts`                      | Desktop 1440px plan card title width, scale bar colors, theme buttons, fixed switch |
 | `e2e/modals-and-security.spec.ts`                    | Mobile chat sheet, advisory modal, and live HTTP security headers                   |
 | `e2e/onboarding-layout.spec.ts`                      | Phone 390px wrap padding, outline suppression, and SVG text sizing                  |
