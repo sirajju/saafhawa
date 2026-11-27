@@ -1,5 +1,5 @@
 import { redact } from '../logger';
-import { MS_PER_DAY } from '@/lib/constants';
+import { MS_PER_DAY } from '../constants';
 
 export interface QuotaAnalysis {
   isQuota: boolean;
@@ -54,39 +54,47 @@ export function isGeminiConfigError(error: unknown): boolean {
   );
 }
 
-export function parseGeminiQuotaError(error: unknown): QuotaAnalysis {
-  if (!error) return { isQuota: false, isDailyQuota: false };
-  const rawMsg =
-    error instanceof Error
-      ? error.message
-      : error && typeof error === 'object' && 'message' in error
-        ? String((error as { message: unknown }).message)
-        : String(error || '');
-  const lower = rawMsg.toLowerCase();
-  const errObj = error as {
-    status?: number;
-    code?: number | string;
-    details?: Array<Record<string, unknown>>;
-    errorDetails?: Array<Record<string, unknown>>;
-  };
+type GeminiErrorShape = {
+  status?: number;
+  code?: number | string;
+  details?: Array<Record<string, unknown>>;
+  errorDetails?: Array<Record<string, unknown>>;
+};
 
-  const details = Array.isArray(errObj.details)
-    ? errObj.details
-    : Array.isArray(errObj.errorDetails)
-      ? errObj.errorDetails
-      : [];
+const DAILY_MESSAGE_MARKERS = ['per day', 'per-day', 'daily', 'requests_per_day', 'perday'];
+const DAILY_METADATA_MARKERS = ['per_day', 'perday', 'requests_per_day', 'daily'];
+/** A retry delay longer than a minute means a daily (not per-minute) limit. */
+const DAILY_RETRY_THRESHOLD_MS = 60000;
 
+function readErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String((error as { message: unknown }).message);
+  }
+  return String(error || '');
+}
+
+function readErrorDetails(errObj: GeminiErrorShape): Array<Record<string, unknown>> {
+  if (Array.isArray(errObj.details)) return errObj.details;
+  return Array.isArray(errObj.errorDetails) ? errObj.errorDetails : [];
+}
+
+function isQuotaFailure(errObj: GeminiErrorShape, lower: string): boolean {
   const is429 =
     errObj.status === 429 ||
     errObj.code === 429 ||
     lower.includes('429') ||
     lower.includes('resource_exhausted');
-  const isQuota = is429 || lower.includes('quota') || lower.includes('rate limit');
-  if (!isQuota) return { isQuota: false, isDailyQuota: false };
+  return is429 || lower.includes('quota') || lower.includes('rate limit');
+}
 
+/** Reads the retry delay and any daily-quota marker from google.rpc error details. */
+function readDetailSignals(details: Array<Record<string, unknown>>): {
+  retryDelayMs?: number;
+  hasDailyMetadata: boolean;
+} {
   let retryDelayMs: number | undefined;
   let hasDailyMetadata = false;
-
   for (const d of details) {
     if (d.retryDelay && typeof d.retryDelay === 'string') {
       const sec = parseFloat(d.retryDelay);
@@ -94,30 +102,34 @@ export function parseGeminiQuotaError(error: unknown): QuotaAnalysis {
     }
     if (d.metadata && typeof d.metadata === 'object') {
       const metaStr = JSON.stringify(d.metadata).toLowerCase();
-      if (
-        metaStr.includes('per_day') ||
-        metaStr.includes('perday') ||
-        metaStr.includes('requests_per_day') ||
-        metaStr.includes('daily')
-      ) {
-        hasDailyMetadata = true;
-      }
+      if (DAILY_METADATA_MARKERS.some((m) => metaStr.includes(m))) hasDailyMetadata = true;
     }
   }
+  return { retryDelayMs, hasDailyMetadata };
+}
 
-  if (retryDelayMs === undefined) {
-    const delayMatch = rawMsg.match(/retry(?:Delay| after)?[:\s]+(\d+(?:\.\d+)?)\s*s/i);
-    if (delayMatch) retryDelayMs = parseFloat(delayMatch[1]) * 1000;
-  }
+function readDelayFromMessage(rawMsg: string): number | undefined {
+  const delayMatch = rawMsg.match(/retry(?:Delay| after)?[:\s]+(\d+(?:\.\d+)?)\s*s/i);
+  return delayMatch ? parseFloat(delayMatch[1]) * 1000 : undefined;
+}
 
+/**
+ * Classifies a Gemini error as a per-minute or daily quota failure and extracts the
+ * retry delay, from structured details first and the message text second.
+ */
+export function parseGeminiQuotaError(error: unknown): QuotaAnalysis {
+  if (!error) return { isQuota: false, isDailyQuota: false };
+  const rawMsg = readErrorMessage(error);
+  const lower = rawMsg.toLowerCase();
+  const errObj = error as GeminiErrorShape;
+  if (!isQuotaFailure(errObj, lower)) return { isQuota: false, isDailyQuota: false };
+
+  const signals = readDetailSignals(readErrorDetails(errObj));
+  const retryDelayMs = signals.retryDelayMs ?? readDelayFromMessage(rawMsg);
   const isDaily =
-    hasDailyMetadata ||
-    lower.includes('per day') ||
-    lower.includes('per-day') ||
-    lower.includes('daily') ||
-    lower.includes('requests_per_day') ||
-    lower.includes('perday') ||
-    (retryDelayMs !== undefined && retryDelayMs > 60000);
+    signals.hasDailyMetadata ||
+    DAILY_MESSAGE_MARKERS.some((m) => lower.includes(m)) ||
+    (retryDelayMs !== undefined && retryDelayMs > DAILY_RETRY_THRESHOLD_MS);
 
   const resetAt = isDaily ? Date.now() + (retryDelayMs ?? MS_PER_DAY) : undefined;
   const resetTimeFormatted = resetAt

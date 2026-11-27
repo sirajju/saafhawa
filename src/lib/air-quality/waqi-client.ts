@@ -44,31 +44,20 @@ interface WaqiResponse {
   };
 }
 
-/**
- * Fetches real-time telemetry from the nearest CPCB ground monitoring station via the WAQI API.
- * WAQI Terms: Non-commercial acceptable use; mandatory attribution to WAQI and CPCB monitoring agency.
- */
-export async function fetchWaqiNearestStation(
-  latitude: number,
-  longitude: number,
-  token = env.waqiToken,
-  fetchFn: typeof fetch = fetch,
+type WaqiStationData = NonNullable<WaqiResponse['data']>;
+const UG_M3 = 'MICROGRAMS_PER_CUBIC_METER';
+
+/** Calls the WAQI feed and maps transport, rate-limit and parse failures to AirQualityError. */
+async function requestWaqiFeed(
+  url: string,
+  fetchFn: typeof fetch,
   timeoutMs?: number
-): Promise<WaqiStationResult | null> {
-  if (!token || token.trim().length === 0) {
-    return null;
-  }
-
-  const url = `${WAQI_FEED_BASE_URL}/geo:${latitude};${longitude}/?token=${encodeURIComponent(token.trim())}`;
-
+): Promise<WaqiResponse> {
   let response: Response;
   try {
     response = await safeFetch(
       url,
-      {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-      },
+      { method: 'GET', headers: { Accept: 'application/json' } },
       { fetchFn, timeoutMs }
     );
   } catch (err: unknown) {
@@ -87,7 +76,6 @@ export async function fetchWaqiNearestStation(
     logServerWarning('WaqiClient', 'WAQI API rate limit reached (HTTP 429)');
     throw new AirQualityError('Air quality service rate limit reached. Please wait a moment.', 429);
   }
-
   if (!response.ok) {
     logServerWarning('WaqiClient', `WAQI API returned HTTP status ${response.status}`);
     throw new AirQualityError(
@@ -96,9 +84,8 @@ export async function fetchWaqiNearestStation(
     );
   }
 
-  let data: WaqiResponse;
   try {
-    data = (await response.json()) as WaqiResponse;
+    return (await response.json()) as WaqiResponse;
   } catch {
     logServerWarning('WaqiClient', 'Failed to parse JSON from WAQI station');
     throw new AirQualityError(
@@ -106,42 +93,57 @@ export async function fetchWaqiNearestStation(
       502
     );
   }
+}
 
-  if (data.status !== 'ok' || !data.data) {
-    return null;
-  }
+const numberOrNull = (value: unknown): number | null => (typeof value === 'number' ? value : null);
 
-  const d = data.data;
-  const pm25Val = typeof d.iaqi?.pm25?.v === 'number' ? d.iaqi.pm25.v : null;
-  const pm10Val = typeof d.iaqi?.pm10?.v === 'number' ? d.iaqi.pm10.v : null;
-  const stationName = d.city?.name || 'Nearest CPCB Station';
-
+/** Converts a WAQI station reading into the app's CPCB-based current conditions. */
+function toCurrentAirQuality(d: WaqiStationData, stationName: string): CurrentAirQuality {
+  const pm25Val = numberOrNull(d.iaqi?.pm25?.v);
+  const pm10Val = numberOrNull(d.iaqi?.pm10?.v);
   const cpcb = calculateCpcbAqi(pm25Val, pm10Val);
-  const aqiScore = typeof d.aqi === 'number' ? d.aqi : cpcb.aqi;
 
-  const current: CurrentAirQuality = {
+  return {
     dateTime: d.time?.iso || new Date().toISOString(),
-    aqi: aqiScore,
+    aqi: typeof d.aqi === 'number' ? d.aqi : cpcb.aqi,
     category: cpcb.category,
     dominantPollutant:
       d.dominentpol === 'pm25' || d.dominentpol === 'pm10' ? d.dominentpol : cpcb.dominantPollutant,
     indexCode: 'ind_cpcb',
     indexDisplayName: 'AQI (hourly estimate, CPCB breakpoints)',
-    pm25: pm25Val !== null ? { value: pm25Val, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
-    pm10: pm10Val !== null ? { value: pm10Val, units: 'MICROGRAMS_PER_CUBIC_METER' } : null,
+    pm25: pm25Val !== null ? { value: pm25Val, units: UG_M3 } : null,
+    pm10: pm10Val !== null ? { value: pm10Val, units: UG_M3 } : null,
     dataSource: `CPCB Ground Station (${stationName})`,
     attribution: `Ground sensor data from ${stationName} via World Air Quality Index Project (waqi.info) under acceptable use terms`,
   };
+}
 
-  const stationGeo = d.city?.geo;
-  const stationLat = Array.isArray(stationGeo) && stationGeo.length >= 2 ? stationGeo[0] : latitude;
-  const stationLon =
-    Array.isArray(stationGeo) && stationGeo.length >= 2 ? stationGeo[1] : longitude;
+/**
+ * Fetches real-time telemetry from the nearest CPCB ground monitoring station via the WAQI API.
+ * WAQI Terms: Non-commercial acceptable use; mandatory attribution to WAQI and CPCB monitoring agency.
+ */
+export async function fetchWaqiNearestStation(
+  latitude: number,
+  longitude: number,
+  token = env.waqiToken,
+  fetchFn: typeof fetch = fetch,
+  timeoutMs?: number
+): Promise<WaqiStationResult | null> {
+  if (!token || token.trim().length === 0) return null;
+
+  const url = `${WAQI_FEED_BASE_URL}/geo:${latitude};${longitude}/?token=${encodeURIComponent(token.trim())}`;
+  const data = await requestWaqiFeed(url, fetchFn, timeoutMs);
+  if (data.status !== 'ok' || !data.data) return null;
+
+  const d = data.data;
+  const stationName = d.city?.name || 'Nearest CPCB Station';
+  const geo = d.city?.geo;
+  const hasGeo = Array.isArray(geo) && geo.length >= 2;
 
   return {
-    current,
+    current: toCurrentAirQuality(d, stationName),
     stationName,
-    latitude: stationLat,
-    longitude: stationLon,
+    latitude: hasGeo ? geo[0] : latitude,
+    longitude: hasGeo ? geo[1] : longitude,
   };
 }

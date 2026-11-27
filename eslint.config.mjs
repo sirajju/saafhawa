@@ -33,6 +33,16 @@ const eslintConfig = defineConfig([
       eqeqeq: ['error', 'always'],
     },
   },
+  {
+    // Ceilings for application code, set at the measured maximum so they can only go down.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/test/**'],
+    rules: {
+      complexity: ['error', 30],
+      'max-depth': ['error', 4],
+      'max-params': ['error', 5],
+    },
+  },
 ]);
 
 export default eslintConfig;

@@ -1,9 +1,10 @@
 import { type PlanRequest } from './plan/types';
+import { getAqiBand } from './aqi-band';
 
 /**
  * SaafHawa Calm Health Design System
  *
- * Strict alignment with saafhawa-design-reference.html:
+ * Tokens are defined in src/app/styles/tokens.css:
  * - Off-white (#f6f5f1) in light, near-black (#0e1013) in dark
  * - Three text colours: ink, ink-2, ink-3
  * - One brand color: deep teal (#0e5a55 in light, #5fc4b8 in dark)
@@ -12,74 +13,20 @@ import { type PlanRequest } from './plan/types';
  * - Corner radius: 16px cards, 10–12px controls, full pill for chips
  */
 
+/** CSS colour token for an AQI reading, e.g. "var(--aqi-poor)". */
 export function getAqiCategoryCssVar(
   aqi: number | null | undefined,
   category?: string | null
 ): string {
-  const normCategory = (category || '').toLowerCase();
-  if (
-    normCategory.includes('severe') ||
-    normCategory.includes('hazardous') ||
-    (typeof aqi === 'number' && aqi > 400)
-  ) {
-    return 'var(--aqi-severe)';
-  }
-  if (
-    normCategory.includes('very poor') ||
-    normCategory.includes('very unhealthy') ||
-    (typeof aqi === 'number' && aqi > 300)
-  ) {
-    return 'var(--aqi-vpoor)';
-  }
-  if (
-    normCategory.includes('poor') ||
-    normCategory.includes('unhealthy') ||
-    (typeof aqi === 'number' && aqi > 200)
-  ) {
-    return 'var(--aqi-poor)';
-  }
-  if (normCategory.includes('moderate') || (typeof aqi === 'number' && aqi > 100)) {
-    return 'var(--aqi-mod)';
-  }
-  if (normCategory.includes('satisfactory') || (typeof aqi === 'number' && aqi > 50)) {
-    return 'var(--aqi-sat)';
-  }
-  return 'var(--aqi-good)';
+  return `var(--aqi-${getAqiBand(aqi, category)})`;
 }
 
+/** Soft (background) CSS colour token for an AQI reading, e.g. "var(--aqi-poor-soft)". */
 export function getAqiCategorySoftCssVar(
   aqi: number | null | undefined,
   category?: string | null
 ): string {
-  const normCategory = (category || '').toLowerCase();
-  if (
-    normCategory.includes('severe') ||
-    normCategory.includes('hazardous') ||
-    (typeof aqi === 'number' && aqi > 400)
-  ) {
-    return 'var(--aqi-severe-soft)';
-  }
-  if (
-    normCategory.includes('very poor') ||
-    normCategory.includes('very unhealthy') ||
-    (typeof aqi === 'number' && aqi > 300)
-  ) {
-    return 'var(--aqi-vpoor-soft)';
-  }
-  if (
-    normCategory.includes('poor') ||
-    normCategory.includes('unhealthy') ||
-    (typeof aqi === 'number' && aqi > 200)
-  ) {
-    return 'var(--aqi-poor-soft)';
-  }
-  if (normCategory.includes('moderate') || (typeof aqi === 'number' && aqi > 100)) {
-    return 'var(--aqi-mod-soft)';
-  }
-  if (normCategory.includes('satisfactory') || (typeof aqi === 'number' && aqi > 50)) {
-    return 'var(--aqi-sat-soft)';
-  }
-  return 'var(--aqi-good-soft)';
+  return `var(--aqi-${getAqiBand(aqi, category)}-soft)`;
 }
 
 /** Neutral label when no place is known yet; SaafHawa covers all of India. */

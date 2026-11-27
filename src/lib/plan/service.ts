@@ -159,15 +159,15 @@ export async function generateHouseholdPlan(
   selectedActions = resolvePlanConsistency(selectedActions, profile, airQualityContext);
   selectedActions = pruneCleanAirActions(selectedActions, isCleanAir, catalogueMap);
 
-  const { plannedActions, summary } = buildPlannedActionsAndSummary(
+  const { plannedActions, summary } = buildPlannedActionsAndSummary({
     selectedActions,
     profile,
-    airQuality.current.aqi,
+    airQualityAqi: airQuality.current.aqi,
     airQualityContext,
     catalogueMap,
     cleanestWindowSpan,
-    isCleanAir
-  );
+    isCleanAir,
+  });
 
   const planResult: PlanResponse = {
     location: airQuality.location,

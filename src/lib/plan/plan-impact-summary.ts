@@ -10,69 +10,108 @@ import {
   type PlanSummary,
 } from './types';
 
-export function buildPlannedActionsAndSummary(
-  selectedActions: GeminiSelectedAction[],
+export interface PlanImpactInput {
+  selectedActions: GeminiSelectedAction[];
+  profile: PlanRequest;
+  airQualityAqi: number | null | undefined;
+  airQualityContext: AirQualityContext;
+  catalogueMap: Map<string, ActionDefinition>;
+  cleanestWindowSpan: string;
+  isCleanAir: boolean;
+}
+
+/** Actions whose best time is the day's cleanest forecast window. */
+const CLEANEST_WINDOW_ACTIONS = new Set([
+  'ventilate_at_cleanest_afternoon_hour',
+  'shift_outdoor_exercise_to_cleanest_hour',
+  'senior_indoor_morning_walk',
+]);
+
+function resolveTimeOfDay(
+  actionId: string,
+  suggested: string,
   profile: PlanRequest,
-  airQualityAqi: number | null | undefined,
-  airQualityContext: AirQualityContext,
-  catalogueMap: Map<string, ActionDefinition>,
-  cleanestWindowSpan: string,
-  isCleanAir: boolean
-): { plannedActions: PlannedAction[]; summary: PlanSummary } {
-  const actionImpacts: ActionImpactResult[] = [];
-  const plannedActions: PlannedAction[] = selectedActions.map((selected) => {
-    const actionDef = catalogueMap.get(selected.actionId)!;
-    const impact = calculateActionImpact(actionDef, profile, airQualityContext);
-    actionImpacts.push(impact);
+  cleanestWindowSpan: string
+): string {
+  if (actionId === 'wear_n95_mask_outside' && profile.commutersCount === 0) {
+    return 'Any outdoor walks or errands';
+  }
+  if (
+    CLEANEST_WINDOW_ACTIONS.has(actionId) &&
+    (!suggested || suggested.toLowerCase().includes('midday'))
+  ) {
+    return `Cleanest window (${cleanestWindowSpan})`;
+  }
+  return suggested;
+}
 
-    const basisExplanation = generateBasisExplanation(
-      actionDef.id,
-      profile,
-      airQualityAqi,
-      cleanestWindowSpan
+/** On clean-air days, removes smog wording the model may have used in its reason. */
+function adaptReasonToAir(reason: string, isCleanAir: boolean): string {
+  if (!isCleanAir) return reason;
+  return reason
+    .replace(/severe smog/gi, 'outdoor pollution')
+    .replace(
+      /ground-level temperature inversion concentrates severe smog outdoors/gi,
+      'routine respiratory hygiene'
     );
-    let timeOfDay = selected.suggestedTimeOfDay;
-    if (actionDef.id === 'wear_n95_mask_outside' && profile.commutersCount === 0) {
-      timeOfDay = 'Any outdoor walks or errands';
-    } else if (
-      (actionDef.id === 'ventilate_at_cleanest_afternoon_hour' ||
-        actionDef.id === 'shift_outdoor_exercise_to_cleanest_hour' ||
-        actionDef.id === 'senior_indoor_morning_walk') &&
-      (!timeOfDay || timeOfDay.toLowerCase().includes('midday'))
-    ) {
-      timeOfDay = `Cleanest window (${cleanestWindowSpan})`;
-    }
+}
 
-    return {
-      actionId: actionDef.id,
-      title: actionDef.title,
-      description: actionDef.description,
-      category: actionDef.category,
-      suggestedTimeOfDay: timeOfDay,
-      reason: isCleanAir
-        ? selected.reason
-            .replace(/severe smog/gi, 'outdoor pollution')
-            .replace(
-              /ground-level temperature inversion concentrates severe smog outdoors/gi,
-              'routine respiratory hygiene'
-            )
-        : selected.reason,
-      basisExplanation,
-      costRupees: actionDef.costRupees ?? 0,
-      costLabel: actionDef.costLabel ?? 'Free (₹0)',
-      exposureReduction: impact.exposureReduction,
-      emissionReduction: impact.emissionReduction,
-      methodologyNotes: impact.methodologyNotes,
-    };
+function buildPlannedAction(
+  selected: GeminiSelectedAction,
+  actionDef: ActionDefinition,
+  impact: ActionImpactResult,
+  input: PlanImpactInput
+): PlannedAction {
+  return {
+    actionId: actionDef.id,
+    title: actionDef.title,
+    description: actionDef.description,
+    category: actionDef.category,
+    suggestedTimeOfDay: resolveTimeOfDay(
+      actionDef.id,
+      selected.suggestedTimeOfDay,
+      input.profile,
+      input.cleanestWindowSpan
+    ),
+    reason: adaptReasonToAir(selected.reason, input.isCleanAir),
+    basisExplanation: generateBasisExplanation(
+      actionDef.id,
+      input.profile,
+      input.airQualityAqi,
+      input.cleanestWindowSpan
+    ),
+    costRupees: actionDef.costRupees ?? 0,
+    costLabel: actionDef.costLabel ?? 'Free (₹0)',
+    exposureReduction: impact.exposureReduction,
+    emissionReduction: impact.emissionReduction,
+    methodologyNotes: impact.methodologyNotes,
+  };
+}
+
+/**
+ * Attaches deterministic impact numbers to each selected action, orders free actions
+ * first, and totals the household savings without double counting overlapping actions.
+ */
+export function buildPlannedActionsAndSummary(input: PlanImpactInput): {
+  plannedActions: PlannedAction[];
+  summary: PlanSummary;
+} {
+  const actionImpacts: ActionImpactResult[] = [];
+  const plannedActions: PlannedAction[] = input.selectedActions.flatMap((selected) => {
+    const actionDef = input.catalogueMap.get(selected.actionId);
+    if (!actionDef) return [];
+    const impact = calculateActionImpact(actionDef, input.profile, input.airQualityContext);
+    actionImpacts.push(impact);
+    return [buildPlannedAction(selected, actionDef, impact, input)];
   });
 
-  plannedActions.sort(
-    (a, b) => ((a.costRupees ?? 0) > 0 ? 1 : 0) - ((b.costRupees ?? 0) > 0 ? 1 : 0)
-  );
+  const isPaid = (action: PlannedAction) => ((action.costRupees ?? 0) > 0 ? 1 : 0);
+  plannedActions.sort((a, b) => isPaid(a) - isPaid(b));
+
   const deduped = calculateDeduplicatedTotals(
     actionImpacts,
-    profile,
-    airQualityContext.currentPm25
+    input.profile,
+    input.airQualityContext.currentPm25
   );
 
   const summary: PlanSummary = {

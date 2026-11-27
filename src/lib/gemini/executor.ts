@@ -1,13 +1,10 @@
-import {
-  modelExhaustionMap,
-  sanitizeErrorMessage,
-  isFatalGeminiError,
-  isGeminiConfigError,
-  parseGeminiQuotaError,
-  isTransientGeminiError,
-} from './quota';
+import { modelExhaustionMap } from './quota';
+import { decideAfterError, recordDailyReset, type RetryState } from './retry-policy';
 import { logServerWarning } from '../logger';
-import { TIMERS, MS_PER_DAY, FALLBACK_REASONS, type FallbackReason } from '../constants';
+import { TIMERS, FALLBACK_REASONS, type FallbackReason } from '../constants';
+
+const DEFAULT_MODEL = 'gemini-flash-lite-latest';
+const MIN_REMAINING_MS = 1000;
 
 export interface GeminiRetryOptions<T> {
   models?: string[];
@@ -41,6 +38,82 @@ export function deriveFallbackReason(
   return FALLBACK_REASONS.MODEL_ERROR;
 }
 
+function resolveModelOrder(
+  options: Pick<GeminiRetryOptions<unknown>, 'models' | 'primaryModel' | 'fallbackModel'>
+): string[] {
+  const candidates =
+    options.models && options.models.length > 0
+      ? options.models.map((m) => m.trim()).filter(Boolean)
+      : [options.primaryModel, options.fallbackModel].filter((m): m is string =>
+          Boolean(m && m.trim())
+        );
+  return Array.from(new Set(candidates.length > 0 ? candidates : [DEFAULT_MODEL]));
+}
+
+/** Skips a model whose daily quota is known to be exhausted; records when it resets. */
+function isModelExhausted(model: string, label: string, state: RetryState): boolean {
+  const exhaustedUntil = modelExhaustionMap.get(model);
+  if (!exhaustedUntil || Date.now() >= exhaustedUntil) return false;
+  logServerWarning(
+    label,
+    `Model ${model} is exhausted until ${new Date(exhaustedUntil).toLocaleTimeString()} (skipping).`
+  );
+  recordDailyReset(state, exhaustedUntil);
+  return true;
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+type ModelOutcome<T> =
+  | { kind: 'success'; data: T }
+  | { kind: 'fatal'; error: unknown }
+  | { kind: 'exhausted' };
+
+/** Runs up to maxRetries + 1 attempts on one model, following the retry policy. */
+async function runModelAttempts<T>(
+  model: string,
+  options: GeminiRetryOptions<T>,
+  deadline: number,
+  state: RetryState & { lastError: unknown }
+): Promise<ModelOutcome<T>> {
+  const label = options.label || 'Gemini';
+  const maxRetries = options.maxRetriesPerModel ?? 2;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs < MIN_REMAINING_MS) break;
+
+    try {
+      const data = await options.fn(model, Math.min(TIMERS.GEMINI_CALL_TIMEOUT_MS, remainingMs));
+      if (data !== null && data !== undefined) return { kind: 'success', data };
+    } catch (err: unknown) {
+      state.lastError = err;
+      const decision = decideAfterError(
+        err,
+        {
+          label,
+          model,
+          attempt,
+          maxRetries,
+          deadline,
+          apiKey: options.apiKey,
+          initialBackoffMs: options.initialBackoffMs ?? 500,
+        },
+        state
+      );
+      if (decision.kind === 'fatal') return { kind: 'fatal', error: err };
+      if (decision.kind === 'next_model') break;
+      if (decision.waitMs > 0) await sleep(decision.waitMs);
+    }
+  }
+  return { kind: 'exhausted' };
+}
+
+/**
+ * Calls Gemini through an ordered model chain with bounded retries, a total deadline,
+ * per-minute rate-limit waits and daily-quota tracking. Never throws: failures are
+ * reported in the result so callers can fall back to rule-based output.
+ */
 export async function executeWithGeminiRetry<T>(
   options: GeminiRetryOptions<T>
 ): Promise<GeminiExecutionResult<T>> {
@@ -51,114 +124,36 @@ export async function executeWithGeminiRetry<T>(
       TIMERS.GEMINI_TOTAL_TIMEOUT_MS,
       options.totalTimeoutMs ?? TIMERS.GEMINI_TOTAL_TIMEOUT_MS
     );
-  const candidateModels: string[] =
-    options.models && options.models.length > 0
-      ? options.models.map((m) => m.trim()).filter(Boolean)
-      : [options.primaryModel, options.fallbackModel].filter((m): m is string =>
-          Boolean(m && m.trim())
-        );
-  const models = Array.from(
-    new Set(candidateModels.length > 0 ? candidateModels : ['gemini-flash-lite-latest'])
-  );
+  const state: RetryState & { lastError: unknown } = {
+    failedDueToBusy: false,
+    failedDueToDailyQuota: false,
+    lastError: null,
+  };
 
-  let lastError: unknown = null;
-  let failedDueToBusy = false;
-  let failedDueToDailyQuota = false;
-  let latestDailyResetAt: number | undefined;
+  for (const model of resolveModelOrder(options)) {
+    if (isModelExhausted(model, label, state)) continue;
 
-  for (let modelIdx = 0; modelIdx < models.length; modelIdx++) {
-    const model = models[modelIdx];
-
-    const exhaustedUntil = modelExhaustionMap.get(model);
-    if (exhaustedUntil && Date.now() < exhaustedUntil) {
-      logServerWarning(
-        label,
-        `Model ${model} is exhausted until ${new Date(exhaustedUntil).toLocaleTimeString()} (skipping).`
-      );
-      failedDueToDailyQuota = true;
-      latestDailyResetAt = Math.max(latestDailyResetAt || 0, exhaustedUntil);
-      continue;
+    const outcome = await runModelAttempts(model, options, deadline, state);
+    if (outcome.kind === 'success') {
+      return { data: outcome.data, modelUsed: model, failedDueToBusy: false };
     }
-
-    const maxRetries = options.maxRetriesPerModel ?? 2;
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      const remainingMs = deadline - Date.now();
-      if (remainingMs < 1000) break;
-
-      try {
-        const timeoutForCall = Math.min(TIMERS.GEMINI_CALL_TIMEOUT_MS, remainingMs);
-        const data = await options.fn(model, timeoutForCall);
-        if (data !== null && data !== undefined) {
-          return { data, modelUsed: model, failedDueToBusy: false };
-        }
-      } catch (err: unknown) {
-        lastError = err;
-
-        if (isFatalGeminiError(err)) {
-          logServerWarning(label, `Fatal auth error: ${sanitizeErrorMessage(err, options.apiKey)}`);
-          return { data: null, error: err, failedDueToBusy: false };
-        }
-
-        if (isGeminiConfigError(err)) {
-          logServerWarning(
-            label,
-            `Configuration error on model ${model} (404/400): ${sanitizeErrorMessage(err, options.apiKey)}. Skipping retries and trying next model.`
-          );
-          break;
-        }
-
-        const quota = parseGeminiQuotaError(err);
-        if (quota.isDailyQuota) {
-          failedDueToDailyQuota = true;
-          const reset = quota.resetAt || Date.now() + MS_PER_DAY;
-          latestDailyResetAt = Math.max(latestDailyResetAt || 0, reset);
-          modelExhaustionMap.set(model, reset);
-          logServerWarning(
-            label,
-            `Daily quota exhausted on ${model} until ${new Date(reset).toLocaleTimeString()}. Switching model immediately.`
-          );
-          break;
-        }
-
-        if (quota.isQuota && !quota.isDailyQuota) {
-          failedDueToBusy = true;
-          if (attempt === 0 && quota.retryDelayMs !== undefined && quota.retryDelayMs <= 5000) {
-            logServerWarning(
-              label,
-              `Per-minute rate limit on ${model}, waiting ${quota.retryDelayMs}ms once.`
-            );
-            await new Promise((r) => setTimeout(r, quota.retryDelayMs));
-            continue;
-          }
-          logServerWarning(
-            label,
-            `Per-minute rate limit on ${model} (delay > 5s or retried). Switching model.`
-          );
-          break;
-        }
-
-        if (isTransientGeminiError(err)) {
-          failedDueToBusy = true;
-          if (attempt < maxRetries) {
-            const delay = (options.initialBackoffMs ?? 500) * Math.pow(2, attempt);
-            if (Date.now() + delay < deadline) await new Promise((r) => setTimeout(r, delay));
-          }
-        } else {
-          break;
-        }
-      }
+    if (outcome.kind === 'fatal') {
+      return { data: null, error: outcome.error, failedDueToBusy: false };
     }
   }
 
-  const resetTimeString = latestDailyResetAt
-    ? new Date(latestDailyResetAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  const resetTimeString = state.latestDailyResetAt
+    ? new Date(state.latestDailyResetAt).toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+      })
     : undefined;
 
   return {
     data: null,
-    error: lastError,
-    failedDueToBusy: failedDueToBusy && !failedDueToDailyQuota,
-    failedDueToDailyQuota,
+    error: state.lastError,
+    failedDueToBusy: state.failedDueToBusy && !state.failedDueToDailyQuota,
+    failedDueToDailyQuota: state.failedDueToDailyQuota,
     dailyQuotaResetTime: resetTimeString,
   };
 }

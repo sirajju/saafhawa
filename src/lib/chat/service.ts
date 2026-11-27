@@ -30,15 +30,26 @@ export type ChatInput = Omit<ChatRequest, 'conversationHistory'> & {
   conversationHistory?: ChatMessage[];
 };
 
-async function runGeminiConversation(
-  ai: GoogleGenAI,
-  activeModel: string,
-  request: ChatRequest,
-  systemInstruction: string,
-  fetcher: (place: string) => Promise<AirQualityReport>,
-  toolsExecuted: ExecutedToolRecord[],
-  totalBudgetMs: number = TIMERS.CHAT_BUDGET_MS
-): Promise<string> {
+interface ConversationContext {
+  ai: GoogleGenAI;
+  activeModel: string;
+  request: ChatRequest;
+  systemInstruction: string;
+  fetcher: (place: string) => Promise<AirQualityReport>;
+  toolsExecuted: ExecutedToolRecord[];
+  totalBudgetMs?: number;
+}
+
+/** Runs one Gemini chat turn, executing up to two rounds of tool calls within the time budget. */
+async function runGeminiConversation({
+  ai,
+  activeModel,
+  request,
+  systemInstruction,
+  fetcher,
+  toolsExecuted,
+  totalBudgetMs = TIMERS.CHAT_BUDGET_MS,
+}: ConversationContext): Promise<string> {
   const contents: Content[] = [];
   const history = request.conversationHistory || [];
   for (const msg of history.slice(-TEXT_LIMITS.CHAT_HISTORY_TURNS)) {
@@ -146,15 +157,15 @@ export async function handleChatQuery(
     label: 'ChatService',
     totalTimeoutMs: TIMERS.CHAT_BUDGET_MS,
     fn: async (activeModel, timeoutMs) => {
-      return runGeminiConversation(
+      return runGeminiConversation({
         ai,
         activeModel,
         request,
         systemInstruction,
         fetcher,
         toolsExecuted,
-        timeoutMs
-      );
+        totalBudgetMs: timeoutMs,
+      });
     },
   });
 

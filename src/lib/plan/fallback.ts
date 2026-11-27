@@ -5,6 +5,7 @@ import { type AirQualityReport } from '../air-quality/types';
 import { type GeminiSelectedAction, type PlanRequest } from './types';
 import { FALLBACK_METADATA_MAP } from './metadata';
 import { resolvePlanConsistency } from './conflict-resolver';
+import { computeProfileBoosts } from './profile-boosts';
 
 interface ActionWithImpact {
   action: ActionDefinition;
@@ -62,47 +63,6 @@ function filterApplicableActions(
     if (isZeroCost && (item.action.costRupees ?? 0) > 0) return false;
     return true;
   });
-}
-
-function computeProfileBoosts(id: string, profile: PlanRequest, isZeroCost: boolean): number {
-  let boost = 0;
-  if (profile.elderlyCount > 0) {
-    if (id === 'senior_indoor_morning_walk') boost += 55;
-    if (id === 'seniors_avoid_strenuous_outdoor') boost += 45;
-    if (id === 'wear_n95_mask_outside') boost += 20;
-  }
-  if (profile.hasAsthmaOrRespiratoryCondition) {
-    if (id === 'wear_n95_mask_outside') boost += 50;
-    if (id === 'run_hepa_air_purifier_bedroom') boost += 40;
-    if (id === 'diy_corsi_rosenthal_box') boost += 35;
-    if (id === 'seal_windows_during_peak_inversion') boost += 25;
-  }
-  if (profile.childrenCount > 0) {
-    if (id === 'keep_children_indoors_morning_smog') boost += 45;
-    if (id === 'wear_n95_mask_outside') boost += 20;
-  }
-  if (profile.usesIncenseOrMosquitoCoils && id === 'eliminate_incense_and_mosquito_coils')
-    boost += 40;
-  if (profile.hasKitchenChimneyOrExhaust && id === 'use_exhaust_fan_cooking') boost += 30;
-  if (
-    (profile.primaryCommuteMode === 'petrol_car' || profile.primaryCommuteMode === 'diesel_car') &&
-    id === 'swap_car_for_metro'
-  )
-    boost += 25;
-  if (profile.primaryCommuteMode === 'two_wheeler' && id === 'swap_two_wheeler_for_metro_or_bus')
-    boost += 35;
-  if (profile.canWorkFromHome && id === 'work_from_home_on_smog_days') boost += 30;
-  if (profile.cookingFuel === 'biomass') {
-    if (
-      id === 'cook_with_kitchen_cross_ventilation' ||
-      id === 'keep_vulnerable_out_of_chulha_kitchen'
-    )
-      boost += 55;
-    if (id === 'use_dry_seasoned_chulha_fuel') boost += 50;
-    if (!isZeroCost && id === 'swap_biomass_cookstove_to_induction') boost += 50;
-  }
-  if (profile.hasGardenOrOpenWasteBurning && id === 'stop_open_waste_burning') boost += 45;
-  return boost;
 }
 
 function scoreCandidateActions(
