@@ -31,7 +31,7 @@ describe('Security - Configuration & Header Realization', () => {
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("base-uri 'self'");
     expect(csp).toContain("form-action 'self'");
-    expect(csp).toContain('upgrade-insecure-requests');
+    expect(csp).not.toContain('upgrade-insecure-requests');
   });
 
   it('defines cross-origin policies and strict referrer without COEP', () => {

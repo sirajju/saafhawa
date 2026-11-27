@@ -96,6 +96,7 @@ describe('Security - Mandatory Security Headers', () => {
     expect(SECURITY_HEADERS['Content-Security-Policy']).toContain("object-src 'none'");
     expect(SECURITY_HEADERS['Content-Security-Policy']).toContain("base-uri 'self'");
     expect(SECURITY_HEADERS['Content-Security-Policy']).toContain("form-action 'self'");
+    expect(SECURITY_HEADERS['Content-Security-Policy']).not.toContain('upgrade-insecure-requests');
     expect(SECURITY_HEADERS['Strict-Transport-Security']).toContain('max-age=');
     expect(SECURITY_HEADERS['X-Frame-Options']).toBe('DENY');
     expect(SECURITY_HEADERS['X-Content-Type-Options']).toBe('nosniff');

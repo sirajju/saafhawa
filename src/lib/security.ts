@@ -31,7 +31,6 @@ export const SECURITY_HEADERS_LIST = [
       "object-src 'none';",
       "base-uri 'self';",
       "form-action 'self';",
-      'upgrade-insecure-requests;',
     ].join(' '),
   },
 ] as const;
