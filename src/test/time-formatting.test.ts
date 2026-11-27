@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
+import { formatHourInPlaceLocalTime } from '@/lib/air-quality/time-utils';
 import { buildForecastAdvice } from '@/lib/air-quality/forecast-advice';
 
 describe('Localized Time Formatting', () => {

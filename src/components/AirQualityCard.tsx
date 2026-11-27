@@ -14,7 +14,7 @@ import {
   type ForecastAdviceHousehold,
 } from '@/lib/air-quality/forecast-advice';
 import { formatMeasurementTime } from '@/lib/air-quality/time-utils';
-import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
+import { formatHourInPlaceLocalTime } from '@/lib/air-quality/time-utils';
 
 interface AirQualityCardProps {
   location: CleanLocation;

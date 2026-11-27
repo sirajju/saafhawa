@@ -1,39 +1,10 @@
 import { getAirQualityByLocation } from '../air-quality/service';
 import { type AirQualityReport } from '../air-quality/types';
-import { formatMeasurementTime, parseDateTimeToIso } from '../air-quality/time-utils';
+import { formatMeasurementTime, formatHourInPlaceLocalTime } from '../air-quality/time-utils';
 import { ACTION_CATALOGUE } from '../impact/catalogue';
 import { calculateActionImpact } from '../impact/calculator';
 import { type HouseholdProfile, HouseholdProfileSchema } from '../impact/types';
 import { getEmissionComparisonText, getExposureComparisonText } from '../impact/comparisons';
-import { MS_PER_HOUR } from '@/lib/constants';
-
-export function formatHourInPlaceLocalTime(dateTimeIso: string, timeZone = 'Asia/Kolkata'): string {
-  const formatWithTz = (tz: string) => {
-    const iso = parseDateTimeToIso(dateTimeIso, tz);
-    const rawDate = new Date(iso);
-    if (isNaN(rawDate.getTime())) return dateTimeIso;
-    // Round odd minutes to the nearest hour (e.g. 10:04 AM -> 10 AM, 10:45 AM -> 11 AM)
-    const roundedMs = Math.round(rawDate.getTime() / MS_PER_HOUR) * MS_PER_HOUR;
-    const roundedDate = new Date(roundedMs);
-    const formatted = roundedDate.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      hour12: true,
-      timeZone: tz,
-    });
-    // Use non-breaking space between number and meridiem (e.g. 10\u00A0AM, 1\u00A0PM)
-    return formatted.replace(/\s+/g, '\u00A0');
-  };
-
-  try {
-    return formatWithTz(timeZone);
-  } catch {
-    try {
-      return formatWithTz('Asia/Kolkata');
-    } catch {
-      return dateTimeIso;
-    }
-  }
-}
 
 export interface AirQualityToolResult {
   locationName: string;

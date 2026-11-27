@@ -5,6 +5,7 @@
  * anchored in real UTC milliseconds before formatting, preventing timezone skew
  * when running in UTC server environments (such as Vercel where process.env.TZ = 'UTC').
  */
+import { MS_PER_HOUR } from '../constants';
 
 /**
  * Calculates the UTC offset in seconds for a given IANA time zone (default Asia/Kolkata).
@@ -88,5 +89,36 @@ export function formatMeasurementTime(dateTimeIso?: string, timeZone = 'Asia/Kol
     });
   } catch {
     return dateTimeIso;
+  }
+}
+
+/**
+ * Formats an ISO timestamp as a rounded local hour (e.g. "10 AM") in the place's time zone.
+ */
+export function formatHourInPlaceLocalTime(dateTimeIso: string, timeZone = 'Asia/Kolkata'): string {
+  const formatWithTz = (tz: string) => {
+    const iso = parseDateTimeToIso(dateTimeIso, tz);
+    const rawDate = new Date(iso);
+    if (isNaN(rawDate.getTime())) return dateTimeIso;
+    // Round odd minutes to the nearest hour (e.g. 10:04 AM -> 10 AM, 10:45 AM -> 11 AM)
+    const roundedMs = Math.round(rawDate.getTime() / MS_PER_HOUR) * MS_PER_HOUR;
+    const roundedDate = new Date(roundedMs);
+    const formatted = roundedDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      hour12: true,
+      timeZone: tz,
+    });
+    // Use non-breaking space between number and meridiem (e.g. 10\u00A0AM, 1\u00A0PM)
+    return formatted.replace(/\s+/g, '\u00A0');
+  };
+
+  try {
+    return formatWithTz(timeZone);
+  } catch {
+    try {
+      return formatWithTz('Asia/Kolkata');
+    } catch {
+      return dateTimeIso;
+    }
   }
 }

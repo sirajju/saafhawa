@@ -1,6 +1,6 @@
 'use client';
 
-import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
+import { formatHourInPlaceLocalTime } from '@/lib/air-quality/time-utils';
 import { ForecastChartSvg } from './forecast/ForecastChartSvg';
 
 export interface ForecastPoint {

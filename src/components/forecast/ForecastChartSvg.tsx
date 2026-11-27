@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { formatHourInPlaceLocalTime } from '@/lib/chat/tools';
+import { formatHourInPlaceLocalTime } from '@/lib/air-quality/time-utils';
 import { getAqiCategoryCssVar } from '@/lib/design-system';
 import { CHART_SVG_DIMENSIONS } from '@/lib/constants';
 
