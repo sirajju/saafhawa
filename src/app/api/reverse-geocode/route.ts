@@ -1,30 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 import { getClientIp, reverseGeocodeRateLimiter } from '@/lib/rate-limit';
 import { reverseGeocodeCoordinates } from '@/lib/air-quality/reverse-geocoder';
 import { logServerError } from '@/lib/logger';
 import { rateLimited, jsonError } from '@/lib/api/responses';
 import { TIMERS } from '@/lib/constants';
+import { ReverseGeocodeQuerySchema } from '@/lib/validation';
 
 export const maxDuration = 10;
-
-const CoordinateParamSchema = (name: string, min: number, max: number) =>
-  z
-    .string()
-    .min(1, `${name} parameter is required.`)
-    .max(40, `${name} parameter must be at most 40 characters.`)
-    .refine((val) => /^[+-]?\d+(\.\d+)?$/.test(val.trim()), {
-      message: `${name} must be a valid numeric string.`,
-    })
-    .transform((val) => Number(val))
-    .refine((num) => Number.isFinite(num) && num >= min && num <= max, {
-      message: `${name} must be a finite number between ${min} and ${max}.`,
-    });
-
-export const ReverseGeocodeQuerySchema = z.object({
-  lat: CoordinateParamSchema('Latitude', -90, 90),
-  lon: CoordinateParamSchema('Longitude', -180, 180),
-});
 
 export async function GET(request: NextRequest) {
   const clientIp = getClientIp(request);

@@ -4,11 +4,12 @@ import { getAirQualityByLocation } from '../air-quality/service';
 import { type AirQualityReport } from '../air-quality/types';
 import { formatMeasurementTime } from '../air-quality/time-utils';
 import { capTextLength, withTimeout } from '../gemini/utils';
-import { executeWithGeminiRetry } from '../gemini/executor';
+import { executeWithGeminiRetry, deriveFallbackReason } from '../gemini/executor';
 import { logServerError } from '../logger';
 import { type AdvisoryRequest, type AdvisoryResponse } from './types';
 import { generateTemplateAdvisory } from './advisory-templates';
 import { buildAdvisoryCacheKey, getCachedAdvisory, setCachedAdvisory } from '../gemini/cache';
+import { FALLBACK_REASONS } from '@/lib/constants';
 
 export interface AdvisoryGeneratorOptions {
   models?: string[];
@@ -55,7 +56,7 @@ export async function generateCommunityAdvisory(
       language: request.language,
       airQualitySnapshot: snapshot,
       generationMethod: 'template',
-      fallbackReason: 'no_key',
+      fallbackReason: FALLBACK_REASONS.NO_KEY,
     };
   }
 
@@ -116,12 +117,7 @@ REQUIREMENTS:
       return responseToReturn;
     }
 
-    let fallbackReason: AdvisoryResponse['fallbackReason'] = 'model_error';
-    if (execResult.failedDueToDailyQuota) {
-      fallbackReason = 'daily_quota_exhausted';
-    } else if (execResult.failedDueToBusy) {
-      fallbackReason = 'gemini_busy';
-    }
+    const fallbackReason = deriveFallbackReason(execResult);
 
     return {
       ...generateTemplateAdvisory(report, request.audience, request.language),
@@ -139,7 +135,7 @@ REQUIREMENTS:
       language: request.language,
       airQualitySnapshot: snapshot,
       generationMethod: 'template',
-      fallbackReason: 'model_error',
+      fallbackReason: FALLBACK_REASONS.MODEL_ERROR,
     };
   }
 }

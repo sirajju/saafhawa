@@ -7,7 +7,7 @@ import {
   isTransientGeminiError,
 } from './quota';
 import { logServerWarning } from '../logger';
-import { TIMERS, MS_PER_DAY } from '../constants';
+import { TIMERS, MS_PER_DAY, FALLBACK_REASONS, type FallbackReason } from '../constants';
 
 export interface GeminiRetryOptions<T> {
   models?: string[];
@@ -28,6 +28,17 @@ export interface GeminiExecutionResult<T> {
   failedDueToBusy: boolean;
   failedDueToDailyQuota?: boolean;
   dailyQuotaResetTime?: string;
+}
+
+/**
+ * Maps a failed Gemini execution to the fallback reason shown to the user.
+ */
+export function deriveFallbackReason(
+  result: Pick<GeminiExecutionResult<unknown>, 'failedDueToBusy' | 'failedDueToDailyQuota'>
+): FallbackReason {
+  if (result.failedDueToDailyQuota) return FALLBACK_REASONS.DAILY_QUOTA_EXHAUSTED;
+  if (result.failedDueToBusy) return FALLBACK_REASONS.GEMINI_BUSY;
+  return FALLBACK_REASONS.MODEL_ERROR;
 }
 
 export async function executeWithGeminiRetry<T>(

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PlaceSchema } from '../validation';
 
 export {
   AirQualityError,
@@ -156,11 +157,7 @@ export const AirQualityReportSchema = z.object({
 export type AirQualityReport = z.infer<typeof AirQualityReportSchema>;
 
 export const AirQualityQuerySchema = z.object({
-  place: z
-    .string()
-    .trim()
-    .min(2, 'Place name or pincode must be at least 2 characters long')
-    .max(120, 'Place name or pincode cannot exceed 120 characters'),
+  place: PlaceSchema,
 });
 
 export type AirQualityQuery = z.infer<typeof AirQualityQuerySchema>;

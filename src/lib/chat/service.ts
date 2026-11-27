@@ -4,9 +4,9 @@ import { resolveGeminiApiKey } from '../env';
 import { getAirQualityByLocation } from '../air-quality/service';
 import { type AirQualityReport } from '../air-quality/types';
 import { capTextLength, withTimeout } from '../gemini/utils';
-import { executeWithGeminiRetry } from '../gemini/executor';
+import { executeWithGeminiRetry, deriveFallbackReason } from '../gemini/executor';
 import { logServerError } from '../logger';
-import { TIMERS, TEXT_LIMITS } from '../constants';
+import { TIMERS, TEXT_LIMITS, FALLBACK_REASONS } from '../constants';
 import { CHAT_TOOLS } from './tool-declarations';
 import { executeSingleToolCall } from './tool-runner';
 import {
@@ -131,7 +131,7 @@ export async function handleChatQuery(
 
   if (!apiKey) {
     const fallback = await generateFallbackChatResponse(request, fetcher);
-    return { ...fallback, fallbackReason: 'no_key' };
+    return { ...fallback, fallbackReason: FALLBACK_REASONS.NO_KEY };
   }
 
   const systemInstruction = buildChatSystemInstruction(request.householdProfile, request.place);
@@ -161,12 +161,7 @@ export async function handleChatQuery(
   }
 
   const fallback = await generateFallbackChatResponse(request, fetcher);
-  let fallbackReason: ChatResponse['fallbackReason'] = 'model_error';
-  if (execResult.failedDueToDailyQuota) {
-    fallbackReason = 'daily_quota_exhausted';
-  } else if (execResult.failedDueToBusy) {
-    fallbackReason = 'gemini_busy';
-  }
+  const fallbackReason = deriveFallbackReason(execResult);
 
   return {
     ...fallback,

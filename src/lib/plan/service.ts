@@ -8,10 +8,10 @@ import { resolvePlanConsistency } from './conflict-resolver';
 import { pruneCleanAirActions } from './action-scoring';
 import { buildPlannedActionsAndSummary } from './plan-impact-summary';
 import { resolveForecastWindow } from './forecast-window';
-import { executeWithGeminiRetry } from '../gemini/executor';
+import { executeWithGeminiRetry, deriveFallbackReason } from '../gemini/executor';
 import { resolveGeminiModels } from '../gemini/client';
 import { resolveGeminiApiKey } from '../env';
-import { type FallbackReason } from '../constants';
+import { type FallbackReason, FALLBACK_REASONS } from '../constants';
 import { buildPlanCacheKey, getCachedPlan, setCachedPlan } from '../gemini/cache';
 import { logServerError } from '../logger';
 import {
@@ -42,7 +42,7 @@ async function tryGeminiPlanGeneration(
     return {
       selectedActions: [],
       generationMethod: 'rule_based_fallback',
-      fallbackReason: 'no_key',
+      fallbackReason: FALLBACK_REASONS.NO_KEY,
     };
   }
 
@@ -71,12 +71,8 @@ async function tryGeminiPlanGeneration(
   });
 
   if (!execResult.data) {
-    let fallbackReason: FallbackReason = 'model_error';
-    if (execResult.failedDueToDailyQuota) {
-      fallbackReason = 'daily_quota_exhausted';
-    } else if (execResult.failedDueToBusy) {
-      fallbackReason = 'gemini_busy';
-    } else {
+    const fallbackReason = deriveFallbackReason(execResult);
+    if (fallbackReason === FALLBACK_REASONS.MODEL_ERROR) {
       logServerError(
         'PlanService',
         execResult.error || new Error('Gemini plan execution failed without output'),
@@ -118,7 +114,7 @@ async function tryGeminiPlanGeneration(
   return {
     selectedActions: [],
     generationMethod: 'rule_based_fallback',
-    fallbackReason: 'model_error',
+    fallbackReason: FALLBACK_REASONS.MODEL_ERROR,
   };
 }
 

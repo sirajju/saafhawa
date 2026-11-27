@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { type FallbackReason } from '../constants';
+import { PlaceSchema } from '../validation';
 
 export const AdvisoryAudienceSchema = z.enum(['housing_society', 'school_group']);
 export const AdvisoryLanguageSchema = z.enum(['en', 'hi']);
@@ -7,11 +8,7 @@ export type AdvisoryAudience = z.infer<typeof AdvisoryAudienceSchema>;
 export type AdvisoryLanguage = z.infer<typeof AdvisoryLanguageSchema>;
 
 export const AdvisoryRequestSchema = z.object({
-  place: z
-    .string()
-    .trim()
-    .min(2, 'Place must be at least 2 characters')
-    .max(120, 'Place cannot exceed 120 characters'),
+  place: PlaceSchema,
   audience: AdvisoryAudienceSchema.default('housing_society'),
   language: AdvisoryLanguageSchema.default('en'),
 });

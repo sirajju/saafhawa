@@ -28,12 +28,6 @@ export interface ParsedEnv {
   geminiModels: string[];
   trustedProxyHops: number;
   isVercel: boolean;
-  GEMINI_API_KEY: string | undefined;
-  GOOGLE_MAPS_API_KEY: string | undefined;
-  WAQI_TOKEN: string | undefined;
-  GEMINI_MODELS: string[];
-  TRUSTED_PROXY_HOPS: number;
-  VERCEL: string | undefined;
 }
 
 export function parseEnv(raw: NodeJS.ProcessEnv = process.env): ParsedEnv {
@@ -82,18 +76,29 @@ export function parseEnv(raw: NodeJS.ProcessEnv = process.env): ParsedEnv {
     geminiModels,
     trustedProxyHops,
     isVercel,
-    GEMINI_API_KEY: geminiApiKey,
-    GOOGLE_MAPS_API_KEY: googleMapsApiKey,
-    WAQI_TOKEN: waqiToken,
-    GEMINI_MODELS: geminiModels,
-    TRUSTED_PROXY_HOPS: trustedProxyHops,
-    VERCEL: data.VERCEL,
   };
+}
+
+const ENV_KEYS = Object.keys(EnvSchema.shape) as (keyof typeof EnvSchema.shape)[];
+let cachedSignature: string | undefined;
+let cachedEnv: ParsedEnv | undefined;
+
+/**
+ * Returns the parsed environment, re-parsing only when one of the variables we read
+ * has changed (tests and local tooling can change process.env at runtime).
+ */
+function currentEnv(): ParsedEnv {
+  const signature = ENV_KEYS.map((key) => process.env[key] ?? '').join('\u0000');
+  if (!cachedEnv || signature !== cachedSignature) {
+    cachedEnv = parseEnv(process.env);
+    cachedSignature = signature;
+  }
+  return cachedEnv;
 }
 
 export const env: ParsedEnv = new Proxy({} as ParsedEnv, {
   get(_target, prop: keyof ParsedEnv) {
-    return parseEnv(process.env)[prop];
+    return currentEnv()[prop];
   },
 });
 

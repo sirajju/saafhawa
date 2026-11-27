@@ -10,18 +10,15 @@ import {
   type HourlyForecastPoint,
   type AirQualityReport,
 } from '../air-quality/types';
-import { VALIDATION_LIMITS, VALIDATION_MESSAGES, type FallbackReason } from '../constants';
+import { VALIDATION_LIMITS, type FallbackReason } from '../constants';
+import { PlaceSchema } from '../validation';
 
 // ============================================================================
 // Plan Request Schema
 // ============================================================================
 
 export const PlanRequestSchema = z.object({
-  place: z
-    .string()
-    .trim()
-    .min(VALIDATION_LIMITS.PLACE_MIN_LENGTH, VALIDATION_MESSAGES.PLACE_LENGTH)
-    .max(VALIDATION_LIMITS.PLACE_MAX_LENGTH, VALIDATION_MESSAGES.PLACE_LENGTH),
+  place: PlaceSchema,
   coordinates: z
     .string()
     .trim()

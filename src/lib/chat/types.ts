@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { PlanRequestSchema } from '../plan/types';
 import { type FallbackReason } from '../constants';
+import { PlaceSchema } from '../validation';
 
 export const ChatMessageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system']),
@@ -35,11 +36,7 @@ export const ChatRequestSchema = z.preprocess(
       .trim()
       .min(1, 'Please enter a question')
       .max(500, 'Please provide a valid question under 500 characters.'),
-    place: z
-      .string()
-      .trim()
-      .min(2, 'Place name or pincode must be at least 2 characters')
-      .max(120, 'Place cannot exceed 120 characters'),
+    place: PlaceSchema,
     householdProfile: PlanRequestSchema.optional(),
     conversationHistory: z.array(ChatMessageSchema).max(12).optional().default([]),
   })
