@@ -1,7 +1,11 @@
 {
   "name": "saafhawa",
   "version": "0.1.0",
+  "description": "GenAI winter-smog assistant for Indian families: real-time air quality, Gemini-planned low-emission routines, indoor air fixes and the measured impact of each choice.",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

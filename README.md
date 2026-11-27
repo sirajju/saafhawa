@@ -1,4 +1,4 @@
-# SaafHawa (Clean Air Assistant) 🌫️🌱
+# SaafHawa (Clean Air Assistant)
 
 Winter smog mitigation platform for households and communities. Combines real-time air quality data with living profiles to generate tailored 24-hour smog action plans, physical exposure and emission reduction arithmetic, conversational guidance via Gemini function calling, and WhatsApp community broadcast advisories.
 
@@ -83,6 +83,8 @@ Every screen identifies the active data source and measurement timestamp.
 | **Plan Consistency: Mutual Exclusivity**                           | [`src/lib/plan/conflict-resolver.ts`](src/lib/plan/conflict-resolver.ts)                                                                                                       | [`src/test/plan-consistency.test.ts`](src/test/plan-consistency.test.ts)                                                                                                         |
 | **Trusted Proxy Hops (`TRUSTED_PROXY_HOPS`)**                      | [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts)                                                                                                                               | [`src/test/rate-limit-proxy.test.ts`](src/test/rate-limit-proxy.test.ts)                                                                                                         |
 | **Security Headers (CSP, COOP, CORP)**                             | [`src/lib/security.ts`](src/lib/security.ts), [`next.config.ts`](next.config.ts)                                                                                               | [`src/test/security.test.ts`](src/test/security.test.ts), [`e2e/modals-and-security.spec.ts`](e2e/modals-and-security.spec.ts)                                                   |
+| **Prompt-Injection Guard & Role Restriction**                      | [`src/lib/gemini/prompt-safety.ts`](src/lib/gemini/prompt-safety.ts), [`src/lib/chat/types.ts`](src/lib/chat/types.ts)                                                         | [`src/test/gemini-safety.test.ts`](src/test/gemini-safety.test.ts)                                                                                                               |
+| **Automated WCAG 2.2 AA Checks (axe)**                             | [`e2e/accessibility-axe.spec.ts`](e2e/accessibility-axe.spec.ts)                                                                                                               | [`e2e/accessibility-axe.spec.ts`](e2e/accessibility-axe.spec.ts)                                                                                                                 |
 
 ---
 
@@ -117,6 +119,7 @@ cp .env.example .env.local
 | Variable                | Required? | Default / Example                                                 | Purpose                                                              |
 | :---------------------- | :-------- | :---------------------------------------------------------------- | :------------------------------------------------------------------- |
 | `GEMINI_API_KEY`        | Optional  | `AIzaSy...`                                                       | Enables Gemini plan generation, chat tools, and advisory text.       |
+| `AI_API_KEY`            | Optional  | `AIzaSy...`                                                       | Alias for `GEMINI_API_KEY` (used only if that is unset).             |
 | `GEMINI_MODELS`         | Optional  | `gemini-flash-lite-latest,gemini-2.5-flash-lite,gemini-3.8-flash` | Ordered list of models tried in sequence, skipping exhausted quotas. |
 | `GEMINI_MODEL`          | Optional  | `gemini-flash-lite-latest`                                        | Backwards-compatible primary model ID.                               |
 | `GEMINI_FALLBACK_MODEL` | Optional  | `gemini-2.5-flash-lite`                                           | Backwards-compatible fallback model ID.                              |
@@ -135,7 +138,7 @@ npm run check
 # Run unit and integration tests with coverage
 npm run test:coverage
 
-# Run live network integration test (evaluator cities)
+# Run live network integration test (five Indian cities, no keys needed)
 npm run test:live
 
 # Run Playwright end-to-end browser tests
@@ -144,6 +147,8 @@ npm run test:e2e
 # Build production bundle
 npm run build
 ```
+
+Current results (measured, see [`docs/TESTING.md`](docs/TESTING.md)): 331 unit and integration tests in 85 files, 85% statement coverage, and 27 Playwright tests including axe-core WCAG 2.2 AA scans in light and dark themes. Unit tests are hermetic: any unmocked network call fails.
 
 ---
 
@@ -175,24 +180,25 @@ npm run build
 
 1. **Deterministic Foundation:** Defined mass-balance arithmetic, CPCB breakpoints, and Zod schemas to keep AI output bounded.
 2. **Quality & Resilience:** Implemented sliding-window rate limiters, 64 KB payload boundaries, trusted proxy hops, and multi-model fallback chains.
-3. **Calm Health UX:** Transformed dense inputs into a 3-step wizard with choice chips, an SVG 24-hour forecast curve, clean timeline groupings, and isolated AQI category tokens.
-4. **Field Hardening:** Integrated server-side Nominatim reverse geocoding, Gemini daily quota tracking, and transparent fallback notices.
+3. **Usable Interface:** Turned dense inputs into a 3-step wizard with choice chips, an SVG 24-hour forecast chart, timeline groupings, and AQI colours reserved for air-quality data.
+4. **Real-World Fixes:** Added server-side Nominatim reverse geocoding, Gemini daily quota tracking, and clear fallback notices after testing in real cities.
+5. **Final Review:** An independent audit led to hermetic tests, prompt-injection guards, capped caches, axe accessibility checks, and splitting the most complex functions into tables and helpers, with characterisation tests proving identical output.
 
 ### Division of Labor
 
-- **Human Author:** Problem definition, calm health UX principles, environmental health benchmarks, testing across Indian cities, security reviews, and architectural trade-offs.
+- **Human Author:** Problem definition, interface principles, environmental health benchmarks, testing across Indian cities, security reviews, and architectural trade-offs.
 - **Generative AI:** Component and service implementation, design tokens, unit and integration test authoring, Playwright scenario generation, and accessibility compliance.
 
 ---
 
 ## 11. Documentation Index
 
-- 🏗️ [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Architectural topology, module map, and request flows.
-- 📐 [`docs/DECISIONS.md`](docs/DECISIONS.md) — Architectural design decision records and trade-offs.
-- 🛡️ [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64 KB caps, rate limiters, and proxy configurations.
-- ♿ [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) — Semantic landmarks, keyboard navigation, contrast, and focus management.
-- 🧪 [`docs/TESTING.md`](docs/TESTING.md) — Test suites, coverage summaries, and live network testing.
-- ⚡ [`docs/EFFICIENCY.md`](docs/EFFICIENCY.md) — Build asset measurements, standalone packaging, and cache bounds.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Architectural topology, module map, and request flows.
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — Architectural design decision records and trade-offs.
+- [`SECURITY.md`](SECURITY.md) — Threat models, CSP, 64 KB caps, rate limiters, and proxy configurations.
+- [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) — Semantic landmarks, keyboard navigation, contrast, and focus management.
+- [`docs/TESTING.md`](docs/TESTING.md) — Test suites, coverage summaries, and live network testing.
+- [`docs/EFFICIENCY.md`](docs/EFFICIENCY.md) — Build asset measurements, caches, timeouts and bundle boundaries.
 
 ---
 

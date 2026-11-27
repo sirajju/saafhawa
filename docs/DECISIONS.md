@@ -45,5 +45,5 @@ This document records the core architectural and design decisions made in **Saaf
 ### Decision 5: Standalone Container Output with Strict Security Headers
 
 - **Context:** Deployment to Google Cloud Run and hardened container environments.
-- **Decision:** Next.js `output: 'standalone'` is enabled in [`../next.config.ts`](../next.config.ts), generating a minimal Node.js server bundle with all security headers injected via Next.js response headers ([`../src/lib/security.ts`](../src/lib/security.ts)), including Content-Security-Policy (CSP), HSTS, X-Frame-Options, and X-Content-Type-Options.
+- **Decision:** Next.js `output: 'standalone'` is enabled in [`../next.config.ts`](../next.config.ts) for container builds (it is skipped on Vercel, which packages the app itself), generating a minimal Node.js server bundle with all security headers injected via Next.js response headers ([`../src/lib/security.ts`](../src/lib/security.ts)), including Content-Security-Policy (CSP), HSTS, X-Frame-Options, and X-Content-Type-Options.
 - **Rationale:** Drastically reduces Docker image size, removes dev dependencies from runtime containers, and ensures security policy compliance at the edge.

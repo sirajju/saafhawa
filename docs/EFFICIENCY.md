@@ -8,8 +8,8 @@ This document details the efficiency and resource optimization strategies implem
 
 - **Air Quality Telemetry Cache:** Live air quality reports are cached in memory for 15 minutes (900,000 ms) using a FIFO eviction queue capped at 300 entries ([`src/lib/air-quality/cache.ts`](../src/lib/air-quality/cache.ts)), eliminating redundant upstream API calls.
 - **Reverse Geocoding Cache:** Reverse geocode coordinate lookups are cached up to 50 entries with a 1 req/sec sliding limiter to strictly adhere to OpenStreetMap Nominatim fair use ([`src/lib/air-quality/reverse-geocoder.ts`](../src/lib/air-quality/reverse-geocoder.ts)).
-- **Gemini Plan Cache (30-min TTL):** Generated household plans are cached for 30 minutes using a composite key: `plan:${place}:${hour}:${stableProfileJson}` ([`src/lib/gemini/cache.ts`](../src/lib/gemini/cache.ts)). Identical household profiles queried in the same hour are served instantly from memory, preserving free-tier AI quotas.
-- **Gemini Community Advisory Cache (30-min TTL):** Broadcast advisories are cached for 30 minutes using `adv:${place}:${audience}:${language}:${hour}` ([`src/lib/gemini/cache.ts`](../src/lib/gemini/cache.ts)), avoiding repetitive generative calls across audience and language toggles.
+- **Gemini Plan Cache (30-min TTL, 200 entries):** Generated household plans are cached for 30 minutes in a bounded cache (oldest entries evicted first) using a composite key: `plan:${place}:${hour}:${stableProfileJson}` ([`src/lib/gemini/cache.ts`](../src/lib/gemini/cache.ts)). Identical household profiles queried in the same hour are served instantly from memory, preserving free-tier AI quotas.
+- **Gemini Community Advisory Cache (30-min TTL, 200 entries):** Broadcast advisories are cached for 30 minutes using `adv:${place}:${audience}:${language}:${hour}` ([`src/lib/gemini/cache.ts`](../src/lib/gemini/cache.ts)), avoiding repetitive generative calls across audience and language toggles.
 
 ---
 
@@ -34,8 +34,8 @@ This document details the efficiency and resource optimization strategies implem
   ```
 
 - **Measured Static Asset Footprint:**
-  - Client bundles in `.next/static/chunks` total 8 files (7 JavaScript chunks, 1 CSS stylesheet) with a combined size of 939,590 bytes (~917.6 KB uncompressed across React 19, Next.js runtime, and Tailwind stylesheet).
-  - Total `.next/static` directory size across all 27 assets (including fonts and SVG icons) is 1,171,497 bytes (~1.17 MB).
+  - The home page loads 7 JavaScript chunks totalling 740 KB uncompressed (223 KB gzip), plus one 35 KB stylesheet (measured from the production build's prerendered `index.html`).
+  - The whole `.next/static` directory holds 27 files totalling 1,025,235 bytes (~1.0 MB), including fonts.
 
 ---
 
@@ -66,4 +66,4 @@ This document details the efficiency and resource optimization strategies implem
   - Monolithic global CSS split into focused stylesheets (`tokens.css`, `base.css`, `layout.css`, `onboarding.css`, `dashboard.css`, `chat.css`).
   - Icons factored into dedicated submodules (`ActionIcons.tsx`, `DomainIcons.tsx`, `NavIcons.tsx`, `ThemeIcons.tsx`, `TimeIcons.tsx`, `VehicleIcons.tsx`).
   - Onboarding form split across 3 discrete step components and reusable option groups.
-  - Generates minimal bundle sizes, granular tree-shaking, fast HMR, and sub-2s Turbopack builds.
+  - UI components import only browser-safe modules (hour formatting lives in `src/lib/air-quality/time-utils.ts`, not in the chat tool module), so no chat-tool or Gemini code is bundled for the browser.
