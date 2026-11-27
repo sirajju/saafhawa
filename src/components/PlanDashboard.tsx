@@ -136,10 +136,19 @@ export function PlanDashboard({
           >
             <ShareIcon className="icon" />
           </span>
-          <div>
-            <h3>Warn your society</h3>
-            <p className="caption">A ready WhatsApp message in English or हिन्दी</p>
-          </div>
+          <span className="flex flex-col text-left">
+            <span
+              style={{
+                fontSize: '17px',
+                lineHeight: 1.4,
+                fontWeight: 600,
+                color: 'var(--ink)',
+              }}
+            >
+              Warn your society
+            </span>
+            <span className="caption">A ready WhatsApp message in English or हिन्दी</span>
+          </span>
         </button>
       </aside>
 
